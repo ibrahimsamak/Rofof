@@ -1,5 +1,5 @@
 // Require the fastify framework and instantiate it
-const auth = require('./src/controllers/auth');
+const auth = require('./controllers/auth');
 const jwt = require('jsonwebtoken');
 const config = require('config');
  
@@ -12,10 +12,10 @@ const fastify = require('fastify')({
 const mongoose = require('mongoose')
 
 // Import Routes
-const routes = require('./src/routes')
+const routes = require('./routes')
 
 // Import Swagger Options
-const swagger = require('./src/config/swagger')
+const swagger = require('./config/swagger')
 
 // Register Swagger
 fastify.register(require('fastify-swagger'), swagger.options)
