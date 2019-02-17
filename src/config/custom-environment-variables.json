@@ -1,0 +1,5 @@
+{
+    "jwtPrivateKey": "gaz_jwtPrivateKey",
+    "db": "db_liken" 
+
+}

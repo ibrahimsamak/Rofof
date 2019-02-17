@@ -1,0 +1,982 @@
+// External Dependancies
+const boom = require('boom')
+const NodeGeocoder = require('node-geocoder');
+const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+const geolib = require('geolib')
+const _ = require('underscore');
+const lodash = require('lodash');
+const GeoFire = require('geofire');
+const firebase = require('firebase');
+
+var config = {
+    apiKey: "AIzaSyABN7HaigdqFPQx9un5pngBD7w6w2Cz5_E",
+    authDomain: "gazapp-4e160.firebaseapp.com",
+    databaseURL: "https://gazapp-4e160.firebaseio.com",
+    projectId: "gazapp-4e160",
+    storageBucket: "gazapp-4e160.appspot.com",
+    messagingSenderId: "239118239090"
+};
+firebase.initializeApp(config);
+
+
+var firebaseRef = firebase.database().ref();
+// Create a GeoFire index
+var geoFire = new GeoFire(firebaseRef);
+var ref = geoFire.ref();  // ref === firebaseRef
+
+
+
+// Get Data Models
+const { Order } = require('../models/Order')
+const { Admin } = require('../models/Admin')
+const { Point } = require('../models/Point')
+const { UserPoint } = require('../models/userPoint')
+const { Notifications } = require('../models/Notifications')
+const { Drivers } = require('../models/Driver')
+
+const options = {
+    provider: 'google',
+    httpAdapter: 'https',
+    apiKey: 'AIzaSyDP-XwnS5Daa_uSFZJvY6H0hsKaOxe2ar0',
+    formatter: null
+};
+const geocoder = NodeGeocoder(options);
+
+
+async function getAddress(lat, lng) {
+    var current_city = ''
+    return new Promise(function (resolve, reject) {
+        geocoder.reverse({ lat: lat, lon: lng })
+            .then(async function (res) {
+                if (res) {
+                    console.log(res[0]);
+                    console.log(res[0]['administrativeLevels']['level1long'], res[0].country);
+                    current_city = res[0]['administrativeLevels']['level1long']
+                    resolve(current_city);
+                }
+                else {
+                    reject('');
+                }
+            })
+            .catch(function (err) {
+                console.log(err);
+                reject(err);
+            });
+    });
+}
+
+function CreateNotification(deviceId, msg, order_id, from_userName, to_user_id) {
+    return new Promise(function (resolve, reject) {
+
+        let _Notification = new Notifications({
+            from: from_userName,
+            user_id: to_user_id,
+            title: 'متابعة الطلبات',
+            msg: msg,
+            dt_date: new Date(),
+            type: 1,
+            body_parms: order_id,
+            isRead: false
+        });
+
+        let rs = _Notification.save();
+        console.log(rs);
+        let postModel =
+        {
+            "notification": {
+                "title": "متابعة الطلبات",
+                "body": msg,
+                "sound": "default",
+            },
+            "data": {
+                "data": order_id,
+            },
+            "to": deviceId
+        };
+        var data = JSON.stringify(postModel);
+        var xhr = new XMLHttpRequest();
+        //xhr.withCredentials = true;
+
+        xhr.addEventListener("readystatechange", function () {
+            if (this.readyState === 4) {
+                console.log('send' + this.responseText);
+            }
+        });
+
+        xhr.open("POST", "https://fcm.googleapis.com/fcm/send");
+        xhr.setRequestHeader("Authorization", 'key=AAAAN6yOxXI:APA91bH99PN9-Cyfph4w4Tf1pWScF1M3OZOhpsM1FrTZdbjjhhPnDaSmP5MAqTsAY8hPNWx4FaCnBsqgLUlwtzc5cv4osE0uPwSvYwU31bHE_LaHMuLeB9qFcXKkIV59_Rr1eWZbWJoY');
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send(data);
+        resolve(data);
+    });
+}
+
+function CreateNotificationMultiple([deviceId], msg, order_id, from_userName, to_user_id) {
+    return new Promise(function (resolve, reject) {
+
+        // let _Notification = new Notifications({
+        //     from: from_userName,
+        //     user_id: to_user_id,
+        //     title: 'متابعة الطلبات',
+        //     msg: msg,
+        //     dt_date: new Date(),
+        //     type: 1,
+        //     body_parms: order_id,
+        //     isRead: false
+        // });
+
+        // let rs = _Notification.save();
+        // console.log(rs);
+
+        let postModel =
+        {
+            "notification": {
+                "title": "متابعة الطلبات",
+                "body": msg,
+                "sound": "default",
+                "icon": "assets/images/logo.png"
+            },
+            "data": {
+                "data": order_id,
+            },
+            "registration_ids": [deviceId]
+        };
+        var data = JSON.stringify(postModel);
+        var xhr = new XMLHttpRequest();
+        //xhr.withCredentials = true;
+
+        xhr.addEventListener("readystatechange", function () {
+            if (this.readyState === 4) {
+                console.log('send' + this.responseText);
+            }
+        });
+
+        xhr.open("POST", "https://fcm.googleapis.com/fcm/send");
+        xhr.setRequestHeader("Authorization", 'key=AAAAN6yOxXI:APA91bH99PN9-Cyfph4w4Tf1pWScF1M3OZOhpsM1FrTZdbjjhhPnDaSmP5MAqTsAY8hPNWx4FaCnBsqgLUlwtzc5cv4osE0uPwSvYwU31bHE_LaHMuLeB9qFcXKkIV59_Rr1eWZbWJoY');
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send(data);
+        resolve(data);
+    });
+}
+
+// add new order of products
+// order type : 1 - product , 2- refill
+exports.addOrder = async (req, reply) => {
+    //paymentType: 
+    //1: cash 
+    //2: paymet getway
+    //3: points
+    try {
+        var current_city = ''
+        const User_id = req.user._id
+        await getAddress(req.body.lat, req.body.lng).then((x) => {
+            current_city = x;
+        });
+
+
+        if (req.body.paymentType == 3) {
+            //check points numbers
+            const userPoints = await UserPoint.findOne({ user_id: User_id });
+            if (userPoints) {
+                const points_to_mony = parseInt(userPoints.points, 10) / parseInt(userPoints.point_price, 10)
+                console.log(userPoints)
+                let disc = (((parseFloat(req.body.subTotal, 10))) + parseInt(req.body.deliveryCost, 10))
+
+                if (points_to_mony >= disc) {
+                    let Orders = new Order({
+                        addressDetails: req.body.addressDetails,
+                        orderType: req.body.orderType,
+                        lat: req.body.lat,
+                        lng: req.body.lng,
+                        paymentType: req.body.paymentType,
+                        deliveryCost: req.body.deliveryCost,
+                        subTotal: req.body.subTotal,
+                        Total: ((parseFloat(req.body.subTotal, 10))) + parseInt(req.body.deliveryCost, 10),
+                        Notes: req.body.Notes,
+                        StatusId: 1,
+                        delivery_date: req.body.delivery_date,
+                        delivery_time: req.body.delivery_time,
+                        user_id: User_id,
+                        items: req.body.items,
+                        city: current_city,
+                        createAt: new Date(),
+                    });
+                    let rs = await Orders.save();
+                    const response = {
+                        items: rs,
+                        status: true,
+                        status_code: 200,
+                        message: 'تمت اضافة طلبك بنجاح'
+                    }
+
+                    const _userPoints = await UserPoint.findByIdAndUpdate((userPoints._id), {
+                        $inc: { points: -disc }
+                    }, { new: true })
+
+
+
+                    var database = firebase.database(); // Ref to Firebase Database
+                    var geoFire = new GeoFire(database.ref('userLocation')); // Ref to 'Item Locations' table
+                    // geoFire.set('3',[21.400404, 23.1030303]);
+                    var driversToken = []
+                    var keys_arr = []
+                    let geoQuery = geoFire.query({
+                        center: [req.body.lat, req.body.lng],
+                        radius: 5000
+                    })
+
+                    var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
+                        console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+                        let obj = {
+                            key: key,
+                            location: location,
+                            distance: distance
+                        }
+                        console.log(key)
+                        keys_arr.push(key)
+                    });
+
+                    var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
+                        console.log(key + " exited query to " + location + " (" + distance + " km from center)");
+                        onKeyEnteredRegistration.cancel();
+
+                        const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
+                        console.log(drivers)
+                        drivers.forEach(element => {
+                            driversToken.push(element.fcmToken)
+                        });
+                        // reply.send(driversToken)
+                    });
+
+                    CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', req.user._id)
+
+                    reply.send(response)
+                } else {
+                    const response = {
+                        items: null,
+                        status: false,
+                        status_code: 404,
+                        message: 'لاتوجد لديك نقاط كافية'
+                    }
+                    reply.send(response)
+                }
+            } else {
+                const response = {
+                    items: null,
+                    status: false,
+                    status_code: 404,
+                    message: 'لاتوجد لديك نقاط كافية'
+                }
+                reply.send(response)
+            }
+        } else {
+            let Orders = new Order({
+                addressDetails: req.body.addressDetails,
+                orderType: req.body.orderType,
+                lat: req.body.lat,
+                lng: req.body.lng,
+                paymentType: req.body.paymentType,
+                deliveryCost: req.body.deliveryCost,
+                subTotal: req.body.subTotal,
+                Total: ((parseFloat(req.body.subTotal, 10))) + parseInt(req.body.deliveryCost, 10),
+                Notes: req.body.Notes,
+                StatusId: 1,
+                delivery_date: req.body.delivery_date,
+                delivery_time: req.body.delivery_time,
+                user_id: User_id,
+                items: req.body.items,
+                city: current_city,
+                createAt: new Date(),
+            });
+            let rs = await Orders.save();
+            const response = {
+                items: rs,
+                status: true,
+                status_code: 200,
+                message: 'تمت اضافة طلبك بنجاح'
+            }
+
+            var database = firebase.database(); // Ref to Firebase Database
+            var geoFire = new GeoFire(database.ref('userLocation')); // Ref to 'Item Locations' table
+            // geoFire.set('3',[21.400404, 23.1030303]);
+            var driversToken = []
+            var keys_arr = []
+            let geoQuery = geoFire.query({
+                center: [req.body.lat, req.body.lng],
+                radius: 5000
+            })
+
+            var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
+                console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+                let obj = {
+                    key: key,
+                    location: location,
+                    distance: distance
+                }
+                console.log(key)
+                keys_arr.push(key)
+            });
+
+            var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
+                console.log(key + " exited query to " + location + " (" + distance + " km from center)");
+                onKeyEnteredRegistration.cancel();
+
+                const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
+                console.log(drivers)
+                drivers.forEach(element => {
+                    driversToken.push(element.fcmToken)
+                });
+                // reply.send(driversToken)
+            });
+
+            CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', req.user._id)
+
+            reply.send(response)
+        }
+
+        //push notification to all drivers within 30 km
+
+    } catch (err) {
+        throw boom.boomify(err)
+    }
+}
+
+// update order status
+exports.updateOrderByUser = async (req, reply) => {
+    try {
+        if (req.body.StatusId == 4) {
+            // to cpanel also
+            const order = await Order.findById(req.query.id).populate('user_id').populate('driver_id')
+            // const clientFCM = order.user_id.fcmToken
+            const arr = []
+            let msg = `تم استلام الطلب من العميل رقم الطلب: ${order._id}`;
+            const driverFCM = order.driver_id.fcmToken;
+
+
+            let notification = CreateNotification(driverFCM, msg, order._id, order.user_id.full_name, order.driver_id._id);
+            const _points = await Point.findOne({
+                $and: [{ 'supplier_id': order.driver_id.supplier_id }, { 'min_value': { $lt: order.Total } }, { 'max_value': { $gte: order.Total } },]
+            })
+
+            const _user_points = await UserPoint.findOne({
+                $and: [{ 'user_id': order.user_id._id }]
+            })
+
+            if (_points) {
+                console.log(_points)
+                if (_user_points) {
+                    const UserPoints = await UserPoint.findByIdAndUpdate((_user_points._id), {
+                        $inc: { points: _points.points }
+                    }, { new: true })
+                } else {
+                    let UserPoints = new UserPoint({
+                        user_id: order.user_id._id,
+                        supplier_id: order.driver_id.supplier_id,
+                        points: _points.points,
+                        point_price: _points.point_price
+                    });
+                    let rs = await UserPoints.save();
+                    console.log(UserPoints)
+                }
+            }
+
+
+            const sp = await Order.findByIdAndUpdate((req.query.id), {
+                StatusId: req.body.StatusId
+            }, { new: true })
+
+
+            const response = {
+                status_code: 200,
+                status: true,
+                message: 'تم تعديل الطلب بنجاح',
+                items: sp
+            }
+            const devicesID = await Admin.find().select('fcmToken');
+            devicesID.forEach(element => {
+                arr.push(element['fcmToken'])
+            });
+            CreateNotificationMultiple(arr, msg, '', '', '');
+            console.log(devicesID)
+
+            return response
+
+        }
+        if (req.body.StatusId == 5) {
+            if (order.StatusId == 1) {
+                const order = await Order.findById(req.query.id).populate('user_id')
+                let msg = `قام العميل بالغاء الطلب رقم: ${order._id}`;
+
+                const arr = []
+                const devicesID = await Admin.find().select('fcmToken');
+                devicesID.forEach(element => {
+                    arr.push(element['fcmToken'])
+                });
+                CreateNotificationMultiple(arr, msg, '', '', '');
+
+                const sp = await Order.findByIdAndUpdate((req.query.id), {
+                    StatusId: req.body.StatusId,
+                    Notes: req.body.Notes
+                }, { new: true })
+
+
+                const response = {
+                    status_code: 200,
+                    status: true,
+                    message: 'تم تعديل الطلب بنجاح',
+                    items: sp
+                }
+                return response
+            }
+            else {
+                const response = {
+                    status_code: 400,
+                    status: false,
+                    message: 'عذرا لا يمكن الغاء الطلب جاري توصيله',
+                    items: []
+                }
+                return response
+            }
+        }
+
+    } catch (err) {
+        throw boom.boomify(err)
+    }
+}
+
+//update order driver
+exports.updateOrderByDriver = async (req, reply) => {
+    try {
+        const order = await Order.findById(req.query.id).populate('user_id')
+        const clientFCM = order.user_id.fcmToken
+        // const driverFCM = order.driver_id.fcmToken;
+        if (req.body.StatusId == 2) {
+            if (order.driver_id) {
+                const response = {
+                    status_code: 404,
+                    status: false,
+                    message: 'عذرا تم قبول الطلب من قبل شركة اخرى',
+                    items: []
+                }
+                return response
+            } else {
+                let msg = `تم استلام طلبكم وجاري التوصيل طلب رقم: ${order._id}`;
+                console.log(req.user._id)
+                const sp = await Order.findByIdAndUpdate((req.query.id), {
+                    StatusId: req.body.StatusId,
+                    Notes: req.body.Notes,
+                    driver_id: req.user._id
+                }, { new: true })
+                const driver = await Drivers.findById(req.user._id)
+                let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
+
+                const response = {
+                    status_code: 200,
+                    status: true,
+                    message: 'تم تعديل الطلب بنجاح',
+                    items: sp
+                }
+
+                return response
+            }
+        }
+        if (req.body.StatusId == 3) {
+            let msg = `تم توصيل طلبكم رقم: ${order._id}`;
+            console.log(msg)
+
+            let notification = CreateNotification(clientFCM, msg, order._id, order.driver_id.name, order.user_id._id);
+
+            const sp = await Order.findByIdAndUpdate((req.query.id), {
+                StatusId: req.body.StatusId,
+                Notes: req.body.Notes
+            }, { new: true })
+
+
+            const response = {
+                status_code: 200,
+                status: true,
+                message: 'تم تعديل الطلب بنجاح',
+                items: sp
+            }
+            return response
+        }
+        if (req.body.StatusId == 6) {
+            if (order.StatusId == 1){
+                let msg = `قام السائق برفض الطلب رقم: ${order._id}`;
+                console.log(msg)
+                var arr = []
+                const driver = await Drivers.findById(req.user._id)
+                let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);    
+                const sp = await Order.findByIdAndUpdate((req.query.id), {
+                    StatusId: 1,
+                    Notes: ''
+                }, { new: true })
+    
+                const devicesID = await Admin.find().select('fcmToken');
+                devicesID.forEach(element => {
+                    arr.push(element['fcmToken'])
+                });
+                CreateNotificationMultiple(arr, msg, '', '', '');
+    
+    
+                var database = firebase.database(); // Ref to Firebase Database
+                var geoFire = new GeoFire(database.ref('userLocation')); // Ref to 'Item Locations' table
+                // geoFire.set('3',[21.400404, 23.1030303]);
+                var driversToken = []
+                var keys_arr = []
+                let geoQuery = geoFire.query({
+                    center: [order.lat, order.lng],
+                    radius: 5000
+                })
+    
+                var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
+                    console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+                    let obj = {
+                        key: key,
+                        location: location,
+                        distance: distance
+                    }
+                    console.log(key)
+                    keys_arr.push(key)
+                });
+    
+                var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
+                    console.log(key + " exited query to " + location + " (" + distance + " km from center)");
+                    onKeyEnteredRegistration.cancel();
+    
+                    const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
+                    console.log(drivers)
+                    drivers.forEach(element => {
+                        driversToken.push(element.fcmToken)
+                    });
+                    // reply.send(driversToken)
+                });
+    
+                CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', req.user._id)
+    
+    
+                const response = {
+                    status_code: 200,
+                    status: true,
+                    message: 'تم تعديل الطلب بنجاح',
+                    items: sp
+                }
+                return response
+            }else{
+                const response = {
+                    status_code: 404,
+                    status: false,
+                    message: 'عذرا لايمكن رفض الطلب بعد قبوله',
+                    items: []
+                }
+            }
+        }
+        
+    } catch (err) {
+        throw boom.boomify(err)
+    }
+}
+
+// add Rate of Orders and products
+exports.addRate = async (req, reply) => {
+    try {
+        const ord = await Order.findById((req.query.id));
+        if (ord.StatusId == 4) {
+
+            const arr = []
+            const devicesID = await Admin.find().select('fcmToken');
+            devicesID.forEach(element => {
+                arr.push(element['fcmToken'])
+            });
+            console.log(arr)
+            CreateNotificationMultiple(arr, 'تمت اضافة تقييم جديد الرجاء مراجعة قسم التقييمات', '', '', '');
+
+            const _order = await Order.findByIdAndUpdate((req.query.id), {
+                rate: req.body.rate,
+                comment: req.body.comment,
+                isRate: true,
+                rateDate: new Date(),
+                isOpen: false
+            }, { new: true })
+            const response = {
+                status_code: 200,
+                status: true,
+                message: 'تم اضافة تقييمك بنجاح',
+                items: _order
+            }
+            return response
+        }
+        else {
+            const response = {
+                status_code: 404,
+                status: false,
+                message: 'لا يمكن تقييم الطلبية الا بعد استلامها من السائق',
+                items: null
+            }
+            return response
+        }
+    } catch (err) {
+        throw boom.boomify(err)
+    }
+}
+
+// Get user Order
+exports.getUserOrder = async (req, reply) => {
+    try {
+        var page = parseInt(req.query.page, 10)
+        var limit = parseInt(req.query.limit, 10)
+        const total = await Order.find({ user_id: req.query.id, StatusId: req.query.staustId }).count();
+
+        var result = []
+        if (req.query.staustId != 1) {
+            await Order.find({ user_id: req.query.id, StatusId: req.query.staustId }).sort({ _id: -1 })
+                .populate('user_id')
+                .populate('driver_id')
+                .populate({ path: 'items.product_id', populate: { path: 'product_id' } })
+                .skip((page) * limit)
+                .limit(limit)
+                .exec(function (err, item) {
+                    console.log(item)
+                    const response = {
+                        status_code: 200,
+                        status: true,
+                        message: 'return succssfully',
+                        items: item,
+                        pagenation: {
+                            size: item.length,
+                            totalElements: total,
+                            totalPages: Math.floor(total / limit),
+                            pageNumber: page
+                        }
+                    }
+                    reply.send(response)
+                });
+        }
+        else {
+            await Order.find({ user_id: req.query.id, StatusId: req.query.staustId }).sort({ _id: -1 })
+                .populate('user_id')
+                // .populate('driver_id')
+                .populate({ path: 'items.product_id', populate: { path: 'product_id' } })
+                .skip((page) * limit)
+                .limit(limit)
+                .exec(function (err, item) {
+                    console.log(item)
+                    const response = {
+                        status_code: 200,
+                        status: true,
+                        message: 'return succssfully',
+                        items: item,
+                        pagenation: {
+                            size: item.length,
+                            totalElements: total,
+                            totalPages: Math.floor(total / limit),
+                            pageNumber: page
+                        }
+                    }
+                    reply.send(response)
+                });
+        }
+    }
+    catch (err) {
+        throw boom.boomify(err)
+    }
+}
+
+// Get Driver Order
+exports.getDriverOrder = async (req, reply) => {
+    try {
+        var page = parseInt(req.query.page, 10)
+        var limit = parseInt(req.query.limit, 10)
+        const total = await Order.find({ driver_id: req.query.id, StatusId: req.query.staustId }).count();
+
+        var result = []
+        await Order.find({ driver_id: req.query.id, StatusId: req.query.staustId }).sort({ _id: -1 })
+            .populate('user_id')
+            .populate('driver_id')
+            .populate({ path: 'items.product_id', populate: { path: 'product_id' } })
+            .skip((page) * limit)
+            .limit(limit)
+            .exec(function (err, item) {
+                result = item
+                const response = {
+                    status_code: 200,
+                    status: true,
+                    message: 'return succssfully',
+                    items: result,
+                    pagenation: {
+                        size: result.length,
+                        totalElements: total,
+                        totalPages: Math.floor(total / limit),
+                        pageNumber: page
+                    }
+                }
+                reply.send(response)
+            });
+    }
+    catch (err) {
+        throw boom.boomify(err)
+    }
+}
+
+// Get Order Details
+exports.getOrderDetails = async (req, reply) => {
+    try {
+        const ord = await Order.find({ _id: req.query.id })
+        console.log(ord)
+        if (ord.StatusId == 1) {
+            await Order.find({ _id: req.query.id })
+                .sort({ _id: -1 })
+                .populate('user_id')
+                .populate({ path: 'items.product_id', populate: { path: 'product_id' } })
+                .exec(async function (err, item) {
+                    const response = {
+                        status_code: 200,
+                        status: true,
+                        message: 'return succssfully',
+                        items: item
+                    }
+                    reply.send(response)
+                });
+        } else {
+            const ord = await Order.find({ _id: req.query.id })
+                .sort({ _id: -1 })
+                .populate('user_id')
+                .populate('driver_id')
+                .populate({ path: 'items.product_id', populate: { path: 'product_id' } })
+                .exec(async function (err, item) {
+                    const response = {
+                        status_code: 200,
+                        status: true,
+                        message: 'return succssfully',
+                        items: item
+                    }
+                    reply.send(response)
+                });
+        }
+    }
+    catch{
+        throw boom.boomify(err)
+    }
+}
+
+//check drivers in range in refill gaz 
+exports.checkAvailableDrivers = async (req, reply) => {
+    try {
+        let result = geolib.isPointInside(
+            { latitude: 51.5125, longitude: 7.485 },
+            [
+                { latitude: 51.50, longitude: 7.40 },
+                { latitude: 51.555, longitude: 7.40 },
+                { latitude: 51.555, longitude: 7.625 },
+                { latitude: 51.5125, longitude: 7.625 }
+            ]
+        );
+
+        const response = {
+            status_code: 200,
+            status: true,
+            message: 'return succssfully',
+            items: result
+        }
+        return response
+    }
+    catch {
+        throw boom.boomify(err)
+    }
+}
+
+
+
+
+// cPanel
+exports.getOrders = async (req, reply) => {
+    try {
+        var page = parseInt(req.query.page, 10)
+        var limit = parseInt(req.query.limit, 10)
+        const total = await Order.find().count();
+
+        await Order.find().sort({ _id: -1 })
+            .populate('user_id')
+            .populate('driver_id')
+            .populate({ path: 'items.product_id', populate: { path: 'product_id' } })
+            .skip((page) * limit)
+            .limit(limit)
+            .exec(function (err, item) {
+                // if (err) return handleError(err); 
+                const response = {
+                    status_code: 200,
+                    status: true,
+                    message: 'return succssfully',
+                    items: item,
+                    pagenation: {
+                        size: item.length,
+                        totalElements: total,
+                        totalPages: Math.floor(total / limit),
+                        pageNumber: page
+                    }
+                }
+                reply.send(response);
+            });
+    }
+    catch {
+        throw boom.boomify(err)
+    }
+}
+
+exports.getOrdersSeacrh = async (req, reply) => {
+    try {
+        var page = parseInt(req.query.page, 10)
+        var limit = parseInt(req.query.limit, 10)
+        // const total = await Order.find().count();
+
+        await Order.find().sort({ _id: -1 })
+            .populate('driver_id')
+            .populate('user_id')
+            .populate({ path: 'items.product_id', populate: { path: 'product_id' } })
+            // .skip((page - 1) * limit)
+            // .limit(limit)
+            .exec(function (err, item) {
+                var result = _.filter(item, function (itm) {
+                    return (itm.user_id.full_name.indexOf(req.body.full_name) >= 0 || itm.user_id.phone_number.indexOf(req.body.phone_number) >= 0)
+                });
+                var result1 = lodash(result).slice((page) * limit).take(limit).value();
+                const response = {
+                    items: result1,
+                    status_code: 200,
+                    message: 'returned successfully',
+                    pagenation: {
+                        size: result1.length,
+                        totalElements: result.length,
+                        totalPages: Math.floor(result.length / limit),
+                        pageNumber: page
+                    }
+                }
+                reply.send(response);
+            });
+    }
+    catch {
+        throw boom.boomify(err)
+    }
+}
+
+exports.getRatedOrders = async (req, reply) => {
+    try {
+        var page = parseInt(req.query.page, 10)
+        var limit = parseInt(req.query.limit, 10)
+        const total = await Order.find({ isRate: true }).count();
+
+        await Order.find({ isRate: true }).sort({ _id: -1 })
+            .populate('user_id')
+            .populate('driver_id')
+            .populate({ path: 'items.product_id', populate: { path: 'product_id' } })
+            .skip((page) * limit)
+            .limit(limit)
+            .exec(function (err, item) {
+                // if (err) return handleError(err); 
+                const response = {
+                    status_code: 200,
+                    status: true,
+                    message: 'return succssfully',
+                    items: item,
+                    pagenation: {
+                        size: item.length,
+                        totalElements: total,
+                        totalPages: Math.floor(total / limit),
+                        pageNumber: page
+                    }
+                }
+                reply.send(response);
+            });
+    }
+    catch {
+        throw boom.boomify(err)
+    }
+}
+
+exports.getNewOrder = async (req, reply) => {
+    try {
+        const total = await Order.find({ StatusId: 1 }).count();
+        reply.send(total)
+
+    }
+    catch {
+        throw boom.boomify(err)
+    }
+}
+
+exports.getNewRatedOrder = async (req, reply) => {
+    try {
+        const total = await Order.find({ isRate: true, isOpen: false }).count();
+        reply.send(total)
+
+    }
+    catch {
+        throw boom.boomify(err)
+    }
+}
+
+exports.updateRate = async (req, reply) => {
+    try {
+        const _order = await Order.findByIdAndUpdate((req.params.id), {
+            isOpen: true
+        }, { new: true })
+        const response = {
+            status_code: 200,
+            status: true,
+            message: 'تم تعديل التقييم بنجاح',
+            items: null
+        }
+        reply.send(response);
+
+    }
+    catch {
+        throw boom.boomify(err)
+    }
+}
+
+
+function getRandomCoords() {
+    var lat = (Math.random() * 90).toFixed(5);
+    lat *= Math.floor(Math.random() * 2) === 1 ? 1 : -1;
+
+    var lon = (Math.random() * 180).toFixed(5);
+    lon *= Math.floor(Math.random() * 2) === 1 ? 1 : -1;
+
+    return [lat, lon];
+}
+
+
+exports.testGeoFire = async (req, reply) => {
+    var database = firebase.database(); // Ref to Firebase Database
+    var geoFire = new GeoFire(database.ref('userLocation')); // Ref to 'Item Locations' table
+    // geoFire.set('3',[21.400404, 23.1030303]);
+    var driversToken = []
+    var xx = []
+    let geoQuery = geoFire.query({
+        center: [10.20200203, 21.4040202],
+        radius: 5000
+    })
+
+    var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
+        console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+        let obj = {
+            key: key,
+            location: location,
+            distance: distance
+        }
+        console.log(key)
+        xx.push(key)
+    });
+
+    var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
+        console.log(key + " exited query to " + location + " (" + distance + " km from center)");
+        onKeyEnteredRegistration.cancel();
+
+        const drivers = await Drivers.find({ _id: { $in: xx } }).select('fcmToken')
+        console.log(drivers)
+        drivers.forEach(element => {
+            driversToken.push(element.fcmToken)
+        });
+        reply.send(driversToken)
+    });
+}
