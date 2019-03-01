@@ -501,24 +501,24 @@ exports.updateOrderByDriver = async (req, reply) => {
             return response
         }
         if (req.body.StatusId == 6) {
-            if (order.StatusId == 1){
+            if (order.StatusId == 1) {
                 let msg = `قام السائق برفض الطلب رقم: ${order._id}`;
                 console.log(msg)
                 var arr = []
                 const driver = await Drivers.findById(req.user._id)
-                let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);    
+                let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
                 const sp = await Order.findByIdAndUpdate((req.query.id), {
                     StatusId: 1,
                     Notes: ''
                 }, { new: true })
-    
+
                 const devicesID = await Admin.find().select('fcmToken');
                 devicesID.forEach(element => {
                     arr.push(element['fcmToken'])
                 });
                 CreateNotificationMultiple(arr, msg, '', '', '');
-    
-    
+
+
                 var database = firebase.database(); // Ref to Firebase Database
                 var geoFire = new GeoFire(database.ref('userLocation')); // Ref to 'Item Locations' table
                 // geoFire.set('3',[21.400404, 23.1030303]);
@@ -528,7 +528,7 @@ exports.updateOrderByDriver = async (req, reply) => {
                     center: [order.lat, order.lng],
                     radius: 5000
                 })
-    
+
                 var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
                     console.log(key + " entered query at " + location + " (" + distance + " km from center)");
                     let obj = {
@@ -539,11 +539,11 @@ exports.updateOrderByDriver = async (req, reply) => {
                     console.log(key)
                     keys_arr.push(key)
                 });
-    
+
                 var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
                     console.log(key + " exited query to " + location + " (" + distance + " km from center)");
                     onKeyEnteredRegistration.cancel();
-    
+
                     const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
                     console.log(drivers)
                     drivers.forEach(element => {
@@ -551,10 +551,10 @@ exports.updateOrderByDriver = async (req, reply) => {
                     });
                     // reply.send(driversToken)
                 });
-    
+
                 CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', req.user._id)
-    
-    
+
+
                 const response = {
                     status_code: 200,
                     status: true,
@@ -562,7 +562,7 @@ exports.updateOrderByDriver = async (req, reply) => {
                     items: sp
                 }
                 return response
-            }else{
+            } else {
                 const response = {
                     status_code: 404,
                     status: false,
@@ -571,7 +571,7 @@ exports.updateOrderByDriver = async (req, reply) => {
                 }
             }
         }
-        
+
     } catch (err) {
         throw boom.boomify(err)
     }
@@ -762,25 +762,52 @@ exports.getOrderDetails = async (req, reply) => {
 //check drivers in range in refill gaz 
 exports.checkAvailableDrivers = async (req, reply) => {
     try {
-        let result = geolib.isPointInside(
-            { latitude: 51.5125, longitude: 7.485 },
-            [
-                { latitude: 51.50, longitude: 7.40 },
-                { latitude: 51.555, longitude: 7.40 },
-                { latitude: 51.555, longitude: 7.625 },
-                { latitude: 51.5125, longitude: 7.625 }
-            ]
-        );
+        var database = firebase.database(); // Ref to Firebase Database
+        var geoFire = new GeoFire(database.ref('userLocation')); // Ref to 'Item Locations' table
+        // geoFire.set('3',[21.400404, 23.1030303]);
+        console.log(req.body.lat, req.body.lng)
+        var keys_arr = []
+        let geoQuery = geoFire.query({
+            center: [req.body.lat, req.body.lng],
+            radius: 500
+        })
 
-        const response = {
-            status_code: 200,
-            status: true,
-            message: 'return succssfully',
-            items: result
-        }
-        return response
+        var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
+            console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+            keys_arr.push(key)
+        });
+
+        var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
+            console.log(key + " exited query to " + location + " (" + distance + " km from center)");
+            onKeyEnteredRegistration.cancel();
+          
+            if (keys_arr.length > 0) {
+                const response = {
+                    status_code: 200,
+                    status: true,
+                    message: 'return succssfully',
+                    items: null,
+                }
+                reply.send(response)
+            } else {
+                const response = {
+                    status_code: 404,
+                    status: false,
+                    message: 'عذرا منطقتك خارج التغطية الرجاء المحاولة فيما بعد',
+                    items: null,
+                }
+                reply.send(response)
+            }
+        });
     }
-    catch {
+    catch (err) {
+        // const response = {
+        //     status_code: 404,
+        //     status: false,
+        //     message: 'عذرا منطقتك خارج التغطية الرجاء المحاولة فيما بعد',
+        //     items: null,
+        // }
+        // reply.send(response)
         throw boom.boomify(err)
     }
 }
@@ -933,18 +960,6 @@ exports.updateRate = async (req, reply) => {
         throw boom.boomify(err)
     }
 }
-
-
-function getRandomCoords() {
-    var lat = (Math.random() * 90).toFixed(5);
-    lat *= Math.floor(Math.random() * 2) === 1 ? 1 : -1;
-
-    var lon = (Math.random() * 180).toFixed(5);
-    lon *= Math.floor(Math.random() * 2) === 1 ? 1 : -1;
-
-    return [lat, lon];
-}
-
 
 exports.testGeoFire = async (req, reply) => {
     var database = firebase.database(); // Ref to Firebase Database

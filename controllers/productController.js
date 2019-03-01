@@ -605,7 +605,7 @@ exports.updateProduct = async (req, reply) => {
                 warrenty: req.raw.body.warrenty,
                 category_id: req.raw.body.category_id,
                 createat: new Date(),
-                rate: 0,
+                // rate: 0,
                 price: req.raw.body.price
             }, { new: true })
             const response = {
@@ -622,7 +622,7 @@ exports.updateProduct = async (req, reply) => {
                 warrenty: req.raw.body.warrenty,
                 category_id: req.raw.body.category_id,
                 createat: new Date(),
-                rate: 0,
+                // rate: 0,
                 price: req.raw.body.price
             }, { new: true })
             const response = {

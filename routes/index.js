@@ -307,7 +307,6 @@ const routes = [
   {
     method: 'POST',
     url: '/api/forgetPassword',
-    beforeHandler: [auth.getToken],
     handler: userController.forgetPassword
   },
   {
@@ -411,7 +410,7 @@ const routes = [
     handler: orderController.getOrderDetails
   },
   {
-    method: 'GET',
+    method: 'POST',
     url: '/api/checkAvailableDrivers',
     handler: orderController.checkAvailableDrivers
   },
