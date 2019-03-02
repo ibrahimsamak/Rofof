@@ -178,11 +178,17 @@ exports.login = async (req, reply) => {
     try {
         const _Users = await Users.findOne({ $and: [{ email: req.body.email, password: req.body.password }] })
         if (_Users) {
+            const user = await Users.findByIdAndUpdate((req.body.id), {
+                token: jwt.sign({ _id: req.body.id }, config.get('jwtPrivateKey'), {
+                    expiresIn: '365d'
+                })
+            }, { new: true })
+
             const response = {
                 status_code: 200,
                 status: true,
                 message: 'تم التحقق بنجاح',
-                items: _Users
+                items: user
             }
             return response
         } else {
