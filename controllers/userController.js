@@ -178,7 +178,7 @@ exports.login = async (req, reply) => {
     try {
         const _Users = await Users.findOne({ $and: [{ email: req.body.email, password: req.body.password }] })
         if (_Users) {
-            const user = await Users.findByIdAndUpdate((req.body.id), {
+            const user = await Users.findByIdAndUpdate((_Users.id), {
                 token: jwt.sign({ _id: req.body.id }, config.get('jwtPrivateKey'), {
                     expiresIn: '365d'
                 })
