@@ -111,9 +111,7 @@ exports.getSingleUsers = async (req, reply) => {
 // Add a new Users
 exports.addUsers = async (req, reply) => {
     try {
-
         var current_city = ''
-
         const _user = await Users.findOne({ $or: [{ phone_number: req.body.phone_number }, { email: req.body.email }] });
         if (_user) {
             if (_user.isBlock == true) {
@@ -130,17 +128,15 @@ exports.addUsers = async (req, reply) => {
                     status_code: 400,
                     status: false,
                     message: 'البريد الالكتروني او رقم الجوال موجود لدينا مسبقا',
-                    items: _user
+                    items: []
                 }
                 return response
             }
         }
         else {
-
             await getAddress(req.body.lat, req.body.lng).then((x) => {
                 current_city = x;
             });
-
             let user = new Users({
                 phone_number: req.body.phone_number,
                 verify_code: 1234,
