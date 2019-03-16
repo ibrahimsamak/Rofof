@@ -371,6 +371,11 @@ const routes = [
     handler: userController.userprofile
   },
   {
+    method: 'PUT',
+    url: '/api/updateOrderByAdmin/:id',
+    handler: orderController.updateOrderByAdmin
+  },
+  {
     method: 'POST',
     url: '/api/order',
     beforeHandler: [auth.getToken],
@@ -418,7 +423,13 @@ const routes = [
     method: 'GET',
     url: '/api/getOrders',
     handler: orderController.getOrders
-  }, {
+  },
+  {
+    method: 'GET',
+    url: '/api/getTunckOrders',
+    handler: orderController.getTunckOrders
+  },
+  {
     method: 'POST',
     url: '/api/getOrdersSeacrh',
     handler: orderController.getOrdersSeacrh

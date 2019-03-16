@@ -160,97 +160,79 @@ function CreateNotificationMultiple([deviceId], msg, order_id, from_userName, to
 }
 
 // add new order of products
-// order type : 1 - product , 2- refill
+// order type : 1 - product , 2 - refill , 3 - gazTunck
 exports.addOrder = async (req, reply) => {
     //paymentType: 
     //1: cash 
     //2: paymet getway
     //3: points
     try {
+        var arr = []
         var current_city = ''
-        const User_id = req.user._id
-        await getAddress(req.body.lat, req.body.lng).then((x) => {
-            current_city = x;
-        });
 
+        if (req.body.orderType == 3) {
+            const User_id = req.user._id
+            await getAddress(req.body.lat, req.body.lng).then((x) => {
+                current_city = x;
+            });
 
-        if (req.body.paymentType == 3) {
-            //check points numbers
-            const userPoints = await UserPoint.findOne({ user_id: User_id });
-            if (userPoints) {
-                const points_to_mony = parseInt(userPoints.points, 10) / parseInt(userPoints.point_price, 10)
-                console.log(userPoints)
-                let disc = (((parseFloat(req.body.subTotal, 10))) + parseInt(req.body.deliveryCost, 10))
+            if (req.body.paymentType == 3) {
+                //check points numbers
+                const userPoints = await UserPoint.findOne({ user_id: User_id });
+                if (userPoints) {
+                    const points_to_mony = parseInt(userPoints.points, 10) / parseInt(userPoints.point_price, 10)
+                    console.log(userPoints)
+                    let disc = (((parseFloat(req.body.subTotal, 10))) + parseInt(req.body.deliveryCost, 10))
 
-                if (points_to_mony >= disc) {
-                    let Orders = new Order({
-                        addressDetails: req.body.addressDetails,
-                        orderType: req.body.orderType,
-                        lat: req.body.lat,
-                        lng: req.body.lng,
-                        paymentType: req.body.paymentType,
-                        deliveryCost: req.body.deliveryCost,
-                        subTotal: req.body.subTotal,
-                        Total: ((parseFloat(req.body.subTotal, 10))) + parseInt(req.body.deliveryCost, 10),
-                        Notes: req.body.Notes,
-                        StatusId: 1,
-                        delivery_date: req.body.delivery_date,
-                        delivery_time: req.body.delivery_time,
-                        user_id: User_id,
-                        items: req.body.items,
-                        city: current_city,
-                        createAt: new Date(),
-                    });
-                    let rs = await Orders.save();
-                    const response = {
-                        items: rs,
-                        status: true,
-                        status_code: 200,
-                        message: 'تمت اضافة طلبك بنجاح'
-                    }
-
-                    const _userPoints = await UserPoint.findByIdAndUpdate((userPoints._id), {
-                        $inc: { points: -disc }
-                    }, { new: true })
-
-
-
-                    var database = firebase.database(); // Ref to Firebase Database
-                    var geoFire = new GeoFire(database.ref('userLocation')); // Ref to 'Item Locations' table
-                    // geoFire.set('3',[21.400404, 23.1030303]);
-                    var driversToken = []
-                    var keys_arr = []
-                    let geoQuery = geoFire.query({
-                        center: [req.body.lat, req.body.lng],
-                        radius: 5000
-                    })
-
-                    var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
-                        console.log(key + " entered query at " + location + " (" + distance + " km from center)");
-                        let obj = {
-                            key: key,
-                            location: location,
-                            distance: distance
-                        }
-                        console.log(key)
-                        keys_arr.push(key)
-                    });
-
-                    var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
-                        console.log(key + " exited query to " + location + " (" + distance + " km from center)");
-                        onKeyEnteredRegistration.cancel();
-
-                        const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
-                        console.log(drivers)
-                        drivers.forEach(element => {
-                            driversToken.push(element.fcmToken)
+                    if (points_to_mony >= disc) {
+                        let Orders = new Order({
+                            addressDetails: req.body.addressDetails,
+                            orderType: req.body.orderType,
+                            lat: req.body.lat,
+                            lng: req.body.lng,
+                            paymentType: req.body.paymentType,
+                            deliveryCost: req.body.deliveryCost,
+                            subTotal: req.body.subTotal,
+                            Total: ((parseFloat(req.body.subTotal, 10))) + parseInt(req.body.deliveryCost, 10),
+                            Notes: req.body.Notes,
+                            StatusId: 1,
+                            delivery_date: req.body.delivery_date,
+                            delivery_time: req.body.delivery_time,
+                            user_id: User_id,
+                            items: req.body.items,
+                            city: current_city,
+                            createAt: new Date(),
                         });
-                        // reply.send(driversToken)
-                    });
+                        let rs = await Orders.save();
+                        const response = {
+                            items: rs,
+                            status: true,
+                            status_code: 200,
+                            message: 'تمت اضافة طلبك بنجاح'
+                        }
 
-                    CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', req.user._id)
+                        const _userPoints = await UserPoint.findByIdAndUpdate((userPoints._id), {
+                            $inc: { points: -disc }
+                        }, { new: true })
 
-                    reply.send(response)
+                        // CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', req.user._id)
+
+                        const devicesID = await Admin.find().select('fcmToken');
+                        devicesID.forEach(element => {
+                            arr.push(element['fcmToken'])
+                        });
+                        CreateNotificationMultiple(arr, 'جديد!! لديكم طلب تعبئة خزان غاز ', '', '', '');
+
+                        reply.send(response)
+                    } else {
+                        const response = {
+                            items: null,
+                            status: false,
+                            status_code: 404,
+                            message: 'لاتوجد لديك نقاط كافية'
+                        }
+                        reply.send(response)
+                    }
                 } else {
                     const response = {
                         items: null,
@@ -261,85 +243,217 @@ exports.addOrder = async (req, reply) => {
                     reply.send(response)
                 }
             } else {
+                let Orders = new Order({
+                    addressDetails: req.body.addressDetails,
+                    orderType: req.body.orderType,
+                    lat: req.body.lat,
+                    lng: req.body.lng,
+                    paymentType: req.body.paymentType,
+                    deliveryCost: req.body.deliveryCost,
+                    subTotal: req.body.subTotal,
+                    Total: ((parseFloat(req.body.subTotal, 10))) + parseInt(req.body.deliveryCost, 10),
+                    Notes: req.body.Notes,
+                    StatusId: 1,
+                    delivery_date: req.body.delivery_date,
+                    delivery_time: req.body.delivery_time,
+                    user_id: User_id,
+                    items: req.body.items,
+                    city: current_city,
+                    createAt: new Date(),
+                });
+                let rs = await Orders.save();
                 const response = {
-                    items: null,
-                    status: false,
-                    status_code: 404,
-                    message: 'لاتوجد لديك نقاط كافية'
+                    items: rs,
+                    status: true,
+                    status_code: 200,
+                    message: 'تمت اضافة طلبك بنجاح'
                 }
+
+
+                const devicesID = await Admin.find().select('fcmToken');
+                devicesID.forEach(element => {
+                    arr.push(element['fcmToken'])
+                });
+                CreateNotificationMultiple(arr, 'جديد!! لديكم طلب تعبئة خزان غاز ', '', '', '');
+
                 reply.send(response)
             }
         } else {
-            let Orders = new Order({
-                addressDetails: req.body.addressDetails,
-                orderType: req.body.orderType,
-                lat: req.body.lat,
-                lng: req.body.lng,
-                paymentType: req.body.paymentType,
-                deliveryCost: req.body.deliveryCost,
-                subTotal: req.body.subTotal,
-                Total: ((parseFloat(req.body.subTotal, 10))) + parseInt(req.body.deliveryCost, 10),
-                Notes: req.body.Notes,
-                StatusId: 1,
-                delivery_date: req.body.delivery_date,
-                delivery_time: req.body.delivery_time,
-                user_id: User_id,
-                items: req.body.items,
-                city: current_city,
-                createAt: new Date(),
+            var current_city = ''
+            const User_id = req.user._id
+            await getAddress(req.body.lat, req.body.lng).then((x) => {
+                current_city = x;
             });
-            let rs = await Orders.save();
-            const response = {
-                items: rs,
-                status: true,
-                status_code: 200,
-                message: 'تمت اضافة طلبك بنجاح'
+
+            if (req.body.paymentType == 3) {
+                //check points numbers
+                const userPoints = await UserPoint.findOne({ user_id: User_id });
+                if (userPoints) {
+                    const points_to_mony = parseInt(userPoints.points, 10) / parseInt(userPoints.point_price, 10)
+                    console.log(userPoints)
+                    let disc = (((parseFloat(req.body.subTotal, 10))) + parseInt(req.body.deliveryCost, 10))
+
+                    if (points_to_mony >= disc) {
+                        let Orders = new Order({
+                            addressDetails: req.body.addressDetails,
+                            orderType: req.body.orderType,
+                            lat: req.body.lat,
+                            lng: req.body.lng,
+                            paymentType: req.body.paymentType,
+                            deliveryCost: req.body.deliveryCost,
+                            subTotal: req.body.subTotal,
+                            Total: ((parseFloat(req.body.subTotal, 10))) + parseInt(req.body.deliveryCost, 10),
+                            Notes: req.body.Notes,
+                            StatusId: 1,
+                            delivery_date: req.body.delivery_date,
+                            delivery_time: req.body.delivery_time,
+                            user_id: User_id,
+                            items: req.body.items,
+                            city: current_city,
+                            createAt: new Date(),
+                        });
+                        let rs = await Orders.save();
+                        const response = {
+                            items: rs,
+                            status: true,
+                            status_code: 200,
+                            message: 'تمت اضافة طلبك بنجاح'
+                        }
+
+                        const _userPoints = await UserPoint.findByIdAndUpdate((userPoints._id), {
+                            $inc: { points: -disc }
+                        }, { new: true })
+
+
+
+                        var database = firebase.database(); // Ref to Firebase Database
+                        var geoFire = new GeoFire(database.ref('userLocation')); // Ref to 'Item Locations' table
+                        // geoFire.set('3',[21.400404, 23.1030303]);
+                        var driversToken = []
+                        var keys_arr = []
+                        let geoQuery = geoFire.query({
+                            center: [req.body.lat, req.body.lng],
+                            radius: 5000
+                        })
+
+                        var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
+                            console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+                            let obj = {
+                                key: key,
+                                location: location,
+                                distance: distance
+                            }
+                            console.log(key)
+                            keys_arr.push(key)
+                        });
+
+                        var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
+                            console.log(key + " exited query to " + location + " (" + distance + " km from center)");
+                            onKeyEnteredRegistration.cancel();
+
+                            const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
+                            console.log(drivers)
+                            drivers.forEach(element => {
+                                driversToken.push(element.fcmToken)
+                            });
+                            // reply.send(driversToken)
+                        });
+
+                        CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', req.user._id)
+
+                        reply.send(response)
+                    } else {
+                        const response = {
+                            items: null,
+                            status: false,
+                            status_code: 404,
+                            message: 'لاتوجد لديك نقاط كافية'
+                        }
+                        reply.send(response)
+                    }
+                } else {
+                    const response = {
+                        items: null,
+                        status: false,
+                        status_code: 404,
+                        message: 'لاتوجد لديك نقاط كافية'
+                    }
+                    reply.send(response)
+                }
+            } else {
+                let Orders = new Order({
+                    addressDetails: req.body.addressDetails,
+                    orderType: req.body.orderType,
+                    lat: req.body.lat,
+                    lng: req.body.lng,
+                    paymentType: req.body.paymentType,
+                    deliveryCost: req.body.deliveryCost,
+                    subTotal: req.body.subTotal,
+                    Total: ((parseFloat(req.body.subTotal, 10))) + parseInt(req.body.deliveryCost, 10),
+                    Notes: req.body.Notes,
+                    StatusId: 1,
+                    delivery_date: req.body.delivery_date,
+                    delivery_time: req.body.delivery_time,
+                    user_id: User_id,
+                    items: req.body.items,
+                    city: current_city,
+                    createAt: new Date(),
+                });
+                let rs = await Orders.save();
+                const response = {
+                    items: rs,
+                    status: true,
+                    status_code: 200,
+                    message: 'تمت اضافة طلبك بنجاح'
+                }
+
+                var database = firebase.database(); // Ref to Firebase Database
+                var geoFire = new GeoFire(database.ref('userLocation')); // Ref to 'Item Locations' table
+                // geoFire.set('3',[21.400404, 23.1030303]);
+                var driversToken = []
+                var keys_arr = []
+                let geoQuery = geoFire.query({
+                    center: [req.body.lat, req.body.lng],
+                    radius: 5000
+                })
+
+                var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
+                    console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+                    let obj = {
+                        key: key,
+                        location: location,
+                        distance: distance
+                    }
+                    console.log(key)
+                    keys_arr.push(key)
+                });
+
+                var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
+                    console.log(key + " exited query to " + location + " (" + distance + " km from center)");
+                    onKeyEnteredRegistration.cancel();
+
+                    const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
+                    console.log(drivers)
+                    drivers.forEach(element => {
+                        driversToken.push(element.fcmToken)
+                    });
+                    // reply.send(driversToken)
+                });
+
+                CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', req.user._id)
+
+                reply.send(response)
             }
 
-            var database = firebase.database(); // Ref to Firebase Database
-            var geoFire = new GeoFire(database.ref('userLocation')); // Ref to 'Item Locations' table
-            // geoFire.set('3',[21.400404, 23.1030303]);
-            var driversToken = []
-            var keys_arr = []
-            let geoQuery = geoFire.query({
-                center: [req.body.lat, req.body.lng],
-                radius: 5000
-            })
-
-            var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
-                console.log(key + " entered query at " + location + " (" + distance + " km from center)");
-                let obj = {
-                    key: key,
-                    location: location,
-                    distance: distance
-                }
-                console.log(key)
-                keys_arr.push(key)
-            });
-
-            var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
-                console.log(key + " exited query to " + location + " (" + distance + " km from center)");
-                onKeyEnteredRegistration.cancel();
-
-                const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
-                console.log(drivers)
-                drivers.forEach(element => {
-                    driversToken.push(element.fcmToken)
-                });
-                // reply.send(driversToken)
-            });
-
-            CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', req.user._id)
-
-            reply.send(response)
         }
-
         //push notification to all drivers within 30 km
 
     } catch (err) {
         throw boom.boomify(err)
     }
 }
+
+
 
 // update order status
 exports.updateOrderByUser = async (req, reply) => {
@@ -780,7 +894,7 @@ exports.checkAvailableDrivers = async (req, reply) => {
         var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
             console.log(key + " exited query to " + location + " (" + distance + " km from center)");
             onKeyEnteredRegistration.cancel();
-          
+
             if (keys_arr.length > 0) {
                 const response = {
                     status_code: 200,
@@ -813,16 +927,48 @@ exports.checkAvailableDrivers = async (req, reply) => {
 }
 
 
-
-
 // cPanel
 exports.getOrders = async (req, reply) => {
     try {
         var page = parseInt(req.query.page, 10)
         var limit = parseInt(req.query.limit, 10)
-        const total = await Order.find().count();
+        const total = await Order.find({ orderType: { $ne: 3 } }).count();
 
-        await Order.find().sort({ _id: -1 })
+        await Order.find({ orderType: { $ne: 3 } }).sort({ _id: -1 })
+            .populate('user_id')
+            .populate('driver_id')
+            .populate({ path: 'items.product_id', populate: { path: 'product_id' } })
+            .skip((page) * limit)
+            .limit(limit)
+            .exec(function (err, item) {
+                // if (err) return handleError(err); 
+                const response = {
+                    status_code: 200,
+                    status: true,
+                    message: 'return succssfully',
+                    items: item,
+                    pagenation: {
+                        size: item.length,
+                        totalElements: total,
+                        totalPages: Math.floor(total / limit),
+                        pageNumber: page
+                    }
+                }
+                reply.send(response);
+            });
+    }
+    catch {
+        throw boom.boomify(err)
+    }
+}
+
+exports.getTunckOrders = async (req, reply) => {
+    try {
+        var page = parseInt(req.query.page, 10)
+        var limit = parseInt(req.query.limit, 10)
+        const total = await Order.find({ orderType: 3 }).count();
+
+        await Order.find({ orderType: 3 }).sort({ _id: -1 })
             .populate('user_id')
             .populate('driver_id')
             .populate({ path: 'items.product_id', populate: { path: 'product_id' } })
@@ -957,6 +1103,52 @@ exports.updateRate = async (req, reply) => {
 
     }
     catch {
+        throw boom.boomify(err)
+    }
+}
+
+exports.updateOrderByAdmin = async (req, reply) => {
+    try {
+
+        console.log(req.params.id)
+        const sp = await Order.findByIdAndUpdate((req.params.id), {
+            StatusId: req.body.StatusId
+        }, { new: true })
+
+        const response = {
+            status_code: 200,
+            status: true,
+            message: 'تم تعديل الطلب بنجاح',
+            items: sp
+        }
+
+        const order = await Order.findById(req.query.id).populate('user_id')
+
+        if (req.body.StatusId === 2) {
+            let msg = `جاري توصيل طلبكم رقم: ${order._id}`;
+            console.log(msg)
+
+            let notification = CreateNotification(order.user_id.fcmToken, msg, order._id, 'ادارة تطبيق غاز', order.user_id._id);
+        }
+
+        if (req.body.StatusId === 3) {
+            let msg = `تم توصيل طلبكم رقم: ${order._id}`;
+            console.log(msg)
+
+            let notification = CreateNotification(order.user_id.fcmToken, msg, order._id, 'ادارة تطبيق غاز', order.user_id._id);
+
+        }
+
+        if (req.body.StatusId === 7) {
+            let msg = `تم الغاء طلبكم رقم: ${order._id} من قبل الادارة`;
+            console.log(msg)
+
+            let notification = CreateNotification(order.user_id.fcmToken, msg, order._id, 'ادارة تطبيق غاز', order.user_id._id);
+        }
+
+        return response
+
+    } catch (err) {
         throw boom.boomify(err)
     }
 }
