@@ -275,6 +275,26 @@ exports.changePassword = async (req, reply) => {
     }
 }
 
+exports.updateStatus = async (req, reply) => {
+    try {
+        const Driver_id = req.user._id
+        const user = await Drivers.findByIdAndUpdate((Driver_id), {
+            driver_status: req.body.driver_status
+        }, { new: true })
+        if (user){
+            const response = {
+                status_code: 200,
+                status: true,
+                message: 'تمت العملية بنجاح',
+                items: user
+            }
+            return response
+        }
+    } catch (err) {
+        throw boom.boomify(err)
+    }
+}
+
 //logout
 exports.logout = async (req, reply) => {
     try {
@@ -392,6 +412,7 @@ exports.userlistInfo = async (req, reply) => {
         throw boom.boomify(err)
     }
 }
+
 
 exports.block = async (req, reply) => {
     try {

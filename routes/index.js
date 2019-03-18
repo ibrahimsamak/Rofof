@@ -459,6 +459,12 @@ const routes = [
     handler: driverController.addDrivers
   },
   {
+    method: 'POST',
+    url: '/api/updateStatus',
+    beforeHandler: [auth.getToken],
+    handler: driverController.updateStatus
+  },
+  {
     method: 'PUT',
     url: '/api/blockDriver/:id',
     handler: driverController.block

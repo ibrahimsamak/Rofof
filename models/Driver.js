@@ -9,8 +9,8 @@ const Driverschema = mongoose.Schema({
         required: true
     },
     supplier_id: {
-        type : mongoose.Schema.Types.ObjectId, ref: 'Supplier',
-        required:true
+        type: mongoose.Schema.Types.ObjectId, ref: 'Supplier',
+        required: true
     },
     phone_number: {
         type: String,
@@ -43,14 +43,18 @@ const Driverschema = mongoose.Schema({
         type: Boolean,
         required: false
     },
+    driver_status: {
+        type: Boolean,
+        required: false
+    },
     createAt: {
         type: Date, default: new Date()
     },
-    fcmToken:{
+    fcmToken: {
         type: String,
         required: false
     },
-    token:{
+    token: {
         type: String,
         required: false
     }

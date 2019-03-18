@@ -324,8 +324,6 @@ exports.addOrder = async (req, reply) => {
                             $inc: { points: -disc }
                         }, { new: true })
 
-
-
                         var database = firebase.database(); // Ref to Firebase Database
                         var geoFire = new GeoFire(database.ref('userLocation')); // Ref to 'Item Locations' table
                         // geoFire.set('3',[21.400404, 23.1030303]);
@@ -565,7 +563,7 @@ exports.updateOrderByDriver = async (req, reply) => {
         const clientFCM = order.user_id.fcmToken
         // const driverFCM = order.driver_id.fcmToken;
         if (req.body.StatusId == 2) {
-            if (order.driver_id) {
+            if (order.driver_id != '' && order.driver_id) {
                 const response = {
                     status_code: 404,
                     status: false,
@@ -614,6 +612,7 @@ exports.updateOrderByDriver = async (req, reply) => {
             }
             return response
         }
+
         if (req.body.StatusId == 6) {
             if (order.StatusId == 1) {
                 let msg = `قام السائق برفض الطلب رقم: ${order._id}`;
@@ -623,6 +622,7 @@ exports.updateOrderByDriver = async (req, reply) => {
                 let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
                 const sp = await Order.findByIdAndUpdate((req.query.id), {
                     StatusId: 1,
+                    driver_id: '',
                     Notes: ''
                 }, { new: true })
 
@@ -685,7 +685,6 @@ exports.updateOrderByDriver = async (req, reply) => {
                 }
             }
         }
-
     } catch (err) {
         throw boom.boomify(err)
     }
