@@ -5,6 +5,7 @@ const constantController = require('../controllers/constantController')
 const auth = require('../controllers/auth')
 const productController = require('../controllers/productController')
 const orderController = require('../controllers/orderController')
+const reportController = require('../controllers/reportController')
 const adminController = require('../controllers/adminController')
 const driverController = require('../controllers/driverController')
 const pointController = require('../controllers/pointController')
@@ -546,6 +547,76 @@ const routes = [
     url: '/api/test',
     beforeHandler: [auth.getToken],
     handler: orderController.testGeoFire
+  },
+  {
+    method: 'GET',
+    url: '/api/getDailyRevenu',
+    handler: reportController.getDailyRevenu
+  },
+  {
+    method: 'GET',
+    url: '/api/getProductsCount',
+    handler: reportController.getProductsCount
+  },
+  {
+    method: 'GET',
+    url: '/api/getTop3Category',
+    handler: reportController.getTop3Category
+  },
+  {
+    method: 'GET',
+    url: '/api/getTop5Suppliers',
+    handler: reportController.getTop5Suppliers
+  },
+  {
+    method: 'GET',
+    url: '/api/getTop10Cities',
+    handler: reportController.getTop10Cities
+  },
+  {
+    method: 'GET',
+    url: '/api/importantCounters',
+    handler: reportController.importantCounters
+  },
+  {
+    method: 'GET',
+    url: '/api/top15NewUsers',
+    handler: reportController.top15NewUsers
+  },
+  {
+    method: 'GET',
+    url: '/api/UsersPerYear',
+    handler: reportController.UsersPerYear
+  },
+  {
+    method: 'GET',
+    url: '/api/getTop5RegisterCities',
+    handler: reportController.getTop5RegisterCities
+  },
+  {
+    method: 'GET',
+    url: '/api/revenuPerYear',
+    handler: reportController.revenuPerYear
+  },
+  {
+    method: 'GET',
+    url: '/api/SupplierPerYear',
+    handler: reportController.SupplierPerYear
+  },
+  {
+    method: 'POST',
+    url: '/api/rpt_getOrderswithstatus',
+    handler: reportController.rpt_getOrderswithstatus
+  },
+  {
+    method: 'POST',
+    url: '/api/rpt_getRevenu',
+    handler: reportController.rpt_getRevenu
+  },
+  {
+    method: 'POST',
+    url: '/api/rpt_getOrderMaps',
+    handler: reportController.rpt_getOrderMaps
   }
 ]
 
