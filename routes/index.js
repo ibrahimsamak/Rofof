@@ -151,6 +151,21 @@ const routes = [
   },
   {
     method: 'POST',
+    url: '/api/delivery_time',
+    handler: constantController.adddelivery_time
+  },
+  {
+    method: 'PUT',
+    url: '/api/delivery_time/:id',
+    handler: constantController.updatedelivery_time
+  },
+  {
+    method: 'DELETE',
+    url: '/api/delivery_time/:id',
+    handler: constantController.deletedelivery_time
+  },
+  {
+    method: 'POST',
     url: '/api/DeliveryOption',
     handler: constantController.addCity
   },
@@ -253,6 +268,11 @@ const routes = [
     method: 'GET',
     url: '/api/settings',
     handler: constantController.getSettings
+  },
+  {
+    method: 'GET',
+    url: '/api/delivery_time',
+    handler: constantController.getdelivery_time
   },
   {
     method: 'GET',
@@ -792,6 +812,11 @@ const routes = [
     method: 'POST',
     url: '/api/company/refreshtokenAdmin',
     handler: companyController.refreshToken
+  },
+  {
+    method: 'POST',
+    url: '/api/company/changepassword',
+    handler: companyController.changePassword
   },
   {
     method: 'POST',

@@ -30,11 +30,20 @@ const settings = mongoose.Schema({
 }, { versionKey: false });
 
 
+const delivery_timeSchema = mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  }
+}, { versionKey: false });
+
+
 const setting = mongoose.model('options', settings);
 const BuyUnits = mongoose.model('Buyunits', schema);
 const SocialOption = mongoose.model('SocialOption', Socialschema);
 const ContactOption = mongoose.model('ContactOption', Socialschema);
 const city = mongoose.model('city', schema);
+const delivery_time = mongoose.model('deliveryTime', delivery_timeSchema);
 
 const StaticPageSchema = mongoose.Schema({
   title: {
@@ -56,7 +65,7 @@ function validateCustomer(customer) {
   return Joi.validate(customer, schema);
 }
 
-
+exports.delivery_time = delivery_time;
 exports.setting = setting;
 exports.BuyUnits = BuyUnits;
 exports.city = city;

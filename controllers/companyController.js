@@ -840,7 +840,7 @@ exports.getOrdersSeacrh = async (req, reply) => {
         });
 
 
-        await Order.find({ driver_id: { $in: arr }}).sort({ _id: -1 })
+        await Order.find({ driver_id: { $in: arr } }).sort({ _id: -1 })
             .populate('driver_id')
             .populate('user_id')
             .populate({ path: 'items.product_id', populate: { path: 'product_id' } })
@@ -1114,6 +1114,37 @@ exports.refreshToken = async (req, reply) => {
 
         const user = await Supplier.findByIdAndUpdate((req.body._id), {
             fcmToken: req.body.fcmToken
+        }, { new: true })
+
+        if (!user) {
+            const response = {
+                status_code: 404,
+                status: false,
+                message: 'حدث خطأ الرجاء المحاولة مرة اخرى',
+                items: []
+            }
+            return response
+        }
+        else {
+            const response = {
+                status_code: 200,
+                status: true,
+                message: '',
+                items: user
+            }
+            return response
+        }
+    } catch (err) {
+        throw boom.boomify(err)
+    }
+}
+
+//change password
+exports.changePassword = async (req, reply) => {
+    try {
+
+        const user = await Supplier.findByIdAndUpdate((req.body._id), {
+            password: req.body.password
         }, { new: true })
 
         if (!user) {

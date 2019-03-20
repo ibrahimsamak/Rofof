@@ -1,7 +1,7 @@
 const boom = require('boom')
 
 // Get Data Models
-const { BuyUnits, ContactOption, SocialOption, StaticPage, city, setting } = require('../models/Constant')
+const { BuyUnits, ContactOption, SocialOption, StaticPage, city, setting , delivery_time } = require('../models/Constant')
 
 exports.getBuyUnits = async (req, reply) => {
     try {
@@ -93,8 +93,75 @@ exports.getSettings = async (req, reply) => {
     }
 }
 
+exports.getdelivery_time = async (req, reply) => {
+    try {
+        const settings = await delivery_time.find().sort({ _id: -1 });
+        const response = {
+            status_code: 200,
+            status: true,
+            message: 'return succssfully',
+            items: settings
+        }
+        return response
+    } catch (err) {
+        throw boom.boomify(err)
+    }
+}
 
 // cPanel
+exports.adddelivery_time = async (req, reply) => {
+    try {
+        let _setting = new delivery_time({
+            name: req.body.name
+        });
+
+        let rs = await _setting.save();
+        const response = {
+            status_code: 200,
+            status: true,
+            message: 'return succssfully',
+            items: rs
+        }
+        return response
+    } catch (err) {
+        throw boom.boomify(err)
+    }
+}
+
+exports.updatedelivery_time = async (req, reply) => {
+    try {
+        const _city = await delivery_time.findByIdAndUpdate((req.params.id), {
+            name: req.body.name
+        }, { new: true })
+
+        const response = {
+            status_code: 200,
+            status: true,
+            message: 'return succssfully',
+            items: _city
+        }
+        return response
+    } catch (err) {
+        throw boom.boomify(err)
+    }
+}
+
+exports.deletedelivery_time = async (req, reply) => {
+    try {
+        const _city = await delivery_time.findByIdAndRemove(req.params.id);
+
+        const response = {
+            status_code: 200,
+            status: true,
+            message: 'return succssfully',
+            items: []
+        }
+        return response
+    } catch (err) {
+        throw boom.boomify(err)
+    }
+}
+
 exports.addSetting = async (req, reply) => {
     try {
         let _setting = new setting({
