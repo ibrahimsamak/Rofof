@@ -277,7 +277,8 @@ exports.forgetPassword = async (req, reply) => {
 exports.updateUsers = async (req, reply) => {
     try {
 
-        const User_id = req.user._id
+        const User_id = req.raw.body._id
+        console.log(User_id)
         if (req.raw.files) {
             const files = req.raw.files
             let fileArr = []
@@ -307,8 +308,8 @@ exports.updateUsers = async (req, reply) => {
                 full_name: req.raw.body.full_name,
                 gender: req.raw.body.gender
             }, { new: true })
+            console.log(user)
             if (!user) {
-
                 const response = {
                     status_code: 404,
                     status: false,
@@ -322,7 +323,7 @@ exports.updateUsers = async (req, reply) => {
                 const response = {
                     status_code: 200,
                     status: true,
-                    message: '',
+                    message: 'تم تعديل الملف الشخصي بنجاح',
                     items: user
                 }
                 return response;
@@ -347,7 +348,7 @@ exports.updateUsers = async (req, reply) => {
                 const response = {
                     status_code: 200,
                     status: true,
-                    message: 'تم تعديل الملف الشخصي',
+                    message: 'تم تعديل الملف الشخصي بنجاح',
                     items: user
                 }
                 return response;

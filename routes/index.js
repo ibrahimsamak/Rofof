@@ -6,6 +6,7 @@ const auth = require('../controllers/auth')
 const productController = require('../controllers/productController')
 const orderController = require('../controllers/orderController')
 const reportController = require('../controllers/reportController')
+const companyController = require('../controllers/companyController')
 const adminController = require('../controllers/adminController')
 const driverController = require('../controllers/driverController')
 const pointController = require('../controllers/pointController')
@@ -623,7 +624,190 @@ const routes = [
     method: 'POST',
     url: '/api/rpt_getOrderMaps',
     handler: reportController.rpt_getOrderMaps
-  }
+  },
+
+
+  {
+    method: 'POST',
+    url: '/api/company/rpt_getOrderswithstatus',
+    handler: companyController.rpt_getOrderswithstatus
+  }, {
+    method: 'POST',
+    url: '/api/company/rpt_getRevenu',
+    handler: companyController.rpt_getRevenu
+  },
+  {
+    method: 'POST',
+    url: '/api/company/rpt_getOrderMaps',
+    handler: companyController.rpt_getOrderMaps
+  }, 
+
+  {
+    method: 'POST',
+    url: '/api/company/addDriver/:id',
+    handler: companyController.addDrivers
+  }, 
+  {
+    method: 'POST',
+    url: '/api/company/Driversearch/:id',
+    handler: companyController.Driversearch
+  }, 
+  {
+    method: 'GET',
+    url: '/api/company/DriverList/:id',
+    handler: companyController.Driverlist
+  }, {
+    method: 'GET',
+    url: '/api/company/userlistInfo/:id',
+    handler: companyController.userlistInfo
+  }, {
+    method: 'PUT',
+    url: '/api/company/block',
+    handler: companyController.block
+  }, {
+    method: 'GET',
+    url: '/api/company/userprofile/:id',
+    handler: companyController.userprofile
+  }, 
+  {
+    method: 'PUT',
+    url: '/api/company/updateprofileFromAdmin/:id',
+    handler: companyController.updateprofileFromAdmin
+  }, {
+    method: 'POST',
+    url: '/api/company/uploadDriverPhoto',
+    handler: companyController.uploadDriverPhoto
+  }, 
+  {
+    method: 'GET',
+    url: '/api/company/DriverProfile/:id',
+    handler: driverController.userprofile
+  },
+  
+  {
+    method: 'GET',
+    url: '/api/company/getDailyRevenu/:id',
+    handler: companyController.getDailyRevenu
+  }, {
+    method: 'GET',
+    url: '/api/company/getProductsCount/:id',
+    handler: companyController.getProductsCount
+  }, {
+    method: 'GET',
+    url: '/api/company/getTop3Category/:id',
+    handler: companyController.getTop3Category
+  }, {
+    method: 'GET',
+    url: '/api/company/getTop5Suppliers',
+    handler: companyController.getTop5Suppliers
+  }, {
+    method: 'GET',
+    url: '/api/company/getTop10Cities',
+    handler: companyController.getTop10Cities
+  }, {
+    method: 'GET',
+    url: '/api/company/importantCounters',
+    handler: companyController.importantCounters
+  }, {
+    method: 'GET',
+    url: '/api/company/top15NewUsers',
+    handler: companyController.top15NewUsers
+  }, {
+    method: 'GET',
+    url: '/api/company/UsersPerYear',
+    handler: companyController.UsersPerYear
+  }, 
+  {
+    method: 'GET',
+    url: '/api/company/getTop5RegisterCities',
+    handler: companyController.getTop5RegisterCities
+  },
+  {
+    method: 'GET',
+    url: '/api/company/revenuPerYear/:id',
+    handler: companyController.revenuPerYear
+  },
+  {
+    method: 'GET',
+    url: '/api/company/SupplierPerYear/:id',
+    handler: companyController.SupplierPerYear
+  },
+
+  {
+    method: 'GET',
+    url: '/api/company/getOrders/:id',
+    handler: companyController.getOrders
+  },
+  {
+    method: 'GET',
+    url: '/api/company/getOrdersSeacrh/:id',
+    handler: companyController.getOrdersSeacrh
+  },
+  {
+    method: 'GET',
+    url: '/api/company/getRatedOrders',
+    handler: companyController.getRatedOrders
+  },
+  {
+    method: 'GET',
+    url: '/api/company/getNewOrder',
+    handler: companyController.getNewOrder
+  },
+  {
+    method: 'GET',
+    url: '/api/company/getNewRatedOrder',
+    handler: companyController.getNewRatedOrder
+  },
+  {
+    method: 'PUT',
+    url: '/api/company/updateRate/:id',
+    handler: companyController.updateRate
+  },
+  {
+    method: 'GET',
+    url: '/api/company/getSupplierPoint/:id',
+    handler: companyController.getSupplierPoint
+  },
+  {
+    method: 'GET',
+    url: '/api/company/getSinglePoint/:id',
+    handler: companyController.getSinglePoint
+  },
+  {
+    method: 'PUT',
+    url: '/api/company/updatePoint/:id',
+    handler: companyController.updatePoint
+  },
+  {
+    method: 'DELETE',
+    url: '/api/company/deletePoint',
+    handler: companyController.deletePoint
+  },
+  {
+    method: 'POST',
+    url: '/api/company/loginAdmin',
+    handler: companyController.login
+  },
+  {
+    method: 'POST',
+    url: '/api/company/refreshtokenAdmin',
+    handler: companyController.refreshToken
+  },
+  {
+    method: 'POST',
+    url: '/api/company/upload_file',
+    handler: productController.uploadPhoto
+  },
+  {
+    method: 'POST',
+    url: '/api/company/addPoint',
+    handler: pointController.addPoint
+  },
+  {
+    method: 'GET',
+    url: '/api/company/getOrderDetails',
+    handler: orderController.getOrderDetails
+  },
 ]
 
 module.exports = routes

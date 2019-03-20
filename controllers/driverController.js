@@ -413,7 +413,6 @@ exports.userlistInfo = async (req, reply) => {
     }
 }
 
-
 exports.block = async (req, reply) => {
     try {
         const user = await Drivers.findByIdAndUpdate((req.params.id), {
