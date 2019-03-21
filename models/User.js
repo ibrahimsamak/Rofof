@@ -3,76 +3,79 @@ const mongoose = require('mongoose');
 
 const UserSchema = mongoose.Schema({
     full_name: {
-        type:String
+        type: String
     },
-    email:{
-        type:String,
+    email: {
+        type: String,
     },
-    password:{
-        type:String,
+    password: {
+        type: String,
     },
-    image:{
-        type:String
+    image: {
+        type: String
     },
-    fcmToken:{
-        type:String
+    fcmToken: {
+        type: String
     },
-    phone_number:{
-        type:String,
-        required:true,
-        unique: true ,
+    phone_number: {
+        type: String,
+        required: true,
+        unique: true,
         index: true
     },
-    address:{
-        type:String
+    address: {
+        type: String
     },
-    lat:{
-        type:Number
+    lat: {
+        type: Number
     },
-    lng:{
-        type:Number
+    lng: {
+        type: Number
     },
-    createAt:{
-        type:Date,
+    createAt: {
+        type: Date,
         default: new Date()
     },
-    city:{
-        type:String
+    city: {
+        type: String
     },
-    verify_code:{
-        type:String
+    verify_code: {
+        type: String
     },
-    isVerify:{
-        type:Boolean,
+    isVerify: {
+        type: Boolean,
         default: false
     },
-    isBlock:{
-        type:Boolean,
+    isBlock: {
+        type: Boolean,
         default: false
     },
-    wallet:{
-        type:Number,
+    wallet: {
+        type: Number,
         default: 0
     },
-    token:{
-        type:String
+    token: {
+        type: String
     },
-    fcmToken:{
-        type:String 
+    fcmToken: {
+        type: String
     },
-    gender:{
-        type:String
+    gender: {
+        type: String
+    },
+    currentCity: {
+        type: mongoose.Schema.Types.ObjectId, ref: 'city'
     }
 }, { versionKey: false });
 
-const Users = mongoose.model('Users',UserSchema);
+const Users = mongoose.model('Users', UserSchema);
 
 function validateUsers(u) {
     const schema = {
-      phone_number: Joi.string().required()
+        phone_number: Joi.string().required()
     };
     return Joi.validate(u, schema);
 }
 
-exports.Users = Users; 
+exports.Users = Users;
 exports.validateUsers = validateUsers;

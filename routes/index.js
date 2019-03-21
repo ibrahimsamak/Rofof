@@ -306,6 +306,17 @@ const routes = [
   },
   {
     method: 'GET',
+    url: '/api/getUserByCity/:id',
+    handler: userController.getUserByCity
+  },
+  {
+    method: 'GET',
+    url: '/api/getAllUsers',
+    handler: userController.getAllUsers
+  },
+  
+  {
+    method: 'GET',
     url: '/api/showprofile',
     beforeHandler: [auth.getToken],
     handler: userController.getSingleUsers

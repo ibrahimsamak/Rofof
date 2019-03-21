@@ -739,7 +739,6 @@ exports.addRate = async (req, reply) => {
                 items: _order
             }
 
-
             const currentOrder = await Order.findById(req.query.id)
             let itemProducts = currentOrder.items
             if (itemProducts.length > 0) {

@@ -152,7 +152,8 @@ exports.addUsers = async (req, reply) => {
                 isVerify: false,
                 isBlock: false,
                 wallet: 0,
-                gender: req.body.gender
+                gender: req.body.gender,
+                currentCity: req.body.currentCity
             });
             let rs = await user.save();
 
@@ -306,7 +307,8 @@ exports.updateUsers = async (req, reply) => {
                 image: img,
                 address: req.raw.body.address,
                 full_name: req.raw.body.full_name,
-                gender: req.raw.body.gender
+                gender: req.raw.body.gender,
+                currentCity: req.raw.body.currentCity
             }, { new: true })
             console.log(user)
             if (!user) {
@@ -333,7 +335,8 @@ exports.updateUsers = async (req, reply) => {
             const user = await Users.findByIdAndUpdate((User_id), {
                 address: req.raw.body.address,
                 full_name: req.raw.body.full_name,
-                gender: req.raw.body.gender
+                gender: req.raw.body.gender,
+                currentCity: req.raw.body.currentCity
             }, { new: true })
 
             if (!user) {
@@ -470,7 +473,7 @@ exports.userSearch = async (req, reply) => {
             }
             reply.send(response)
         });
-       
+
     } catch (err) {
         throw boom.boomify(err)
     }
@@ -502,7 +505,7 @@ exports.userslist = async (req, reply) => {
                 }
                 reply.send(response)
             })
-            
+
     } catch (err) {
         throw boom.boomify(err)
     }
@@ -552,6 +555,42 @@ exports.userprofile = async (req, reply) => {
             items: user
         }
         return response
+    } catch (err) {
+        throw boom.boomify(err)
+    }
+}
+
+exports.getUserByCity = async (req, reply) => {
+    try {
+        var result = []
+        await Users.find({currentCity:req.params.id}).exec(function (err, xx) {
+            result = xx
+            const response = {
+                items: result,
+                status_code: 200,
+                message: 'returned successfully'
+            }
+            reply.send(response)
+        });
+
+    } catch (err) {
+        throw boom.boomify(err)
+    }
+}
+
+exports.getAllUsers = async (req, reply) => {
+    try {
+        var result = []
+        await Users.find().exec(function (err, xx) {
+            result = xx
+            const response = {
+                items: result,
+                status_code: 200,
+                message: 'returned successfully'
+            }
+            reply.send(response)
+        });
+
     } catch (err) {
         throw boom.boomify(err)
     }
