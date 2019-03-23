@@ -65,6 +65,9 @@ const UserSchema = mongoose.Schema({
     },
     currentCity: {
         type: mongoose.Schema.Types.ObjectId, ref: 'city'
+    },
+    RegisterType: {
+        type: Number
     }
 }, { versionKey: false });
 

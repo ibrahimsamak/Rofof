@@ -173,7 +173,7 @@ exports.addOrder = async (req, reply) => {
         var arr = []
         var current_city = ''
         var raduis = await setting.findById('5c6758e0c65f421a494cef89')
-
+        console.log(raduis)
         if (req.body.orderType == 3) {
             const User_id = req.user._id
             await getAddress(req.body.lat, req.body.lng).then((x) => {
@@ -226,7 +226,6 @@ exports.addOrder = async (req, reply) => {
                             arr.push(element['fcmToken'])
                         });
                         CreateNotificationMultiple(arr, 'جديد!! لديكم طلب تعبئة خزان غاز ', '', '', '');
-
                         reply.send(response)
                     } else {
                         const response = {
@@ -402,6 +401,7 @@ exports.addOrder = async (req, reply) => {
                     city: current_city,
                     createAt: new Date(),
                 });
+
                 let rs = await Orders.save();
                 const response = {
                     items: rs,
@@ -427,8 +427,9 @@ exports.addOrder = async (req, reply) => {
                         location: location,
                         distance: distance
                     }
-                    console.log(key)
+                    
                     keys_arr.push(key)
+                    console.log(key)
                 });
 
                 var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
@@ -440,11 +441,9 @@ exports.addOrder = async (req, reply) => {
                     drivers.forEach(element => {
                         driversToken.push(element.fcmToken)
                     });
+                    CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', req.user._id)
                     // reply.send(driversToken)
                 });
-
-                CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', req.user._id)
-
                 reply.send(response)
             }
 
@@ -683,11 +682,9 @@ exports.updateOrderByDriver = async (req, reply) => {
                     drivers.forEach(element => {
                         driversToken.push(element.fcmToken)
                     });
+                    CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', order._id, '', req.user._id)
                     // reply.send(driversToken)
                 });
-
-                CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', order._id, '', req.user._id)
-
 
                 const response = {
                     status_code: 200,

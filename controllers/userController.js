@@ -153,7 +153,8 @@ exports.addUsers = async (req, reply) => {
                 isBlock: false,
                 wallet: 0,
                 gender: req.body.gender,
-                currentCity: req.body.currentCity
+                currentCity: req.body.currentCity,
+                RegisterType: req.body.RegisterType
             });
             let rs = await user.save();
 
@@ -563,7 +564,7 @@ exports.userprofile = async (req, reply) => {
 exports.getUserByCity = async (req, reply) => {
     try {
         var result = []
-        await Users.find({currentCity:req.params.id}).exec(function (err, xx) {
+        await Users.find({ currentCity: req.params.id }).exec(function (err, xx) {
             result = xx
             const response = {
                 items: result,
