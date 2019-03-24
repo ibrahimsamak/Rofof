@@ -335,7 +335,7 @@ exports.addOrder = async (req, reply) => {
                         var keys_arr = []
                         let geoQuery = geoFire.query({
                             center: [req.body.lat, req.body.lng],
-                            radius: parseInt(raduis.value, 10)
+                            radius: 5000
                         })
 
                         var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
@@ -345,8 +345,10 @@ exports.addOrder = async (req, reply) => {
                                 location: location,
                                 distance: distance
                             }
-                            console.log(key)
-                            keys_arr.push(key)
+
+                            if (distance <= parseInt(raduis.value, 10)) {
+                                keys_arr.push(key)
+                            }
                         });
 
                         var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
@@ -417,7 +419,7 @@ exports.addOrder = async (req, reply) => {
                 var keys_arr = []
                 let geoQuery = geoFire.query({
                     center: [req.body.lat, req.body.lng],
-                    radius: parseInt(raduis.value, 10)
+                    radius: 5000
                 })
 
                 var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
@@ -427,8 +429,10 @@ exports.addOrder = async (req, reply) => {
                         location: location,
                         distance: distance
                     }
-                    
-                    keys_arr.push(key)
+
+                    if (distance <= parseInt(raduis.value, 10)) {
+                        keys_arr.push(key)
+                    }
                     console.log(key)
                 });
 
@@ -659,7 +663,7 @@ exports.updateOrderByDriver = async (req, reply) => {
                 var keys_arr = []
                 let geoQuery = geoFire.query({
                     center: [order.lat, order.lng],
-                    radius: parseInt(raduis.value, 10)
+                    radius: 5000
                 })
 
                 var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
@@ -670,7 +674,9 @@ exports.updateOrderByDriver = async (req, reply) => {
                         distance: distance
                     }
                     console.log(key)
-                    keys_arr.push(key)
+                    if (distance <= parseInt(raduis.value, 10)) {
+                        keys_arr.push(key)
+                    }
                 });
 
                 var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
@@ -930,7 +936,9 @@ exports.checkAvailableDrivers = async (req, reply) => {
 
         var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
             console.log(key + " entered query at " + location + " (" + distance + " km from center)");
-            keys_arr.push(key)
+            if (distance <= parseInt(raduis.value, 10)) {
+                keys_arr.push(key)
+            }
         });
 
         var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
