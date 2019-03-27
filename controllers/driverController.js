@@ -129,6 +129,9 @@ exports.addDrivers = async (req, reply) => {
             password: req.body.phone_number,
             supplier_id: req.body.supplier_id,
             isBlock: false,
+            car_name : req.body.car_name,
+            car_number : req.body.car_number,
+            car_color : req.body.car_color,
             createAt: new Date()
         });
         let rs = await _user.save();
@@ -219,7 +222,7 @@ exports.updateDrivers = async (req, reply) => {
             image: req.body.image,
             // supplier_id: req.body.supplier_id,
             address: req.body.address,
-            phone_number: req.body.phone_number,
+            phone_number: req.body.phone_number
         }, { new: true })
         if (!user) {
 
@@ -460,6 +463,9 @@ exports.updateprofileFromAdmin = async (req, reply) => {
             // supplier_id: req.body.supplier_id,
             address: req.body.address,
             phone_number: req.body.phone_number,
+            car_name : req.body.car_name,
+            car_number : req.body.car_number,
+            car_color : req.body.car_color,
         }, { new: true })
         if (!user) {
 

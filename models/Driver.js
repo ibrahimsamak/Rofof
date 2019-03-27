@@ -57,7 +57,20 @@ const Driverschema = mongoose.Schema({
     token: {
         type: String,
         required: false
+    },
+    car_name: {
+        type: String,
+        required: false
+    },
+    car_color: {
+        type: String,
+        required: false
+    },
+    car_number: {
+        type: String,
+        required: false
     }
+    
 }, { versionKey: false });
 
 const Driver = mongoose.model('Driver', Driverschema);
