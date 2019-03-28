@@ -51,7 +51,10 @@ exports.addDrivers = async (req, reply) => {
             password: req.body.phone_number,
             supplier_id: req.params.id,
             isBlock: false,
-            createAt: new Date()
+            createAt: new Date(),
+            car_name : req.body.car_name,
+            car_number : req.body.car_number,
+            car_color : req.body.car_color,
         });
         let rs = await _user.save();
 
@@ -173,6 +176,9 @@ exports.updateprofileFromAdmin = async (req, reply) => {
             // supplier_id: req.body.supplier_id,
             address: req.body.address,
             phone_number: req.body.phone_number,
+            car_name : req.body.car_name,
+            car_number : req.body.car_number,
+            car_color : req.body.car_color,
         }, { new: true })
         if (!user) {
 
