@@ -2,6 +2,17 @@
 const boom = require('boom')
 const jwt = require('jsonwebtoken');
 const config = require('config');
+const util = require('util');
+const redis = require('redis');
+const host = 'redis-11505.c99.us-east-1-4.ec2.cloud.redislabs.com'
+const port = 11505
+const password = 'gazredis'
+const client = redis.createClient({
+    port: port, host: host, password: password
+})
+
+
+
 
 // Get Data Models
 const { Admin } = require('../models/Admin')
@@ -9,7 +20,21 @@ const { Admin } = require('../models/Admin')
 // Get all Admins
 exports.getAdmins = async (req, reply) => {
     try {
+        client.get = util.promisify(client.get)
+        const cachedObj = await client.get('Admins')
+        if (cachedObj) {
+            console.log('serving from cach')
+            const response = {
+                status_code: 200,
+                status: true,
+                message: 'return succssfully',
+                items: JSON.parse(cachedObj)
+            }
+            return response
+        }
         const Admins = await Admin.find().sort({ _id: -1 });
+        client.set('Admins', JSON.stringify(Admins))
+        client.expire('Admins', 86400)
         const response = {
             status_code: 200,
             status: true,
@@ -102,7 +127,7 @@ exports.refreshToken = async (req, reply) => {
         const user = await Admin.findByIdAndUpdate((req.body._id), {
             fcmToken: req.body.fcmToken
         }, { new: true })
-    
+
         if (!user) {
             const response = {
                 status_code: 404,

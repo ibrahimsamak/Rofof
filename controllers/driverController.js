@@ -3,11 +3,22 @@ const boom = require('boom')
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const fs = require('fs');
+const util = require('util');
 const NodeGeocoder = require('node-geocoder');
 const concat = require('concat-stream')
 const pump = require('pump')
 const cloudinary = require('cloudinary');
 const multer = require('multer');
+const redis = require('redis');
+const host = 'redis-11505.c99.us-east-1-4.ec2.cloud.redislabs.com'
+const port = 11505
+const password = 'gazredis'
+const client = redis.createClient({
+    port: port, host: host, password: password
+})
+
+
+
 
 cloudinary.config({
     cloud_name: 'diszvlmqq',
@@ -18,7 +29,6 @@ cloudinary.config({
 
 const options = {
     provider: 'google',
-
     // Optional depending on the providers
     httpAdapter: 'https', // Default
     apiKey: 'AIzaSyDP-XwnS5Daa_uSFZJvY6H0hsKaOxe2ar0', // for Mapquest, OpenCage, Google Premier
@@ -84,11 +94,25 @@ function makeid() {
 // Get all Drivers
 exports.getDrivers = async (req, reply) => {
     try {
+        client.get = util.promisify(client.get)
+        const cachedObj = await client.get('Drivers')
+        if (cachedObj) {
+            console.log('serving from cach')
+            const response = {
+                status_code: 200,
+                status: true,
+                message: 'return succssfully',
+                items: JSON.parse(cachedObj)
+            }
+            return response
+        }
         const user = await Drivers.find()
+        client.set('Drivers', JSON.stringify(user))
+        client.expire('Drivers', 86400)
         const response = {
             status_code: 200,
             status: true,
-            message: 'تمت العملية بنجاح',
+            message: 'return succssfully',
             items: user
         }
         return response
@@ -129,9 +153,9 @@ exports.addDrivers = async (req, reply) => {
             password: req.body.phone_number,
             supplier_id: req.body.supplier_id,
             isBlock: false,
-            car_name : req.body.car_name,
-            car_number : req.body.car_number,
-            car_color : req.body.car_color,
+            car_name: req.body.car_name,
+            car_number: req.body.car_number,
+            car_color: req.body.car_color,
             createAt: new Date()
         });
         let rs = await _user.save();
@@ -284,7 +308,7 @@ exports.updateStatus = async (req, reply) => {
         const user = await Drivers.findByIdAndUpdate((Driver_id), {
             driver_status: req.body.driver_status
         }, { new: true })
-        if (user){
+        if (user) {
             const response = {
                 status_code: 200,
                 status: true,
@@ -386,16 +410,28 @@ exports.Driversearch = async (req, reply) => {
 
 exports.Driverlist = async (req, reply) => {
     try {
-        const _Users = await Drivers.find().populate('supplier_id')
-            .sort({ createAt: -1 })
-            .select(['-token', '-password'])
-        const response = {
-            items: _Users,
-            status_code: 200,
-            message: 'returned successfully',
+        client.get = util.promisify(client.get)
+        const cachedObj = await client.get('_Users')
+        if (cachedObj) {
+            console.log('serving from cach')
+            const response = {
+                status_code: 200,
+                status: true,
+                message: 'return succssfully',
+                items: JSON.parse(cachedObj)
+            }
+            return response
         }
-        reply.send(response);
-
+        const _Users = await Drivers.find().populate('supplier_id').sort({ createAt: -1 }).select(['-token', '-password'])
+        client.set('_Users', JSON.stringify(_Users))
+        client.expire('_Users', 86400)
+        const response = {
+            status_code: 200,
+            status: true,
+            message: 'return succssfully',
+            items: _Users
+        }
+        return response
     } catch (err) {
         throw boom.boomify(err)
     }
@@ -463,9 +499,9 @@ exports.updateprofileFromAdmin = async (req, reply) => {
             // supplier_id: req.body.supplier_id,
             address: req.body.address,
             phone_number: req.body.phone_number,
-            car_name : req.body.car_name,
-            car_number : req.body.car_number,
-            car_color : req.body.car_color,
+            car_name: req.body.car_name,
+            car_number: req.body.car_number,
+            car_color: req.body.car_color,
         }, { new: true })
         if (!user) {
 

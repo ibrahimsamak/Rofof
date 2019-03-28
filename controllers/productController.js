@@ -7,6 +7,16 @@ const concat = require('concat-stream')
 const pump = require('pump')
 const cloudinary = require('cloudinary');
 const multer = require('multer');
+const util = require('util');
+const redis = require('redis');
+const host = 'redis-11505.c99.us-east-1-4.ec2.cloud.redislabs.com'
+const port = 11505
+const password = 'gazredis'
+const client = redis.createClient({
+    port: port, host: host, password: password
+})
+
+
 
 cloudinary.config({
     cloud_name: 'diszvlmqq',
@@ -16,7 +26,6 @@ cloudinary.config({
 
 // Get Data Models
 const { Product, Category, Supplier } = require('../models/Product')
-
 
 
 async function uploadImages(img) {
@@ -38,7 +47,21 @@ async function uploadImages(img) {
 // Get All Categories
 exports.getCategories = async (req, reply) => {
     try {
+        client.get = util.promisify(client.get)
+        const cachedObj = await client.get('Categories')
+        if (cachedObj) {
+            console.log('serving from cach')
+            const response = {
+                status_code: 200,
+                status: true,
+                message: 'return succssfully',
+                items: JSON.parse(cachedObj)
+            }
+            return response
+        }
         const Categories = await Category.find()
+        client.set('Categories', JSON.stringify(Categories))
+        client.expire('Categories', 86400)
         const response = {
             status_code: 200,
             status: true,
@@ -54,7 +77,21 @@ exports.getCategories = async (req, reply) => {
 // Get top 20 Products
 exports.getProducts = async (req, reply) => {
     try {
+        client.get = util.promisify(client.get)
+        const cachedObj = await client.get('Products')
+        if (cachedObj) {
+            console.log('serving from cach')
+            const response = {
+                status_code: 200,
+                status: true,
+                message: 'return succssfully',
+                items: JSON.parse(cachedObj)
+            }
+            return response
+        }
         const Products = await Product.find().sort({ rate: -1 }).limit(20)
+        client.set('Products', JSON.stringify(Products))
+        client.expire('Products', 86400)
         const response = {
             status_code: 200,
             status: true,
@@ -62,7 +99,6 @@ exports.getProducts = async (req, reply) => {
             items: Products
         }
         return response
-
     } catch (err) {
         throw boom.boomify(err)
     }
@@ -112,7 +148,6 @@ exports.getProductCateroy = async (req, reply) => {
             }
             reply.send(response)
         });
-
 }
 
 // Get Product by Search Key 
@@ -485,7 +520,6 @@ exports.getAllProducts = async (req, reply) => {
                     }
                     reply.send(response);
                 }
-
             });
     } catch (err) {
         throw boom.boomify(err)
@@ -513,9 +547,8 @@ exports.productbysubcategoryid = async (req, reply) => {
         const products = await Product.find({ category_id: req.params.id }).sort({ _id: -1 })
             .populate('category_id')
             .exec(function (err, xx) {
-                // if (err) return handleError(err);
                 reply.send(xx);
-            });;
+            });
     } catch (err) {
         throw boom.boomify(err)
     }
