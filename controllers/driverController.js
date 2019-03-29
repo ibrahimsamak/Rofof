@@ -9,15 +9,6 @@ const concat = require('concat-stream')
 const pump = require('pump')
 const cloudinary = require('cloudinary');
 const multer = require('multer');
-const redis = require('redis');
-const host = 'redis-11505.c99.us-east-1-4.ec2.cloud.redislabs.com'
-const port = 11505
-const password = 'gazredis'
-const client = redis.createClient({
-    port: port, host: host, password: password
-})
-
-
 
 
 cloudinary.config({
@@ -39,6 +30,7 @@ const geocoder = NodeGeocoder(options);
 
 // Get Data Models
 const { Drivers, validateDrivers } = require('../models/Driver')
+const { client } = require('../models/cache')
 
 
 async function getAddress(lat, lng) {
@@ -94,21 +86,7 @@ function makeid() {
 // Get all Drivers
 exports.getDrivers = async (req, reply) => {
     try {
-        client.get = util.promisify(client.get)
-        const cachedObj = await client.get('Drivers')
-        if (cachedObj) {
-            console.log('serving from cach')
-            const response = {
-                status_code: 200,
-                status: true,
-                message: 'return succssfully',
-                items: JSON.parse(cachedObj)
-            }
-            return response
-        }
         const user = await Drivers.find()
-        client.set('Drivers', JSON.stringify(user))
-        client.expire('Drivers', 86400)
         const response = {
             status_code: 200,
             status: true,

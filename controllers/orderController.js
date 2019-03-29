@@ -90,7 +90,7 @@ function CreateNotification(deviceId, msg, order_id, from_userName, to_user_id) 
                 "title": "متابعة الطلبات",
                 "body": msg,
                 "sound": "default",
-                "badge":1
+                "badge": 1
             },
             "data": {
                 "data": order_id,
@@ -139,7 +139,7 @@ function CreateNotificationMultiple([deviceId], msg, order_id, from_userName, to
                 "body": msg,
                 "sound": "default",
                 "icon": "assets/images/logo.png",
-                "badge":1
+                "badge": 1
             },
             "data": {
                 "data": order_id,

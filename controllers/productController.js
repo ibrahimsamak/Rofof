@@ -8,15 +8,6 @@ const pump = require('pump')
 const cloudinary = require('cloudinary');
 const multer = require('multer');
 const util = require('util');
-const redis = require('redis');
-const host = 'redis-11505.c99.us-east-1-4.ec2.cloud.redislabs.com'
-const port = 11505
-const password = 'gazredis'
-const client = redis.createClient({
-    port: port, host: host, password: password
-})
-
-
 
 cloudinary.config({
     cloud_name: 'diszvlmqq',
@@ -26,6 +17,7 @@ cloudinary.config({
 
 // Get Data Models
 const { Product, Category, Supplier } = require('../models/Product')
+const { client } = require('../models/cache')
 
 
 async function uploadImages(img) {
