@@ -582,12 +582,6 @@ const routes = [
   },
   {
     method: 'GET',
-    url: '/api/test',
-    beforeHandler: [auth.getToken],
-    handler: orderController.testGeoFire
-  },
-  {
-    method: 'GET',
     url: '/api/getDailyRevenu',
     handler: reportController.getDailyRevenu
   },

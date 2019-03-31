@@ -7,6 +7,7 @@ const _ = require('underscore');
 const lodash = require('lodash');
 const GeoFire = require('geofire');
 const firebase = require('firebase');
+const async = require("async");
 
 var config = {
     apiKey: "AIzaSyABN7HaigdqFPQx9un5pngBD7w6w2Cz5_E",
@@ -173,6 +174,7 @@ exports.addOrder = async (req, reply) => {
     //3: points
     try {
         var arr = []
+        var users = []
         var current_city = ''
         var raduis = await setting.findById('5c6758e0c65f421a494cef89')
         console.log(raduis)
@@ -357,15 +359,35 @@ exports.addOrder = async (req, reply) => {
                             console.log(key + " exited query to " + location + " (" + distance + " km from center)");
                             onKeyEnteredRegistration.cancel();
 
-                            const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
-                            console.log(drivers)
-                            drivers.forEach(element => {
-                                driversToken.push(element.fcmToken)
+                            // const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
+                            // console.log(drivers)
+                            // drivers.forEach(element => {
+                            // });
+                            await Drivers.find({ _id: { $in: keys_arr } }, function (err, _users) {
+                                // console.log(users)
+                                users = _users
+                                _users.forEach(element => {
+                                    driversToken.push(element.fcmToken)
+                                });
+                            });
+                            CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', User_id)
+                            async.each(users, async function (data, callback) {
+                                let _Notification = new Notifications({
+                                    from: 'زبون جديد',
+                                    user_id: data._id,
+                                    title: 'متابعة الطلبات',
+                                    msg: 'تم تلقي طلب جديد في حدود منطقتك الحالية',
+                                    dt_date: new Date(),
+                                    type: 1,
+                                    body_parms: rs._id,
+                                    isRead: false
+                                });
+
+                                await _Notification.save();
+                                console.log('saved')
                             });
                             // reply.send(driversToken)
                         });
-
-                        CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', req.user._id)
 
                         reply.send(response)
                     } else {
@@ -442,14 +464,36 @@ exports.addOrder = async (req, reply) => {
                     console.log(key + " exited query to " + location + " (" + distance + " km from center)");
                     onKeyEnteredRegistration.cancel();
 
-                    const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
-                    console.log(drivers)
-                    drivers.forEach(element => {
-                        driversToken.push(element.fcmToken)
+                    // const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
+                    // console.log(drivers)
+                    // drivers.forEach(element => {
+                    // });
+                    await Drivers.find({ _id: { $in: keys_arr } }, function (err, _users) {
+                        // console.log(users)
+                        users = _users
+                        _users.forEach(element => {
+                            driversToken.push(element.fcmToken)
+                        });
                     });
-                    CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', req.user._id)
+                    CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', User_id)
+                    async.each(users, async function (data, callback) {
+                        let _Notification = new Notifications({
+                            from: 'زبون جديد',
+                            user_id: data._id,
+                            title: 'متابعة الطلبات',
+                            msg: 'تم تلقي طلب جديد في حدود منطقتك الحالية',
+                            dt_date: new Date(),
+                            type: 1,
+                            body_parms: rs._id,
+                            isRead: false
+                        });
+
+                        await _Notification.save();
+                        console.log('saved')
+                    });
                     // reply.send(driversToken)
                 });
+
                 reply.send(response)
             }
 
@@ -460,8 +504,6 @@ exports.addOrder = async (req, reply) => {
         throw boom.boomify(err)
     }
 }
-
-
 
 // update order status
 exports.updateOrderByUser = async (req, reply) => {
@@ -474,40 +516,7 @@ exports.updateOrderByUser = async (req, reply) => {
             let msg = `تم استلام الطلب من العميل رقم الطلب: ${order._id}`;
             const driverFCM = order.driver_id.fcmToken;
 
-
-            let notification = CreateNotification(driverFCM, msg, order._id, order.user_id.full_name, order.driver_id._id);
-            const _points = await Point.findOne({
-                $and: [{ 'supplier_id': order.driver_id.supplier_id }, { 'min_value': { $lt: order.Total } }, { 'max_value': { $gte: order.Total } },]
-            })
-
-            const _user_points = await UserPoint.findOne({
-                $and: [{ 'user_id': order.user_id._id }]
-            })
-
-            if (_points) {
-                console.log(_points)
-                if (_user_points) {
-                    const UserPoints = await UserPoint.findByIdAndUpdate((_user_points._id), {
-                        $inc: { points: _points.points }
-                    }, { new: true })
-                } else {
-                    let UserPoints = new UserPoint({
-                        user_id: order.user_id._id,
-                        supplier_id: order.driver_id.supplier_id,
-                        points: _points.points,
-                        point_price: _points.point_price
-                    });
-                    let rs = await UserPoints.save();
-                    console.log(UserPoints)
-                }
-            }
-
-
-            const sp = await Order.findByIdAndUpdate((req.query.id), {
-                StatusId: req.body.StatusId
-            }, { new: true })
-
-
+            CreateNotification(driverFCM, msg, order._id, order.user_id.full_name, order.driver_id._id);
             const response = {
                 status_code: 200,
                 status: true,
@@ -569,6 +578,7 @@ exports.updateOrderByUser = async (req, reply) => {
 //update order driver
 exports.updateOrderByDriver = async (req, reply) => {
     try {
+        var users = []
         const order = await Order.findById(req.query.id).populate('user_id')
         const clientFCM = order.user_id.fcmToken
         // const driverFCM = order.driver_id.fcmToken;
@@ -616,15 +626,56 @@ exports.updateOrderByDriver = async (req, reply) => {
             }
         }
         if (req.body.StatusId == 3) {
-            let msg = `تم توصيل طلبكم رقم: ${order._id}`;
+
+            const _order = await Order.findById(req.query.id).populate('user_id').populate('driver_id')
+
+            let msg = `تم توصيل طلبكم رقم: ${_order._id}`;
             console.log(msg)
 
-            let notification = CreateNotification(clientFCM, msg, order._id, order.driver_id.name, order.user_id._id);
+            CreateNotification(clientFCM, msg, _order._id, _order.driver_id.name, _order.user_id._id);
 
             const sp = await Order.findByIdAndUpdate((req.query.id), {
                 StatusId: req.body.StatusId,
                 Notes: req.body.Notes
             }, { new: true })
+
+
+            const _points = await Point.findOne({
+                $and: [{ 'supplier_id': _order.driver_id.supplier_id }, { 'min_value': { $lt: _order.Total } }, { 'max_value': { $gte: order.Total } },]
+            })
+
+            const _user_points = await UserPoint.findOne({
+                $and: [{ 'user_id': _order.user_id._id }]
+            })
+
+            if (_points) {
+                console.log(_points)
+                if (_user_points) {
+                    const UserPoints = await UserPoint.findByIdAndUpdate((_user_points._id), {
+                        $inc: { points: _points.points }
+                    }, { new: true })
+                } else {
+                    let UserPoints = new UserPoint({
+                        user_id: _order.user_id._id,
+                        supplier_id: _order.driver_id.supplier_id,
+                        points: _points.points,
+                        point_price: _points.point_price
+                    });
+                    await UserPoints.save();
+                    console.log(UserPoints)
+                }
+            }
+
+            // const sp = await Order.findByIdAndUpdate((req.query.id), {
+            //     StatusId: req.body.StatusId
+            // }, { new: true })
+
+            const devicesID = await Admin.find().select('fcmToken');
+            devicesID.forEach(element => {
+                arr.push(element['fcmToken'])
+            });
+            CreateNotificationMultiple(arr, msg, '', '', '');
+            console.log(devicesID)
 
 
             const response = {
@@ -635,7 +686,6 @@ exports.updateOrderByDriver = async (req, reply) => {
             }
             return response
         }
-
         if (req.body.StatusId == 6) {
             if (order.StatusId == 1) {
                 var raduis = await setting.findById('5c6758e0c65f421a494cef89')
@@ -685,15 +735,36 @@ exports.updateOrderByDriver = async (req, reply) => {
                     console.log(key + " exited query to " + location + " (" + distance + " km from center)");
                     onKeyEnteredRegistration.cancel();
 
-                    const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
-                    console.log(drivers)
-                    drivers.forEach(element => {
-                        driversToken.push(element.fcmToken)
+                    // const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
+                    // console.log(drivers)
+                    // drivers.forEach(element => {
+                    // });
+                    await Drivers.find({ _id: { $in: keys_arr } }, function (err, _users) {
+                        // console.log(users)
+                        users = _users
+                        _users.forEach(element => {
+                            driversToken.push(element.fcmToken)
+                        });
                     });
-                    CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', order._id, '', req.user._id)
+                    CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', User_id)
+                    async.each(users, async function (data, callback) {
+                        let _Notification = new Notifications({
+                            from: 'زبون جديد',
+                            user_id: data._id,
+                            title: 'متابعة الطلبات',
+                            msg: 'تم تلقي طلب جديد في حدود منطقتك الحالية',
+                            dt_date: new Date(),
+                            type: 1,
+                            body_parms: rs._id,
+                            isRead: false
+                        });
+
+                        await _Notification.save();
+                        console.log('saved')
+                    });
                     // reply.send(driversToken)
                 });
-
+                
                 const response = {
                     status_code: 200,
                     status: true,
@@ -720,7 +791,7 @@ exports.updateOrderByDriver = async (req, reply) => {
 exports.addRate = async (req, reply) => {
     try {
         const ord = await Order.findById((req.query.id));
-        if (ord.StatusId == 4) {
+        if (ord.StatusId == 3 || ord.StatusId == 4) {
 
             const arr = []
             const devicesID = await Admin.find().select('fcmToken');
@@ -932,7 +1003,7 @@ exports.checkAvailableDrivers = async (req, reply) => {
         var keys_arr = []
         let geoQuery = geoFire.query({
             center: [req.body.lat, req.body.lng],
-            radius: parseInt(raduis.value, 10)
+            radius: 5000
 
         })
 
@@ -1202,39 +1273,4 @@ exports.updateOrderByAdmin = async (req, reply) => {
     } catch (err) {
         throw boom.boomify(err)
     }
-}
-
-exports.testGeoFire = async (req, reply) => {
-    var database = firebase.database(); // Ref to Firebase Database
-    var geoFire = new GeoFire(database.ref('userLocation')); // Ref to 'Item Locations' table
-    // geoFire.set('3',[21.400404, 23.1030303]);
-    var driversToken = []
-    var xx = []
-    let geoQuery = geoFire.query({
-        center: [10.20200203, 21.4040202],
-        radius: 5000
-    })
-
-    var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
-        console.log(key + " entered query at " + location + " (" + distance + " km from center)");
-        let obj = {
-            key: key,
-            location: location,
-            distance: distance
-        }
-        console.log(key)
-        xx.push(key)
-    });
-
-    var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
-        console.log(key + " exited query to " + location + " (" + distance + " km from center)");
-        onKeyEnteredRegistration.cancel();
-
-        const drivers = await Drivers.find({ _id: { $in: xx } }).select('fcmToken')
-        console.log(drivers)
-        drivers.forEach(element => {
-            driversToken.push(element.fcmToken)
-        });
-        reply.send(driversToken)
-    });
 }
