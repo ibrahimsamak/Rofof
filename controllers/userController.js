@@ -177,7 +177,7 @@ exports.login = async (req, reply) => {
         const _Users = await Users.findOne({ $and: [{ email: req.body.email, password: req.body.password }] })
         if (_Users) {
             const user = await Users.findByIdAndUpdate((_Users.id), {
-                token: jwt.sign({ _id: req.body.id }, config.get('jwtPrivateKey'), {
+                token: jwt.sign({ _id: _Users.id}, config.get('jwtPrivateKey'), {
                     expiresIn: '365d'
                 })
             }, { new: true })
@@ -401,7 +401,6 @@ exports.logout = async (req, reply) => {
             fcmToken: '',
             token: ''
         }, { new: true })
-
         if (!user) {
             const response = {
                 status_code: 404,
