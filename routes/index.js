@@ -380,7 +380,7 @@ const routes = [
   {
     method: 'POST',
     url: '/api/notifications/:id',
-    beforeHandler: [auth.getToken],
+    // beforeHandler: [auth.getToken],
     handler: notificationController.readNotifications
   },
   {
