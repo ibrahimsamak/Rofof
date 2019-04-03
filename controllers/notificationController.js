@@ -7,7 +7,7 @@ const { Notifications } = require('../models/Notifications')
 exports.getNotfications = async (req, reply) => {
   try {
     const user_id = req.user._id
-    const _Notification = await Notifications.find({ user_id: user_id, isRead: false })
+    const _Notification = await Notifications.find({ $and: [{ user_id: user_id }, { isRead: false }] })
       .sort({ _id: -1 }).limit(50)
     const response = {
       status_code: 200,
@@ -24,7 +24,6 @@ exports.getNotfications = async (req, reply) => {
 //read notifications
 exports.readNotifications = async (req, reply) => {
   try {
-    console.log(req.user._id)
     const _Notification = await Notifications.findByIdAndUpdate((req.params.id), {
       isRead: true
     }, { new: true })
