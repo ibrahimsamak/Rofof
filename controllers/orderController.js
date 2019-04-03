@@ -37,6 +37,7 @@ const { Drivers } = require('../models/Driver')
 const { BuyUnits, ContactOption, SocialOption, StaticPage, city, setting } = require('../models/Constant')
 const { Product, Category, Supplier } = require('../models/Product')
 const { userRate } = require('../models/userRate')
+const { getCurrentDateTime } = require('../models/Constant');
 
 const options = {
     provider: 'google',
@@ -77,7 +78,7 @@ function CreateNotification(deviceId, msg, order_id, from_userName, to_user_id) 
             user_id: to_user_id,
             title: 'متابعة الطلبات',
             msg: msg,
-            dt_date: new Date(),
+            dt_date: getCurrentDateTime(),
             type: 1,
             body_parms: order_id,
             isRead: false
@@ -124,7 +125,7 @@ function CreateNotificationMultiple([deviceId], msg, order_id, from_userName, to
         //     user_id: to_user_id,
         //     title: 'متابعة الطلبات',
         //     msg: msg,
-        //     dt_date: new Date(),
+        //     dt_date: getCurrentDateTime(),
         //     type: 1,
         //     body_parms: order_id,
         //     isRead: false
@@ -209,7 +210,7 @@ exports.addOrder = async (req, reply) => {
                             user_id: User_id,
                             items: req.body.items,
                             city: current_city,
-                            createAt: new Date(),
+                            createAt: getCurrentDateTime(),
                         });
                         let rs = await Orders.save();
                         const response = {
@@ -266,7 +267,7 @@ exports.addOrder = async (req, reply) => {
                     user_id: User_id,
                     items: req.body.items,
                     city: current_city,
-                    createAt: new Date(),
+                    createAt: getCurrentDateTime(),
                 });
                 let rs = await Orders.save();
                 const response = {
@@ -317,7 +318,7 @@ exports.addOrder = async (req, reply) => {
                             user_id: User_id,
                             items: req.body.items,
                             city: current_city,
-                            createAt: new Date(),
+                            createAt: getCurrentDateTime(),
                         });
                         let rs = await Orders.save();
                         const response = {
@@ -377,7 +378,7 @@ exports.addOrder = async (req, reply) => {
                                     user_id: data._id,
                                     title: 'متابعة الطلبات',
                                     msg: 'تم تلقي طلب جديد في حدود منطقتك الحالية',
-                                    dt_date: new Date(),
+                                    dt_date: getCurrentDateTime(),
                                     type: 1,
                                     body_parms: rs._id,
                                     isRead: false
@@ -425,7 +426,7 @@ exports.addOrder = async (req, reply) => {
                     user_id: User_id,
                     items: req.body.items,
                     city: current_city,
-                    createAt: new Date(),
+                    createAt: getCurrentDateTime(),
                 });
 
                 let rs = await Orders.save();
@@ -482,7 +483,7 @@ exports.addOrder = async (req, reply) => {
                             user_id: data._id,
                             title: 'متابعة الطلبات',
                             msg: 'تم تلقي طلب جديد في حدود منطقتك الحالية',
-                            dt_date: new Date(),
+                            dt_date: getCurrentDateTime(),
                             type: 1,
                             body_parms: rs._id,
                             isRead: false
@@ -753,7 +754,7 @@ exports.updateOrderByDriver = async (req, reply) => {
                             user_id: data._id,
                             title: 'متابعة الطلبات',
                             msg: 'تم تلقي طلب جديد في حدود منطقتك الحالية',
-                            dt_date: new Date(),
+                            dt_date: getCurrentDateTime(),
                             type: 1,
                             body_parms: rs._id,
                             isRead: false
@@ -805,7 +806,7 @@ exports.addRate = async (req, reply) => {
                 rate: req.body.rate,
                 comment: req.body.comment,
                 isRate: true,
-                rateDate: new Date(),
+                rateDate: getCurrentDateTime(),
                 isOpen: false
             }, { new: true })
             const response = {
@@ -1011,6 +1012,7 @@ exports.checkAvailableDrivers = async (req, reply) => {
             console.log(key + " entered query at " + location + " (" + distance + " km from center)");
             if (distance <= parseInt(raduis.value, 10)) {
                 keys_arr.push(key)
+                console.log(key)
             }
         });
 

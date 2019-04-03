@@ -1,5 +1,6 @@
 const Joi = require('joi');
 const mongoose = require('mongoose');
+const { getCurrentDateTime } = require('../models/Constant');
 
 const Orderschema = mongoose.Schema({
     addressDetails: { type: String, required: true },
@@ -25,7 +26,7 @@ const Orderschema = mongoose.Schema({
         }]
     },
     createAt: {
-        type: Date, default: new Date()
+        type: Date, default: getCurrentDateTime()
     },
     rate: { type: Number, required: false },
     comment: { type: String, required: false },

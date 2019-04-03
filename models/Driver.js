@@ -2,6 +2,7 @@
 
 const Joi = require('joi');
 const mongoose = require('mongoose');
+const { getCurrentDateTime } = require('../models/Constant');
 
 const Driverschema = mongoose.Schema({
     name: {
@@ -48,7 +49,7 @@ const Driverschema = mongoose.Schema({
         required: false
     },
     createAt: {
-        type: Date, default: new Date()
+        type: Date, default: getCurrentDateTime()
     },
     fcmToken: {
         type: String,

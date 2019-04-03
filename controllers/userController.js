@@ -8,6 +8,8 @@ const concat = require('concat-stream')
 const pump = require('pump')
 const cloudinary = require('cloudinary');
 const multer = require('multer');
+var moment = require('moment-timezone');
+const { Notifications } = require('../models/Notifications')
 
 cloudinary.config({
     cloud_name: 'diszvlmqq',
@@ -29,6 +31,7 @@ const geocoder = NodeGeocoder(options);
 
 // Get Data Models
 const { Users, validateUsers } = require('../models/User')
+const { getCurrentDateTime } = require('../models/Constant');
 
 
 async function getAddress(lat, lng) {
@@ -147,7 +150,7 @@ exports.addUsers = async (req, reply) => {
                 address: '',
                 lat: req.body.lat,
                 lng: req.body.lng,
-                createAt: new Date(),
+                createAt: getCurrentDateTime(),
                 city: current_city,
                 isVerify: false,
                 isBlock: false,
@@ -177,7 +180,7 @@ exports.login = async (req, reply) => {
         const _Users = await Users.findOne({ $and: [{ email: req.body.email, password: req.body.password }] })
         if (_Users) {
             const user = await Users.findByIdAndUpdate((_Users.id), {
-                token: jwt.sign({ _id: _Users.id}, config.get('jwtPrivateKey'), {
+                token: jwt.sign({ _id: _Users.id }, config.get('jwtPrivateKey'), {
                     expiresIn: '365d'
                 })
             }, { new: true })
@@ -591,6 +594,49 @@ exports.getAllUsers = async (req, reply) => {
             reply.send(response)
         });
 
+    } catch (err) {
+        throw boom.boomify(err)
+    }
+}
+
+
+
+
+exports.testdate = async (req, reply) => {
+    try {
+        let aa = getCurrentDateTime();
+        // console.log(aa)
+        // var a = moment.tz(getCurrentDateTime(), "Asia/Riyadh").format('DD/MM/YYYY hh:mm:ss');
+        const dateThailand = moment.tz(Date.now(), "Asia/Riyadh");
+
+        // moment.utc()
+        var utcDate = moment.utc().toDate();
+
+        console.log(dateThailand)
+        console.log(utcDate)
+        // var offset = getCurrentDateTime().getTimezoneOffset();
+        // console.log(offset)
+
+
+        var utc = getCurrentDateTime();
+        utc.setHours( utc.getHours() + 3);
+
+        let _Notification = new Notifications({
+            from: 'زبون جديد',
+            user_id: '',
+            title: 'متابعة الطلبات',
+            msg: 'تم تلقي طلب جديد في حدود منطقتك الحالية',
+            dt_date: utc,
+            type: 1,
+            body_parms: '123',
+            isRead: false
+        });
+
+        let rs = await _Notification.save();
+
+       
+        console.log(utc)
+        reply.send(rs);
     } catch (err) {
         throw boom.boomify(err)
     }

@@ -65,6 +65,13 @@ function validateCustomer(customer) {
   return Joi.validate(customer, schema);
 }
 
+function getCurrentDateTime(){
+  var utc = new Date();
+  var current =  utc.setHours( utc.getHours() + 3);
+  return current
+}
+
+
 exports.delivery_time = delivery_time;
 exports.setting = setting;
 exports.BuyUnits = BuyUnits;
@@ -73,3 +80,4 @@ exports.ContactOption = ContactOption;
 exports.SocialOption = SocialOption;
 exports.StaticPage = StaticPage;
 exports.validate = validateCustomer;
+exports.getCurrentDateTime = getCurrentDateTime;

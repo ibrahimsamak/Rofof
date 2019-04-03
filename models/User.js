@@ -1,5 +1,6 @@
 const Joi = require('joi');
 const mongoose = require('mongoose');
+const { getCurrentDateTime } = require('../models/Constant');
 
 const UserSchema = mongoose.Schema({
     full_name: {
@@ -34,7 +35,7 @@ const UserSchema = mongoose.Schema({
     },
     createAt: {
         type: Date,
-        default: new Date()
+        default: getCurrentDateTime()
     },
     city: {
         type: String

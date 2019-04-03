@@ -13,6 +13,7 @@ const { Drivers } = require('../models/Driver');
 const { Users } = require('../models/User');
 const { Point } = require('../models/Point');
 const { UserPoint } = require('../models/userPoint');
+const { getCurrentDateTime } = require('../models/Constant');
 
 cloudinary.config({
     cloud_name: 'diszvlmqq',
@@ -51,7 +52,7 @@ exports.addDrivers = async (req, reply) => {
             password: req.body.phone_number,
             supplier_id: req.params.id,
             isBlock: false,
-            createAt: new Date(),
+            createAt: getCurrentDateTime(),
             car_name : req.body.car_name,
             car_number : req.body.car_number,
             car_color : req.body.car_color,

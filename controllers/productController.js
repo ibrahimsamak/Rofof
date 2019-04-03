@@ -18,6 +18,7 @@ cloudinary.config({
 // Get Data Models
 const { Product, Category, Supplier } = require('../models/Product')
 const { client } = require('../models/cache')
+const { getCurrentDateTime } = require('../models/Constant');
 
 
 async function uploadImages(img) {
@@ -579,7 +580,7 @@ exports.addProduct = async (req, reply) => {
                 image: img,
                 warrenty: req.raw.body.warrenty,
                 category_id: req.raw.body.category_id,
-                createat: new Date(),
+                createat: getCurrentDateTime(),
                 rate: 0,
                 price: req.raw.body.price
             });
@@ -629,7 +630,7 @@ exports.updateProduct = async (req, reply) => {
                 image: img,
                 warrenty: req.raw.body.warrenty,
                 category_id: req.raw.body.category_id,
-                createat: new Date(),
+                createat: getCurrentDateTime(),
                 // rate: 0,
                 price: req.raw.body.price
             }, { new: true })
@@ -646,7 +647,7 @@ exports.updateProduct = async (req, reply) => {
                 description: req.raw.body.description,
                 warrenty: req.raw.body.warrenty,
                 category_id: req.raw.body.category_id,
-                createat: new Date(),
+                createat: getCurrentDateTime(),
                 // rate: 0,
                 price: req.raw.body.price
             }, { new: true })

@@ -20,6 +20,11 @@ const fastify = require('fastify')({
 const routes = [
   {
     method: 'GET',
+    url: '/test/test',
+    handler: userController.testdate
+  },
+  {
+    method: 'GET',
     url: '/api/product/:id',
     handler: productController.getSingleProduct
   },

@@ -31,6 +31,7 @@ const geocoder = NodeGeocoder(options);
 // Get Data Models
 const { Drivers, validateDrivers } = require('../models/Driver')
 const { client } = require('../models/cache')
+const { getCurrentDateTime } = require('../models/Constant');
 
 
 async function getAddress(lat, lng) {
@@ -134,7 +135,7 @@ exports.addDrivers = async (req, reply) => {
             car_name: req.body.car_name,
             car_number: req.body.car_number,
             car_color: req.body.car_color,
-            createAt: new Date()
+            createAt: getCurrentDateTime()
         });
         let rs = await _user.save();
 
