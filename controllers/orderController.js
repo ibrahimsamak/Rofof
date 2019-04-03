@@ -671,12 +671,12 @@ exports.updateOrderByDriver = async (req, reply) => {
             //     StatusId: req.body.StatusId
             // }, { new: true })
 
-            const devicesID = await Admin.find().select('fcmToken');
-            devicesID.forEach(element => {
-                arr.push(element['fcmToken'])
-            });
-            CreateNotificationMultiple(arr, msg, '', '', '');
-            console.log(devicesID)
+            // const devicesID = await Admin.find().select('fcmToken');
+            // devicesID.forEach(element => {
+            //     arr.push(element['fcmToken'])
+            // });
+            // CreateNotificationMultiple(arr, msg, '', '', '');
+            // console.log(devicesID)
 
 
             const response = {
