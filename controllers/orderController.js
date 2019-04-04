@@ -117,7 +117,7 @@ function CreateNotification(deviceId, msg, order_id, from_userName, to_user_id) 
     });
 }
 
-function CreateNotificationMultiple([deviceId], msg, order_id, from_userName, to_user_id) {
+function CreateNotificationMultiple(deviceId, msg, order_id, from_userName, to_user_id) {
     return new Promise(function (resolve, reject) {
 
         // let _Notification = new Notifications({
@@ -146,7 +146,7 @@ function CreateNotificationMultiple([deviceId], msg, order_id, from_userName, to
             "data": {
                 "data": order_id,
             },
-            "registration_ids": [deviceId]
+            "registration_ids": deviceId
         };
         var data = JSON.stringify(postModel);
         var xhr = new XMLHttpRequest();
@@ -368,9 +368,10 @@ exports.addOrder = async (req, reply) => {
                                 // console.log(users)
                                 users = _users
                                 _users.forEach(element => {
-                                    driversToken.push(element.fcmToken)
+                                    driversToken.push(element['fcmToken'])
                                 });
                             });
+                            console.log(driversToken)
                             CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', User_id)
                             async.each(users, async function (data, callback) {
                                 let _Notification = new Notifications({
@@ -473,7 +474,7 @@ exports.addOrder = async (req, reply) => {
                         // console.log(users)
                         users = _users
                         _users.forEach(element => {
-                            driversToken.push(element.fcmToken)
+                            driversToken.push(element['fcmToken'])
                         });
                     });
                     CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', User_id)
