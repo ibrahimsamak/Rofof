@@ -133,7 +133,7 @@ exports.updateUserPoint = async (req, reply) => {
     try {
         let user_id = req.user._id
         console.log(req.user)
-        const userPoints = await UserPoint.findOne({user_id:user_id});
+        const userPoints = await UserPoint.findOne({ user_id: user_id });
         const points_to_mony = parseInt(userPoints.points, 10) / parseInt(userPoints.point_price, 10)
         console.log(points_to_mony, userPoints)
         // const _Users = await Users.findByIdAndUpdate((userPoints.user_id), {
@@ -148,7 +148,7 @@ exports.updateUserPoint = async (req, reply) => {
             status_code: 200,
             status: true,
             message: 'تم حساب النقاط بنجاح',
-            items: points_to_mony,
+            items: [{ money: points_to_mony, points: userPoints.points}],
         }
 
         reply.send(response);
