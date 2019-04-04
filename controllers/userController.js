@@ -180,10 +180,10 @@ exports.login = async (req, reply) => {
         const _Users = await Users.findOne({ $and: [{ email: req.body.email, password: req.body.password }] })
         if (_Users) {
             const user = await Users.findByIdAndUpdate((_Users.id), {
-                fcmToken: req.body.fcmToken
-                // token: jwt.sign({ _id: _Users.id }, config.get('jwtPrivateKey'), {
-                //     expiresIn: '365d'
-                // })
+                fcmToken: req.body.fcmToken,
+                token: jwt.sign({ _id: _Users._id }, config.get('jwtPrivateKey'), {
+                    expiresIn: '365d'
+                })
             }, { new: true })
 
             const response = {
@@ -402,7 +402,8 @@ exports.logout = async (req, reply) => {
     try {
         const User_id = req.user._id
         const user = await Users.findByIdAndUpdate((User_id), {
-            fcmToken: ''
+            fcmToken: '',
+            token: ''
         }, { new: true })
         if (!user) {
             const response = {

@@ -167,7 +167,10 @@ exports.login = async (req, reply) => {
         }
         else {
             const ـuser = await Drivers.findByIdAndUpdate((user._id), {
-                fcmToken: req.body.fcmToken
+                fcmToken: req.body.fcmToken,
+                token: jwt.sign({ _id: user.id }, config.get('jwtPrivateKey'), {
+                    expiresIn: '365d'
+                })
             }, { new: true })
             const response = {
                 status_code: 200,
@@ -304,7 +307,7 @@ exports.logout = async (req, reply) => {
         const Driver_id = req.user._id
         const user = await Drivers.findByIdAndUpdate((Driver_id), {
             fcmToken: '',
-            // token: ''
+            token: ''
         }, { new: true })
 
         if (!user) {
