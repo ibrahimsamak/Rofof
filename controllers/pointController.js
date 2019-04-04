@@ -134,24 +134,34 @@ exports.updateUserPoint = async (req, reply) => {
         let user_id = req.user._id
         console.log(req.user)
         const userPoints = await UserPoint.findOne({ user_id: user_id });
-        const points_to_mony = parseInt(userPoints.points, 10) / parseInt(userPoints.point_price, 10)
-        console.log(points_to_mony, userPoints)
-        // const _Users = await Users.findByIdAndUpdate((userPoints.user_id), {
-        //     $inc: { wallet: points_to_mony }
-        // }, { new: true })
+        if (userPoints) {
+            const points_to_mony = parseInt(userPoints.points, 10) / parseInt(userPoints.point_price, 10)
+            console.log(points_to_mony, userPoints)
+            // const _Users = await Users.findByIdAndUpdate((userPoints.user_id), {
+            //     $inc: { wallet: points_to_mony }
+            // }, { new: true })
 
-        // const _userPoints = await UserPoint.findByIdAndUpdate((userPoints._id), {
-        //     points: 0
-        // }, { new: true })
+            // const _userPoints = await UserPoint.findByIdAndUpdate((userPoints._id), {
+            //     points: 0
+            // }, { new: true })
 
-        const response = {
-            status_code: 200,
-            status: true,
-            message: 'تم حساب النقاط بنجاح',
-            items: [{ money: points_to_mony, points: userPoints.points}],
+            const response = {
+                status_code: 200,
+                status: true,
+                message: 'تم حساب النقاط بنجاح',
+                items: [{ money: points_to_mony, points: userPoints.points }],
+            }
+
+            reply.send(response);
+        } else {
+            const response = {
+                status_code: 404,
+                status: false,
+                message: 'عذرا .. ليس لديك اي نقاط حتى اللحظة',
+                items: []
+            }
+            reply.send(response);
         }
-
-        reply.send(response);
     } catch (err) {
         throw boom.boomify(err)
     }
