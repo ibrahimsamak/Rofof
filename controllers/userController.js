@@ -180,9 +180,10 @@ exports.login = async (req, reply) => {
         const _Users = await Users.findOne({ $and: [{ email: req.body.email, password: req.body.password }] })
         if (_Users) {
             const user = await Users.findByIdAndUpdate((_Users.id), {
-                token: jwt.sign({ _id: _Users.id }, config.get('jwtPrivateKey'), {
-                    expiresIn: '365d'
-                })
+                fcmToken: req.body.fcmToken
+                // token: jwt.sign({ _id: _Users.id }, config.get('jwtPrivateKey'), {
+                //     expiresIn: '365d'
+                // })
             }, { new: true })
 
             const response = {
@@ -401,8 +402,7 @@ exports.logout = async (req, reply) => {
     try {
         const User_id = req.user._id
         const user = await Users.findByIdAndUpdate((User_id), {
-            fcmToken: '',
-            token: ''
+            fcmToken: ''
         }, { new: true })
         if (!user) {
             const response = {
@@ -619,7 +619,7 @@ exports.testdate = async (req, reply) => {
 
 
         var utc = getCurrentDateTime();
-        utc.setHours( utc.getHours() + 3);
+        utc.setHours(utc.getHours() + 3);
 
         let _Notification = new Notifications({
             from: 'زبون جديد',
@@ -634,7 +634,7 @@ exports.testdate = async (req, reply) => {
 
         let rs = await _Notification.save();
 
-       
+
         console.log(utc)
         reply.send(rs);
     } catch (err) {
