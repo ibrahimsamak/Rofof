@@ -566,7 +566,7 @@ exports.updateOrderByUser = async (req, reply) => {
                 const response = {
                     status_code: 400,
                     status: false,
-                    message: 'عذرا لا يمكن الغاء الطلب جاري توصيله',
+                    message: ' عذرا لا يمكن الغاء الطلب جاري توصيله او قد يكون تم الغاء الطلب مسبقا',
                     items: []
                 }
                 return response
@@ -1013,7 +1013,6 @@ exports.checkAvailableDrivers = async (req, reply) => {
             console.log(key + " entered query at " + location + " (" + distance + " km from center)");
             if (distance <= parseInt(raduis.value, 10)) {
                 keys_arr.push(key)
-                console.log(key)
             }
         });
 
@@ -1038,6 +1037,7 @@ exports.checkAvailableDrivers = async (req, reply) => {
                 }
                 reply.send(response)
             }
+            
         });
     }
     catch (err) {

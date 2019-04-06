@@ -82,7 +82,7 @@ exports.getProducts = async (req, reply) => {
             }
             return response
         }
-        const Products = await Product.find().sort({ rate: -1 }).limit(20)
+        const Products = await Product.find({ category_id: { $nin: [ '5c681f80ad8747623305f634', '5c8cb6c10a34fc002491f406' ] } }).sort({ rate: -1 }).limit(20)
         client.set('Products', JSON.stringify(Products))
         client.expire('Products', 86400)
         const response = {
