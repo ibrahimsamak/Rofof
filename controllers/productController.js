@@ -40,21 +40,22 @@ async function uploadImages(img) {
 // Get All Categories
 exports.getCategories = async (req, reply) => {
     try {
-        client.get = util.promisify(client.get)
-        const cachedObj = await client.get('Categories')
-        if (cachedObj) {
-            console.log('serving from cach')
-            const response = {
-                status_code: 200,
-                status: true,
-                message: 'return succssfully',
-                items: JSON.parse(cachedObj)
-            }
-            return response
-        }
-        const Categories = await Category.find()
-        client.set('Categories', JSON.stringify(Categories))
-        client.expire('Categories', 86400)
+        // client.del('Categories')
+        // client.get = util.promisify(client.get)
+        // const cachedObj = await client.get('Categories')
+        // if (cachedObj) {
+        //     console.log('serving from cach')
+        //     const response = {
+        //         status_code: 200,
+        //         status: true,
+        //         message: 'return succssfully',
+        //         items: JSON.parse(cachedObj)
+        //     }
+        //     return response
+        // }
+        const Categories = await Category.find({_id: { $nin: [ '5c681f80ad8747623305f634', '5c8cb6c10a34fc002491f406' ] }})
+        // client.set('Categories', JSON.stringify(Categories))
+        // client.expire('Categories', 86400)
         const response = {
             status_code: 200,
             status: true,
@@ -70,21 +71,21 @@ exports.getCategories = async (req, reply) => {
 // Get top 20 Products
 exports.getProducts = async (req, reply) => {
     try {
-        client.get = util.promisify(client.get)
-        const cachedObj = await client.get('Products')
-        if (cachedObj) {
-            console.log('serving from cach')
-            const response = {
-                status_code: 200,
-                status: true,
-                message: 'return succssfully',
-                items: JSON.parse(cachedObj)
-            }
-            return response
-        }
+        // client.get = util.promisify(client.get)
+        // const cachedObj = await client.get('Products')
+        // if (cachedObj) {
+        //     console.log('serving from cach')
+        //     const response = {
+        //         status_code: 200,
+        //         status: true,
+        //         message: 'return succssfully',
+        //         items: JSON.parse(cachedObj)
+        //     }
+        //     return response
+        // }
         const Products = await Product.find({ category_id: { $nin: [ '5c681f80ad8747623305f634', '5c8cb6c10a34fc002491f406' ] } }).sort({ rate: -1 }).limit(20)
-        client.set('Products', JSON.stringify(Products))
-        client.expire('Products', 86400)
+        // client.set('Products', JSON.stringify(Products))
+        // client.expire('Products', 86400)
         const response = {
             status_code: 200,
             status: true,
@@ -149,9 +150,9 @@ exports.getProductBySearch = async (req, reply) => {
     // console.log(req)
     var page = parseInt(req.query.page, 10)
     var limit = parseInt(req.query.limit, 10)
-    const total = await Product.find({ name: { $regex: '.*' + req.body.name + '.*' } }).count();
+    const total = await Product.find({$and:[{ name: { $regex: '.*' + req.body.name + '.*' } } , {category_id: { $nin: [ '5c681f80ad8747623305f634', '5c8cb6c10a34fc002491f406' ] }}  ]}).count();
     var result = [];
-    let prod = await Product.find({ name: { $regex: '.*' + req.body.name + '.*' } })
+    let prod = await Product.find({$and:[{ name: { $regex: '.*' + req.body.name + '.*' } } , {category_id: { $nin: [ '5c681f80ad8747623305f634', '5c8cb6c10a34fc002491f406' ] }}  ]})
         .sort({ rate: -1 })
         .skip((page) * limit)
         .limit(limit)
@@ -175,6 +176,36 @@ exports.getProductBySearch = async (req, reply) => {
 
 
 // cPanel
+exports.getCategoriesAdmin= async (req, reply) => {
+    try {
+        // client.del('Categories')
+        // client.get = util.promisify(client.get)
+        // const cachedObj = await client.get('Categories')
+        // if (cachedObj) {
+        //     console.log('serving from cach')
+        //     const response = {
+        //         status_code: 200,
+        //         status: true,
+        //         message: 'return succssfully',
+        //         items: JSON.parse(cachedObj)
+        //     }
+        //     return response
+        // }
+        const Categories = await Category.find()
+        // client.set('Categories', JSON.stringify(Categories))
+        // client.expire('Categories', 86400)
+        const response = {
+            status_code: 200,
+            status: true,
+            message: 'return succssfully',
+            items: Categories
+        }
+        return response
+    } catch (err) {
+        throw boom.boomify(err)
+    }
+}
+
 exports.uploadPhoto = async (req, reply) => {
     cloudinary.v2.uploader.upload('./public/' + req.files[0].filename,
         function (error, result) {
@@ -470,7 +501,6 @@ exports.deleteSupplier = async (req, reply) => {
 }
 
 
-
 //products
 exports.getAllProducts = async (req, reply) => {
     try {
@@ -681,4 +711,3 @@ exports.getSingleProduct = async (req, reply) => {
         throw boom.boomify(err)
     }
 }
-

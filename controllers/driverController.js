@@ -389,21 +389,21 @@ exports.Driversearch = async (req, reply) => {
 
 exports.Driverlist = async (req, reply) => {
     try {
-        client.get = util.promisify(client.get)
-        const cachedObj = await client.get('_Users')
-        if (cachedObj) {
-            console.log('serving from cach')
-            const response = {
-                status_code: 200,
-                status: true,
-                message: 'return succssfully',
-                items: JSON.parse(cachedObj)
-            }
-            return response
-        }
+        // client.get = util.promisify(client.get)
+        // const cachedObj = await client.get('_Users')
+        // if (cachedObj) {
+        //     console.log('serving from cach')
+        //     const response = {
+        //         status_code: 200,
+        //         status: true,
+        //         message: 'return succssfully',
+        //         items: JSON.parse(cachedObj)
+        //     }
+        //     return response
+        // }
         const _Users = await Drivers.find().populate('supplier_id').sort({ createAt: -1 }).select(['-token', '-password'])
-        client.set('_Users', JSON.stringify(_Users))
-        client.expire('_Users', 86400)
+        // client.set('_Users', JSON.stringify(_Users))
+        // client.expire('_Users', 86400)
         const response = {
             status_code: 200,
             status: true,

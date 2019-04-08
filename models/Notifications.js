@@ -2,11 +2,11 @@ const Joi = require('joi');
 const mongoose = require('mongoose');
 
 const Notificationschema = mongoose.Schema({
-    from:{
+    from: {
         type: String,
         required: false
     },
-    user_id:{
+    user_id: {
         type: String,
         required: false
     },
@@ -26,15 +26,18 @@ const Notificationschema = mongoose.Schema({
         type: Number,
         required: false
     },
-    body_parms:{
+    body_parms: {
         type: String,
         required: false
     },
-    isRead:{
+    isRead: {
         type: Boolean,
         required: false
     },
 }, { versionKey: false });
 
+
+Notificationschema.index({ "user_id": 1, "isRead": 1 })
 const Notifications = mongoose.model('Notification', Notificationschema);
+
 exports.Notifications = Notifications;

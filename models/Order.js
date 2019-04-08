@@ -35,6 +35,11 @@ const Orderschema = mongoose.Schema({
     isOpen: { type: Boolean, required: false }
 }, { versionKey: false });
 
+
+Orderschema.index({ "driver_id": 1, "StatusId": 1 })
+Orderschema.index({ "user_id": 1, "StatusId": 1 })
+Orderschema.index({ "createAt": 1 })
+// Orderschema.index({ "supplier_id": 1 })
 const Order = mongoose.model('Order', Orderschema);
 
 

@@ -246,6 +246,11 @@ const routes = [
   },
   {
     method: 'GET',
+    url: '/api/getCategoriesAdmin',
+    handler: productController.getCategoriesAdmin
+  },
+  {
+    method: 'GET',
     url: '/api/category',
     handler: productController.getCategories
   },

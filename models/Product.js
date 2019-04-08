@@ -2,11 +2,11 @@ const Joi = require('joi');
 const mongoose = require('mongoose');
 
 const Productschema = mongoose.Schema({
-    name:{
+    name: {
         type: String,
         required: false
     },
-    description:{
+    description: {
         type: String,
         required: false
     },
@@ -26,49 +26,52 @@ const Productschema = mongoose.Schema({
         type: String,
         required: false
     },
-    category_id:{
-        type: mongoose.Schema.Types.ObjectId, ref: 'Category' 
+    category_id: {
+        type: mongoose.Schema.Types.ObjectId, ref: 'Category'
     },
-    createat:{
-        type:Date
+    createat: {
+        type: Date
     }
 }, { versionKey: false });
 
 const schema = mongoose.Schema({
     name: {
-        type:String,
-        required:true
+        type: String,
+        required: true
     },
-    image:{
-        type:String,
-        required:true
+    image: {
+        type: String,
+        required: true
     }
 });
 
 const Supplierschema = mongoose.Schema({
     name: {
-        type:String,
-        required:true
+        type: String,
+        required: true
     },
-    image:{
-        type:String,
-        required:true
+    image: {
+        type: String,
+        required: true
     },
-    details:{
-        type:String
+    details: {
+        type: String
     },
-    email:{
-        type:String
+    email: {
+        type: String
     },
-    password:{
-        type:String
+    password: {
+        type: String
     }
 });
 
-const Category = mongoose.model('Category',schema);
-const Supplier = mongoose.model('Supplier',Supplierschema);
-const Product = mongoose.model('Product', Productschema);
 
-exports.Category = Category; 
-exports.Supplier = Supplier; 
+Productschema.index({ "category_id": 1 })
+
+const Category = mongoose.model('Category', schema);
+const Supplier = mongoose.model('Supplier', Supplierschema);
+const Product  = mongoose.model('Product', Productschema);
+
+exports.Category = Category;
+exports.Supplier = Supplier;
 exports.Product = Product;

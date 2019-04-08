@@ -74,6 +74,8 @@ const Driverschema = mongoose.Schema({
     
 }, { versionKey: false });
 
+
+Driverschema.index({ "supplier_id": 1 })
 const Driver = mongoose.model('Driver', Driverschema);
 
 exports.Drivers = Driver; 
