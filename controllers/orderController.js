@@ -518,12 +518,17 @@ exports.updateOrderByUser = async (req, reply) => {
             let msg = `تم استلام الطلب من العميل رقم الطلب: ${order._id}`;
             const driverFCM = order.driver_id.fcmToken;
 
+            const sp = await Order.findByIdAndUpdate((req.query.id), {
+                StatusId: req.body.StatusId
+            }, { new: true })
+
+
             CreateNotification(driverFCM, msg, order._id, order.user_id.full_name, order.driver_id._id);
             const response = {
                 status_code: 200,
                 status: true,
                 message: 'تم تعديل الطلب بنجاح',
-                items: order
+                items: sp
             }
             const devicesID = await Admin.find().select('fcmToken');
             devicesID.forEach(element => {
