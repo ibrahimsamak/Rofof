@@ -460,6 +460,76 @@ exports.refreshToken = async (req, reply) => {
 }
 
 
+//android
+exports.uploadUserPhoto = async (req, reply) => {
+    if (req.raw.files) {
+        const files = req.raw.files
+        let fileArr = []
+        for (let key in files) {
+            fileArr.push({
+                name: files[key].name,
+                mimetype: files[key].mimetype
+            })
+        }
+        var data = new Buffer(files.image.data);
+        fs.writeFile('./uploads/' + files.image.name, data, 'binary', function (err) {
+            if (err) {
+                console.log("There was an error writing the image")
+            }
+            else {
+                console.log("The sheel file was written")
+            }
+        });
+
+        cloudinary.v2.uploader.upload('./uploads/' + files.image.name,
+            function (error, result) {
+                console.log(result, error)
+                reply.send(result)
+            });
+    }
+}
+
+exports.updateUserAndroid = async (req, reply) => {
+    try {
+        const user_id = req.user._id
+        if (req.body.image) {
+            const user = await Users.findByIdAndUpdate((user_id), {
+                image: req.body.image,
+                address: req.body.address,
+                full_name: req.body.full_name,
+                gender: req.body.gender,
+                currentCity: req.body.currentCity
+            }, { new: true })
+    
+            const response = {
+                status_code: 200,
+                status: true,
+                message: '',
+                items: user
+            }
+            reply.send(response);
+        } else {
+            const user = await Users.findByIdAndUpdate((user_id), {
+                address: req.body.address,
+                full_name: req.body.full_name,
+                gender: req.body.gender,
+                currentCity: req.body.currentCity
+            }, { new: true })
+    
+            const response = {
+                status_code: 200,
+                status: true,
+                message: '',
+                items: user
+            }
+            reply.send(response);
+        }
+
+    } catch (err) {
+        throw boom.boomify(err)
+    }
+}
+
 // cPanel
 exports.userSearch = async (req, reply) => {
     try {

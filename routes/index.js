@@ -320,6 +320,11 @@ const routes = [
     handler: userController.getUserByCity
   },
   {
+    method: 'POST',
+    url: '/api/uploadUserPhoto',
+    handler: userController.uploadUserPhoto
+  },
+  {
     method: 'GET',
     url: '/api/getAllUsers',
     handler: userController.getAllUsers
@@ -370,6 +375,12 @@ const routes = [
     url: '/api/updateprofile',
     beforeHandler: [auth.getToken],
     handler: userController.updateUsers
+  },
+  {
+    method: 'PUT',
+    url: '/api/updateUserAndroid',
+    beforeHandler: [auth.getToken],
+    handler: userController.updateUserAndroid
   },
   {
     method: 'PUT',
