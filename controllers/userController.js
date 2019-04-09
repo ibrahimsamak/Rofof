@@ -484,13 +484,8 @@ exports.uploadUserPhoto = async (req, reply) => {
         cloudinary.v2.uploader.upload('./uploads/' + files.image.name,
             function (error, result) {
                 console.log(result, error)
-                const response = {
-                    status_code: 200,
-                    status: true,
-                    message: '',
-                    items: result
-                }
-                reply.send(response);
+                reply.send(result)
+                
             });
     }
 }
