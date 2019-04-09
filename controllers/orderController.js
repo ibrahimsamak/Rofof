@@ -864,29 +864,39 @@ exports.getUserOrder = async (req, reply) => {
         const total = await Order.find({ user_id: req.query.id, StatusId: req.query.staustId }).count();
 
         var result = []
+        var query = {}
+
         if (req.query.staustId != 1) {
-            await Order.find({ user_id: req.query.id, StatusId: req.query.staustId }).sort({ _id: -1 })
-                .populate('user_id')
-                .populate('driver_id')
-                .populate({ path: 'items.product_id', populate: { path: 'product_id' } })
-                .skip((page) * limit)
-                .limit(limit)
-                .exec(function (err, item) {
-                    console.log(item)
-                    const response = {
-                        status_code: 200,
-                        status: true,
-                        message: 'return succssfully',
-                        items: item,
-                        pagenation: {
-                            size: item.length,
-                            totalElements: total,
-                            totalPages: Math.floor(total / limit),
-                            pageNumber: page
-                        }
+            if (req.query.staustId == 3 ){
+               query['user_id'] = req.query.id
+               query['StatusId'] = { $in: [ 3, 4 ] }
+            }else{
+                query['user_id'] = req.query.id
+                query['StatusId'] = req.query.staustId  
+            }
+
+            await Order.find(query).sort({ _id: -1 })
+            .populate('user_id')
+            .populate('driver_id')
+            .populate({ path: 'items.product_id', populate: { path: 'product_id' } })
+            .skip((page) * limit)
+            .limit(limit)
+            .exec(function (err, item) {
+                console.log(item)
+                const response = {
+                    status_code: 200,
+                    status: true,
+                    message: 'return succssfully',
+                    items: item,
+                    pagenation: {
+                        size: item.length,
+                        totalElements: total,
+                        totalPages: Math.floor(total / limit),
+                        pageNumber: page
                     }
-                    reply.send(response)
-                });
+                }
+                reply.send(response)
+            });
         }
         else {
             await Order.find({ user_id: req.query.id, StatusId: req.query.staustId }).sort({ _id: -1 })
