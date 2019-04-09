@@ -523,7 +523,7 @@ exports.updateOrderByUser = async (req, reply) => {
                 status_code: 200,
                 status: true,
                 message: 'تم تعديل الطلب بنجاح',
-                items: sp
+                items: order
             }
             const devicesID = await Admin.find().select('fcmToken');
             devicesID.forEach(element => {

@@ -452,7 +452,7 @@ exports.block = async (req, reply) => {
 
 exports.userprofile = async (req, reply) => {
     try {
-        const user = await Drivers.findById(req.params.id).populate('supplier_id').select(['-token', '-password']);
+        const user = await Drivers.findById(req.params.id).populate('supplier_id').select(['-token']);
         const response = {
             status_code: 200,
             status: true,
@@ -473,7 +473,7 @@ exports.updateprofileFromAdmin = async (req, reply) => {
             name: req.body.name,
             images: req.body.images,
             dt_dob: req.body.dt_dob,
-            // email: req.body.email,
+            password: req.body.password,
             image: req.body.image,
             // supplier_id: req.body.supplier_id,
             address: req.body.address,
