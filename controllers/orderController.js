@@ -209,7 +209,7 @@ exports.addOrder = async (req, reply) => {
                             delivery_time: req.body.delivery_time,
                             user_id: User_id,
                             items: req.body.items,
-                            city: req.body.city,
+                            city: req.body.addressDetails,
                             createAt: getCurrentDateTime(),
                         });
                         let rs = await Orders.save();
@@ -266,7 +266,7 @@ exports.addOrder = async (req, reply) => {
                     delivery_time: req.body.delivery_time,
                     user_id: User_id,
                     items: req.body.items,
-                    city: req.body.city,
+                    city: req.body.addressDetails,
                     createAt: getCurrentDateTime(),
                 });
                 let rs = await Orders.save();
@@ -317,7 +317,7 @@ exports.addOrder = async (req, reply) => {
                             delivery_time: req.body.delivery_time,
                             user_id: User_id,
                             items: req.body.items,
-                            city: req.body.city,
+                            city: req.body.addressDetails,
                             createAt: getCurrentDateTime(),
                         });
                         let rs = await Orders.save();
@@ -426,7 +426,7 @@ exports.addOrder = async (req, reply) => {
                     delivery_time: req.body.delivery_time,
                     user_id: User_id,
                     items: req.body.items,
-                    city: req.body.city,
+                    city: req.body.addressDetails,
                     createAt: getCurrentDateTime(),
                 });
 
