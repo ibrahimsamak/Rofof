@@ -181,9 +181,9 @@ exports.addOrder = async (req, reply) => {
         console.log(raduis)
         if (req.body.orderType == 3) {
             const User_id = req.user._id
-            await getAddress(req.body.lat, req.body.lng).then((x) => {
-                current_city = x;
-            });
+            // await getAddress(req.body.lat, req.body.lng).then((x) => {
+            //     current_city = x;
+            // });
 
             if (req.body.paymentType == 3) {
                 //check points numbers
@@ -209,7 +209,7 @@ exports.addOrder = async (req, reply) => {
                             delivery_time: req.body.delivery_time,
                             user_id: User_id,
                             items: req.body.items,
-                            city: current_city,
+                            city: req.body.city,
                             createAt: getCurrentDateTime(),
                         });
                         let rs = await Orders.save();
@@ -266,7 +266,7 @@ exports.addOrder = async (req, reply) => {
                     delivery_time: req.body.delivery_time,
                     user_id: User_id,
                     items: req.body.items,
-                    city: current_city,
+                    city: req.body.city,
                     createAt: getCurrentDateTime(),
                 });
                 let rs = await Orders.save();
@@ -317,7 +317,7 @@ exports.addOrder = async (req, reply) => {
                             delivery_time: req.body.delivery_time,
                             user_id: User_id,
                             items: req.body.items,
-                            city: current_city,
+                            city: req.body.city,
                             createAt: getCurrentDateTime(),
                         });
                         let rs = await Orders.save();
@@ -426,7 +426,7 @@ exports.addOrder = async (req, reply) => {
                     delivery_time: req.body.delivery_time,
                     user_id: User_id,
                     items: req.body.items,
-                    city: current_city,
+                    city: req.body.city,
                     createAt: getCurrentDateTime(),
                 });
 

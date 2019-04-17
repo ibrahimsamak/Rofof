@@ -9,6 +9,7 @@ const pump = require('pump')
 const cloudinary = require('cloudinary');
 const multer = require('multer');
 var moment = require('moment-timezone');
+var nodemailer = require('nodemailer');
 const { Notifications } = require('../models/Notifications')
 
 cloudinary.config({
@@ -17,6 +18,16 @@ cloudinary.config({
     api_secret: '1ZkJK1IN2eUhF2qVEc-M2QOAI0I'
 });
 
+
+var transporter = nodemailer.createTransport({
+    host: 'webhosting2035.is.cc',
+    port: 465,
+    secure: true,
+    auth: {
+        user: 'no-reply@souqgaz.com',
+        pass: 'no-reply@souqgaz.com'
+    }
+});
 
 const options = {
     provider: 'google',
@@ -257,7 +268,151 @@ exports.forgetPassword = async (req, reply) => {
     try {
         const _Users = await Users.findOne({ email: req.body.email })
         if (_Users) {
-            const update = await Users.findByIdAndUpdate(_Users._id, { password: makeid() }, { new: true })
+            var newPassword = makeid();
+            const update = await Users.findByIdAndUpdate(_Users._id, { password: newPassword }, { new: true })
+            var msg = `
+           <!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box;background-color:#f8fafc;color:#74787e;height:100%;line-height:1.4;margin:0;width:100%!important;word-break:break-word">
+
+
+    <table class="m_1006477609114479258wrapper" width="100%" cellpadding="0" cellspacing="0"
+           style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box;background-color:#f8fafc;margin:0;padding:0;width:100%">
+        <tbody>
+        <tr>
+            <td align="center"
+                style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box">
+                <table class="m_1006477609114479258content" width="100%" cellpadding="0" cellspacing="0"
+                       style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box;margin:0;padding:0;width:100%">
+                    <tbody>
+                    <tr>
+                        <td class="m_1006477609114479258header"
+                            style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box;padding:25px 0;text-align:center">
+                            <a href="www.souqgaz.com"
+                               style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box;color:#bbbfc3;font-size:19px;font-weight:bold;text-decoration:none"
+                               target="_blank"
+                               data-saferedirecturl="www.souqgaz.com">
+                                Souqgaz
+                            </a>
+                        </td>
+                    </tr>
+
+
+                    <tr>
+                        <td class="m_1006477609114479258body" width="100%" cellpadding="0" cellspacing="0"
+                            style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box;background-color:#ffffff;border-bottom:1px solid #edeff2;border-top:1px solid #edeff2;margin:0;padding:0;width:100%">
+                            <table class="m_1006477609114479258inner-body" align="center" width="570" cellpadding="0"
+                                   cellspacing="0"
+                                   style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box;background-color:#ffffff;margin:0 auto;padding:0;width:570px">
+
+                                <tbody>
+                                <tr>
+                                    <td class="m_1006477609114479258content-cell"
+                                        style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box;padding:35px">
+                                        <h1 style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box;color:#3d4852;font-size:19px;font-weight:bold;margin-top:0;text-align:left">
+                                            Hello ${_Users.full_name}!</h1>
+                                        <p style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box;color:#3d4852;font-size:16px;line-height:1.5em;margin-top:0;text-align:left">
+                                            we received your request to reset password</p>
+                                        <table class="m_1006477609114479258action" align="center" width="100%"
+                                               cellpadding="0" cellspacing="0"
+                                               style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box;margin:30px auto;padding:0;text-align:center;width:100%">
+                                            <tbody>
+                                            <tr>
+                                                <td align="center"
+                                                    style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box">
+                                                    <table width="100%" border="0" cellpadding="0" cellspacing="0"
+                                                           style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box">
+                                                        <tbody>
+                                                        <tr>
+                                                            <td align="center"
+                                                                style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box">
+                                                                <table border="0" cellpadding="0" cellspacing="0"
+                                                                       style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box">
+                                                                    <tbody>
+                                                                    <tr>
+                                                                        <td style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box">
+                                                                            <a class="m_1006477609114479258button m_1006477609114479258button-primary"
+                                                                               style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box;border-radius:3px;color:#fff;display:inline-block;text-decoration:none;background-color:#3490dc;border-top:10px solid #3490dc;border-right:18px solid #3490dc;border-bottom:10px solid #3490dc;border-left:18px solid #3490dc">Your
+                                                                                new password is: ${newPassword}</a>
+                                                                        </td>
+                                                                    </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </td>
+                                                        </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                        <p style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box;color:#3d4852;font-size:16px;line-height:1.5em;margin-top:0;text-align:left">
+                                            Thank you for using our application!</p>
+                                        <p style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box;color:#3d4852;font-size:16px;line-height:1.5em;margin-top:0;text-align:left">
+                                            Regards,<br>Souqgaz</p>
+
+                                        <table class="m_1006477609114479258subcopy" width="100%" cellpadding="0"
+                                               cellspacing="0"
+                                               style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box;border-top:1px solid #edeff2;margin-top:25px;padding-top:25px">
+                                            <tbody>
+                                            <tr>
+                                                <td style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box">
+                                                    <p style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box;color:#3d4852;line-height:1.5em;margin-top:0;text-align:left;font-size:12px">
+                                                        If you’re having trouble clicking the "Your password is: ${newPassword}"
+                                                        button</p>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box">
+                            <table class="m_1006477609114479258footer" align="center" width="570" cellpadding="0"
+                                   cellspacing="0"
+                                   style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box;margin:0 auto;padding:0;text-align:center;width:570px">
+                                <tbody>
+                                <tr>
+                                    <td class="m_1006477609114479258content-cell" align="center"
+                                        style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box;padding:35px">
+                                        <p style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';box-sizing:border-box;line-height:1.5em;margin-top:0;color:#aeaeae;font-size:12px;text-align:center">
+                                            © 2019 Souqgaz. All rights reserved.</p>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="yj6qo"></div>
+    <div class="adL">
+    </div>
+</div>
+</body>
+</html>
+           `
+
+            var mailOptions = {
+                from: '"Souqgaz" <no-reply@souqgaz.com>',
+                to: req.body.email,
+                subject: 'Forget Password',
+                html: msg
+            };
+            transporter.sendMail(mailOptions)
             const response = {
                 status_code: 200,
                 status: true,
@@ -485,7 +640,7 @@ exports.uploadUserPhoto = async (req, reply) => {
             function (error, result) {
                 console.log(result, error)
                 reply.send(result)
-                
+
             });
     }
 }
@@ -501,7 +656,7 @@ exports.updateUserAndroid = async (req, reply) => {
                 gender: req.body.gender,
                 currentCity: req.body.currentCity
             }, { new: true })
-    
+
             const response = {
                 status_code: 200,
                 status: true,
@@ -516,7 +671,7 @@ exports.updateUserAndroid = async (req, reply) => {
                 gender: req.body.gender,
                 currentCity: req.body.currentCity
             }, { new: true })
-    
+
             const response = {
                 status_code: 200,
                 status: true,
