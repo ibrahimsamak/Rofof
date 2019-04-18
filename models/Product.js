@@ -31,6 +31,14 @@ const Productschema = mongoose.Schema({
     },
     createat: {
         type: Date
+    },
+    isNewProduct: {
+        type: Boolean,
+        required: false
+    },
+    isReplacement: {
+        type: Boolean,
+        required: false
     }
 }, { versionKey: false });
 

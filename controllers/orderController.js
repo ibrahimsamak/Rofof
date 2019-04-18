@@ -167,12 +167,13 @@ function CreateNotificationMultiple(deviceId, msg, order_id, from_userName, to_u
 }
 
 // add new order of products
-// order type : 1 - product , 2 - refill , 3 - gazTunck
+// order type : 1 - product , 2 - refill , 3 - gaz Tunck , 4 - gaz Product
 exports.addOrder = async (req, reply) => {
     //paymentType: 
     //1: cash 
     //2: paymet getway
     //3: points
+    
     try {
         var arr = []
         var users = []
@@ -223,8 +224,6 @@ exports.addOrder = async (req, reply) => {
                         const _userPoints = await UserPoint.findByIdAndUpdate((userPoints._id), {
                             $inc: { points: -disc }
                         }, { new: true })
-
-                        // CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', req.user._id)
 
                         const devicesID = await Admin.find().select('fcmToken');
                         devicesID.forEach(element => {
@@ -277,13 +276,11 @@ exports.addOrder = async (req, reply) => {
                     message: 'تمت اضافة طلبك بنجاح'
                 }
 
-
                 const devicesID = await Admin.find().select('fcmToken');
                 devicesID.forEach(element => {
                     arr.push(element['fcmToken'])
                 });
                 CreateNotificationMultiple(arr, 'جديد!! لديكم طلب تعبئة خزان غاز ', '', '', '');
-
                 reply.send(response)
             }
         } else {
@@ -501,7 +498,6 @@ exports.addOrder = async (req, reply) => {
 
         }
         //push notification to all drivers within 30 km
-
     } catch (err) {
         throw boom.boomify(err)
     }

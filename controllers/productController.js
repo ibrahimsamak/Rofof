@@ -53,7 +53,7 @@ exports.getCategories = async (req, reply) => {
         //     }
         //     return response
         // }
-        const Categories = await Category.find({_id: { $nin: [ '5c681f80ad8747623305f634', '5c8cb6c10a34fc002491f406' ] }})
+        const Categories = await Category.find({ _id: { $nin: ['5c681f80ad8747623305f634', '5c8cb6c10a34fc002491f406'] } })
         // client.set('Categories', JSON.stringify(Categories))
         // client.expire('Categories', 86400)
         const response = {
@@ -83,7 +83,7 @@ exports.getProducts = async (req, reply) => {
         //     }
         //     return response
         // }
-        const Products = await Product.find({ category_id: { $nin: [ '5c681f80ad8747623305f634', '5c8cb6c10a34fc002491f406' ] } }).sort({ rate: -1 }).limit(20)
+        const Products = await Product.find({ category_id: { $nin: ['5c681f80ad8747623305f634', '5c8cb6c10a34fc002491f406'] } }).sort({ rate: -1 }).limit(20)
         // client.set('Products', JSON.stringify(Products))
         // client.expire('Products', 86400)
         const response = {
@@ -120,10 +120,20 @@ exports.getProductCateroy = async (req, reply) => {
 
     var page = parseInt(req.query.page, 10)
     var limit = parseInt(req.query.limit, 10)
-    const total = await Product.find({ category_id: req.body.category_id }).count();
+    const total = await Product.find({ $and: [{ category_id: req.body.category_id }, { isReplacement: req.body.isReplacement }, { isNewProduct: req.body.isNewProduct }] }).count();
 
     var result = [];
-    await Product.find({ category_id: req.body.category_id })
+    var query = {}
+    query['category_id'] = req.body.category_id
+
+    if (req.body.isNewProduct){
+        query['isNewProduct'] = req.body.isNewProduct
+    }
+    if (req.body.isReplacement){
+        query['isReplacement'] = req.body.isReplacement
+    }
+
+    await Product.find(query)
         .sort({ rate: -1 })
         .skip((page) * limit)
         .limit(limit)
@@ -150,9 +160,9 @@ exports.getProductBySearch = async (req, reply) => {
     // console.log(req)
     var page = parseInt(req.query.page, 10)
     var limit = parseInt(req.query.limit, 10)
-    const total = await Product.find({$and:[{ name: { $regex: '.*' + req.body.name + '.*' } } , {category_id: { $nin: [ '5c681f80ad8747623305f634', '5c8cb6c10a34fc002491f406' ] }}  ]}).count();
+    const total = await Product.find({ $and: [{ name: { $regex: '.*' + req.body.name + '.*' } }, { category_id: { $nin: ['5c681f80ad8747623305f634', '5c8cb6c10a34fc002491f406'] } }] }).count();
     var result = [];
-    let prod = await Product.find({$and:[{ name: { $regex: '.*' + req.body.name + '.*' } } , {category_id: { $nin: [ '5c681f80ad8747623305f634', '5c8cb6c10a34fc002491f406' ] }}  ]})
+    let prod = await Product.find({ $and: [{ name: { $regex: '.*' + req.body.name + '.*' } }, { category_id: { $nin: ['5c681f80ad8747623305f634', '5c8cb6c10a34fc002491f406'] } }] })
         .sort({ rate: -1 })
         .skip((page) * limit)
         .limit(limit)
@@ -176,7 +186,7 @@ exports.getProductBySearch = async (req, reply) => {
 
 
 // cPanel
-exports.getCategoriesAdmin= async (req, reply) => {
+exports.getCategoriesAdmin = async (req, reply) => {
     try {
         // client.del('Categories')
         // client.get = util.promisify(client.get)
@@ -612,7 +622,9 @@ exports.addProduct = async (req, reply) => {
                 category_id: req.raw.body.category_id,
                 createat: getCurrentDateTime(),
                 rate: 0,
-                price: req.raw.body.price
+                price: req.raw.body.price,
+                isNewProduct:req.raw.body.isNewProduct,
+                isReplacement : req.raw.body.isReplacement
             });
 
             let rs = await products.save();
@@ -661,6 +673,8 @@ exports.updateProduct = async (req, reply) => {
                 warrenty: req.raw.body.warrenty,
                 category_id: req.raw.body.category_id,
                 createat: getCurrentDateTime(),
+                isNewProduct:req.raw.body.isNewProduct,
+                isReplacement : req.raw.body.isReplacement,
                 // rate: 0,
                 price: req.raw.body.price
             }, { new: true })
@@ -679,7 +693,9 @@ exports.updateProduct = async (req, reply) => {
                 category_id: req.raw.body.category_id,
                 createat: getCurrentDateTime(),
                 // rate: 0,
-                price: req.raw.body.price
+                price: req.raw.body.price,
+                isNewProduct:req.raw.body.isNewProduct,
+                isReplacement : req.raw.body.isReplacement
             }, { new: true })
             const response = {
                 status_code: 200,
