@@ -188,7 +188,7 @@ exports.addUsers = async (req, reply) => {
 //login
 exports.login = async (req, reply) => {
     try {
-        const _Users = await Users.findOne({ $and: [{ email: req.body.email, password: req.body.password }] })
+        const _Users = await Users.findOne({ $and: [{ phone_number: req.body.phone_number, password: req.body.password }] })
         if (_Users) {
             const user = await Users.findByIdAndUpdate((_Users.id), {
                 fcmToken: req.body.fcmToken,
