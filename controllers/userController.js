@@ -208,7 +208,7 @@ exports.login = async (req, reply) => {
             const response = {
                 status_code: 404,
                 status: false,
-                message: 'خطأ في البريد الالكتروني او كلمة المرور',
+                message: 'خطأ في رقم الجوال او كلمة المرور',
                 items: _Users
             }
             return response
@@ -468,7 +468,9 @@ exports.updateUsers = async (req, reply) => {
                 address: req.raw.body.address,
                 full_name: req.raw.body.full_name,
                 gender: req.raw.body.gender,
-                currentCity: req.raw.body.currentCity
+                currentCity: req.raw.body.currentCity,
+                phone_number:  req.raw.body.phone_number
+
             }, { new: true })
             console.log(user)
             if (!user) {
@@ -496,7 +498,8 @@ exports.updateUsers = async (req, reply) => {
                 address: req.raw.body.address,
                 full_name: req.raw.body.full_name,
                 gender: req.raw.body.gender,
-                currentCity: req.raw.body.currentCity
+                currentCity: req.raw.body.currentCity,
+                phone_number:  req.raw.body.phone_number
             }, { new: true })
 
             if (!user) {
@@ -614,7 +617,6 @@ exports.refreshToken = async (req, reply) => {
     }
 }
 
-
 //android
 exports.uploadUserPhoto = async (req, reply) => {
     if (req.raw.files) {
@@ -654,7 +656,8 @@ exports.updateUserAndroid = async (req, reply) => {
                 address: req.body.address,
                 full_name: req.body.full_name,
                 gender: req.body.gender,
-                currentCity: req.body.currentCity
+                currentCity: req.body.currentCity,
+                phone_number:  req.body.phone_number
             }, { new: true })
 
             const response = {
@@ -669,7 +672,8 @@ exports.updateUserAndroid = async (req, reply) => {
                 address: req.body.address,
                 full_name: req.body.full_name,
                 gender: req.body.gender,
-                currentCity: req.body.currentCity
+                currentCity: req.body.currentCity,
+                phone_number:  req.body.phone_number
             }, { new: true })
 
             const response = {
