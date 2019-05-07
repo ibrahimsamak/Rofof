@@ -33,6 +33,6 @@ const Adminschema = mongoose.Schema({
     }
 }, { versionKey: false });
 
-const Admin = mongoose.model('Admin', Adminschema);
+const Admin = mongoose.model('Admin', Adminschema)
 
 exports.Admin = Admin; 

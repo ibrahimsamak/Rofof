@@ -184,8 +184,7 @@ exports.getProductBySearch = async (req, reply) => {
         });
 }
 
-
-// cPanel
+//cPanel
 exports.getCategoriesAdmin = async (req, reply) => {
     try {
         // client.del('Categories')
