@@ -39,6 +39,10 @@ const Productschema = mongoose.Schema({
     isReplacement: {
         type: Boolean,
         required: false
+    },
+    isSort: {
+        type: Number,
+        required: false
     }
 }, { versionKey: false });
 
@@ -78,7 +82,7 @@ Productschema.index({ "category_id": 1 })
 
 const Category = mongoose.model('Category', schema);
 const Supplier = mongoose.model('Supplier', Supplierschema);
-const Product  = mongoose.model('Product', Productschema);
+const Product = mongoose.model('Product', Productschema);
 
 exports.Category = Category;
 exports.Supplier = Supplier;

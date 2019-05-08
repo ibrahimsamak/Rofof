@@ -34,6 +34,10 @@ const delivery_timeSchema = mongoose.Schema({
   name: {
     type: String,
     required: true
+  },
+  isSort: {
+    type: Number,
+    required: false
   }
 }, { versionKey: false });
 
@@ -65,9 +69,9 @@ function validateCustomer(customer) {
   return Joi.validate(customer, schema);
 }
 
-function getCurrentDateTime(){
+function getCurrentDateTime() {
   var utc = new Date();
-  var current =  utc.setHours( utc.getHours() + 3);
+  var current = utc.setHours(utc.getHours() + 3);
   return current
 }
 

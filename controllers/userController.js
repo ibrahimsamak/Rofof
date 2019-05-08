@@ -469,7 +469,7 @@ exports.updateUsers = async (req, reply) => {
                 full_name: req.raw.body.full_name,
                 gender: req.raw.body.gender,
                 currentCity: req.raw.body.currentCity,
-                phone_number:  req.raw.body.phone_number
+                phone_number: req.raw.body.phone_number
 
             }, { new: true })
             console.log(user)
@@ -499,7 +499,7 @@ exports.updateUsers = async (req, reply) => {
                 full_name: req.raw.body.full_name,
                 gender: req.raw.body.gender,
                 currentCity: req.raw.body.currentCity,
-                phone_number:  req.raw.body.phone_number
+                phone_number: req.raw.body.phone_number
             }, { new: true })
 
             if (!user) {
@@ -657,7 +657,7 @@ exports.updateUserAndroid = async (req, reply) => {
                 full_name: req.body.full_name,
                 gender: req.body.gender,
                 currentCity: req.body.currentCity,
-                phone_number:  req.body.phone_number
+                phone_number: req.body.phone_number
             }, { new: true })
 
             const response = {
@@ -673,7 +673,7 @@ exports.updateUserAndroid = async (req, reply) => {
                 full_name: req.body.full_name,
                 gender: req.body.gender,
                 currentCity: req.body.currentCity,
-                phone_number:  req.body.phone_number
+                phone_number: req.body.phone_number
             }, { new: true })
 
             const response = {

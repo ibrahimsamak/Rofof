@@ -134,7 +134,7 @@ exports.getProductCateroy = async (req, reply) => {
     }
 
     await Product.find(query)
-        .sort({ rate: -1 })
+        .sort({ isSort: 1 })
         .skip((page) * limit)
         .limit(limit)
         .exec(function (err, xx) {
@@ -163,7 +163,7 @@ exports.getProductBySearch = async (req, reply) => {
     const total = await Product.find({ $and: [{ name: { $regex: '.*' + req.body.name + '.*' } }, { category_id: { $nin: ['5c681f80ad8747623305f634', '5c8cb6c10a34fc002491f406'] } }] }).count();
     var result = [];
     let prod = await Product.find({ $and: [{ name: { $regex: '.*' + req.body.name + '.*' } }, { category_id: { $nin: ['5c681f80ad8747623305f634', '5c8cb6c10a34fc002491f406'] } }] })
-        .sort({ rate: -1 })
+        .sort({ isSort: 1 })
         .skip((page) * limit)
         .limit(limit)
         .exec(function (err, xx) {

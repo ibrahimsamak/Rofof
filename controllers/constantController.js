@@ -195,7 +195,7 @@ exports.getdelivery_time = async (req, reply) => {
         //     }
         //     return response
         // }
-        const settings = await delivery_time.find().sort({ _id: -1 });
+        const settings = await delivery_time.find().sort({ isSort: 1 });
         // client.set('delivery_time', JSON.stringify(settings))
         // client.expire('delivery_time', 86400)
         const response = {
