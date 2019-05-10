@@ -126,10 +126,10 @@ exports.getProductCateroy = async (req, reply) => {
     var query = {}
     query['category_id'] = req.body.category_id
 
-    if (req.body.isNewProduct){
+    if (req.body.isNewProduct) {
         query['isNewProduct'] = req.body.isNewProduct
     }
-    if (req.body.isReplacement){
+    if (req.body.isReplacement) {
         query['isReplacement'] = req.body.isReplacement
     }
 
@@ -339,7 +339,7 @@ exports.updateCategory = async (req, reply) => {
 
 exports.deleteCategory = async (req, reply) => {
     try {
-        const categories = await Category.findByIdAndRemove(req.params.id);
+        const categories = await Category.findByIdAndDelete(req.params.id);
 
         const response = {
             status_code: 200,
@@ -495,7 +495,7 @@ exports.updateSupplier = async (req, reply) => {
 
 exports.deleteSupplier = async (req, reply) => {
     try {
-        const categories = await Supplier.findByIdAndRemove(req.params.id);
+        const categories = await Supplier.findByIdAndDelete(req.params.id);
 
         const response = {
             status_code: 200,
@@ -622,8 +622,9 @@ exports.addProduct = async (req, reply) => {
                 createat: getCurrentDateTime(),
                 rate: 0,
                 price: req.raw.body.price,
-                isNewProduct:req.raw.body.isNewProduct,
-                isReplacement : req.raw.body.isReplacement
+                price_buy_new: req.raw.body.price_buy_new,
+                isNewProduct: req.raw.body.isNewProduct,
+                isReplacement: req.raw.body.isReplacement
             });
 
             let rs = await products.save();
@@ -672,8 +673,9 @@ exports.updateProduct = async (req, reply) => {
                 warrenty: req.raw.body.warrenty,
                 category_id: req.raw.body.category_id,
                 createat: getCurrentDateTime(),
-                isNewProduct:req.raw.body.isNewProduct,
-                isReplacement : req.raw.body.isReplacement,
+                isNewProduct: req.raw.body.isNewProduct,
+                isReplacement: req.raw.body.isReplacement,
+                price_buy_new: req.raw.body.price_buy_new,
                 // rate: 0,
                 price: req.raw.body.price
             }, { new: true })
@@ -691,10 +693,11 @@ exports.updateProduct = async (req, reply) => {
                 warrenty: req.raw.body.warrenty,
                 category_id: req.raw.body.category_id,
                 createat: getCurrentDateTime(),
+                price_buy_new: req.raw.body.price_buy_new,
                 // rate: 0,
                 price: req.raw.body.price,
-                isNewProduct:req.raw.body.isNewProduct,
-                isReplacement : req.raw.body.isReplacement
+                isNewProduct: req.raw.body.isNewProduct,
+                isReplacement: req.raw.body.isReplacement
             }, { new: true })
             const response = {
                 status_code: 200,
@@ -711,7 +714,8 @@ exports.updateProduct = async (req, reply) => {
 
 exports.deleteProduct = async (req, reply) => {
     try {
-        const products = await Product.findByIdAndRemove(req.params.id);
+        console.log(req.params.id)
+        const products = await Product.findByIdAndDelete(req.params.id);
         reply.send(products);
     } catch (err) {
         throw boom.boomify(err)

@@ -8,7 +8,7 @@ exports.getNotfications = async (req, reply) => {
   try {
     const user_id = req.user._id
     const _Notification = await Notifications.find({ $and: [{ user_id: user_id }, { isRead: false }] })
-      .sort({ _id: -1 }).limit(50)
+      .sort({ _id: -1 })
     const response = {
       status_code: 200,
       status: true,

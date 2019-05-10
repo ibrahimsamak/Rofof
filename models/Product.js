@@ -18,6 +18,10 @@ const Productschema = mongoose.Schema({
         type: Number,
         required: false
     },
+    price_buy_new: {
+        type: Number,
+        required: false
+    },
     image: {
         type: String,
         required: false
