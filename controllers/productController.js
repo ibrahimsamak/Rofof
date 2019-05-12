@@ -120,17 +120,13 @@ exports.getProductCateroy = async (req, reply) => {
 
     var page = parseInt(req.query.page, 10)
     var limit = parseInt(req.query.limit, 10)
-    if (req.body.category_id == '5c8cb6c10a34fc002491f406Ï') {
-        req.body.category_id = null
-    }
 
     const total = await Product.find({ $and: [{ category_id: req.body.category_id }, { isReplacement: req.body.isReplacement }, { isNewProduct: req.body.isNewProduct }] }).count();
 
     var result = [];
     var query = {}
-    if (req.body.category_id != '5c8cb6c10a34fc002491f406Ï') {
-        query['category_id'] = req.body.category_id
-    }
+
+    query['category_id'] = req.body.category_id
 
     if (req.body.isNewProduct) {
         query['isNewProduct'] = req.body.isNewProduct
@@ -145,18 +141,34 @@ exports.getProductCateroy = async (req, reply) => {
         .limit(limit)
         .exec(function (err, xx) {
             result = xx
-            const response = {
-                items: result,
-                status_code: 200,
-                message: 'returned successfully',
-                pagenation: {
-                    size: result.length,
-                    totalElements: total,
-                    totalPages: Math.floor(total / limit),
-                    pageNumber: page
+
+            if (req.body.category_id == '5c8cb6c10a34fc002491f406') {
+                const response = {
+                    items: [],
+                    status_code: 200,
+                    message: 'returned successfully',
+                    pagenation: {
+                        size: 0,
+                        totalElements: 0,
+                        totalPages: 0,
+                        pageNumber: 0
+                    }
                 }
+                reply.send(response)
+            } else {
+                const response = {
+                    items: result,
+                    status_code: 200,
+                    message: 'returned successfully',
+                    pagenation: {
+                        size: result.length,
+                        totalElements: total,
+                        totalPages: Math.floor(total / limit),
+                        pageNumber: page
+                    }
+                }
+                reply.send(response)
             }
-            reply.send(response)
         });
 }
 
