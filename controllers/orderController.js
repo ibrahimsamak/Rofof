@@ -1043,7 +1043,7 @@ exports.checkAvailableDrivers = async (req, reply) => {
                 const response = {
                     status_code: 404,
                     status: false,
-                    message: 'عذرا منطقتك خارج التغطية الرجاء المحاولة فيما بعد',
+                    message: 'منطقتك غير مغطاة: نعتذر منكم منطقتكم غير مغطاة بخدمة سوق غاز نعمل جاهدين لتغطية المنظقة وخدمتكم في أقرب وقت',
                     items: null,
                 }
                 reply.send(response)
