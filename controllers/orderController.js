@@ -590,7 +590,7 @@ exports.updateOrderByDriver = async (req, reply) => {
                 const response = {
                     status_code: 404,
                     status: false,
-                    message: 'عذرا تم قبول الطلب من قبل شركة اخرى',
+                    message: 'عذرا تم قبول الطلب من قبل سائق اخر',
                     items: []
                 }
                 return response
