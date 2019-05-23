@@ -329,7 +329,7 @@ const routes = [
     url: '/api/getAllUsers',
     handler: userController.getAllUsers
   },
-  
+
   {
     method: 'GET',
     url: '/api/showprofile',
@@ -392,6 +392,11 @@ const routes = [
     url: '/api/notifications',
     beforeHandler: [auth.getToken],
     handler: notificationController.getNotfications
+  },
+  {
+    method: 'GET',
+    url: '/api/updateNotifications/:id',
+    handler: notificationController.updateNotifications
   },
   {
     method: 'POST',
@@ -686,18 +691,18 @@ const routes = [
     method: 'POST',
     url: '/api/company/rpt_getOrderMaps',
     handler: companyController.rpt_getOrderMaps
-  }, 
+  },
 
   {
     method: 'POST',
     url: '/api/company/addDriver/:id',
     handler: companyController.addDrivers
-  }, 
+  },
   {
     method: 'POST',
     url: '/api/company/Driversearch/:id',
     handler: companyController.Driversearch
-  }, 
+  },
   {
     method: 'GET',
     url: '/api/company/DriverList/:id',
@@ -714,7 +719,7 @@ const routes = [
     method: 'GET',
     url: '/api/company/userprofile/:id',
     handler: companyController.userprofile
-  }, 
+  },
   {
     method: 'PUT',
     url: '/api/company/updateprofileFromAdmin/:id',
@@ -723,13 +728,13 @@ const routes = [
     method: 'POST',
     url: '/api/company/uploadDriverPhoto',
     handler: companyController.uploadDriverPhoto
-  }, 
+  },
   {
     method: 'GET',
     url: '/api/company/DriverProfile/:id',
     handler: driverController.userprofile
   },
-  
+
   {
     method: 'GET',
     url: '/api/company/getDailyRevenu/:id',
@@ -762,7 +767,7 @@ const routes = [
     method: 'GET',
     url: '/api/company/UsersPerYear',
     handler: companyController.UsersPerYear
-  }, 
+  },
   {
     method: 'GET',
     url: '/api/company/getTop5RegisterCities',

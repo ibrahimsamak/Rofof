@@ -39,3 +39,29 @@ exports.readNotifications = async (req, reply) => {
     throw boom.boomify(err)
   }
 }
+
+exports.updateNotifications = async (req, reply) => {
+  try {
+    Notifications.update({ "user_id": req.params.id }, { isRead: true }, { multi: true }, function (err, res) {
+      if (err) {
+        const response = {
+          status_code: 404,
+          status: false,
+          message: 'حدث خطأ الرجاء المحاولة مرة اخرى',
+          items: []
+        }
+        return response
+      } else {
+        const response = {
+          status_code: 200,
+          status: true,
+          message: 'تم تعديل حالة التنبيه بنجاح',
+          items: []
+        }
+        return response
+      }
+    });
+  } catch (err) {
+    throw boom.boomify(err)
+  }
+}
