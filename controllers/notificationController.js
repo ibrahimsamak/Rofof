@@ -43,14 +43,15 @@ exports.readNotifications = async (req, reply) => {
 exports.updateNotifications = async (req, reply) => {
   try {
     Notifications.update({ "user_id": req.params.id }, { isRead: true }, { multi: true }, function (err, res) {
+      console.log(err, res)
       if (err) {
         const response = {
-          status_code: 404,
+          status_code: 400,
           status: false,
           message: 'حدث خطأ الرجاء المحاولة مرة اخرى',
           items: []
         }
-        return response
+        reply.send(response)
       } else {
         const response = {
           status_code: 200,
@@ -58,7 +59,7 @@ exports.updateNotifications = async (req, reply) => {
           message: 'تم تعديل حالة التنبيه بنجاح',
           items: []
         }
-        return response
+        reply.send(response)
       }
     });
   } catch (err) {
