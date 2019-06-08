@@ -1261,7 +1261,7 @@ exports.updateOrderByAdmin = async (req, reply) => {
             items: sp
         }
 
-        const order = await Order.findById(req.query.id).populate('user_id')
+        const order = await Order.findById(req.params.id).populate('user_id')
 
         // if (req.body.StatusId === 2) {
         //     let msg = `جاري توصيل طلبكم رقم: ${order._id}`;
