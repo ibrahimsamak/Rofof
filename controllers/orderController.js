@@ -173,7 +173,7 @@ exports.addOrder = async (req, reply) => {
     //1: cash 
     //2: paymet getway
     //3: points
-    
+
     try {
         var arr = []
         var users = []
@@ -767,7 +767,7 @@ exports.updateOrderByDriver = async (req, reply) => {
                     });
                     // reply.send(driversToken)
                 });
-                
+
                 const response = {
                     status_code: 200,
                     status: true,
@@ -868,36 +868,36 @@ exports.getUserOrder = async (req, reply) => {
         var query = {}
 
         if (req.query.staustId != 1) {
-            if (req.query.staustId == 3 ){
-               query['user_id'] = req.query.id
-               query['StatusId'] = { $in: [ 3, 4 ] }
-            }else{
+            if (req.query.staustId == 3) {
                 query['user_id'] = req.query.id
-                query['StatusId'] = req.query.staustId  
+                query['StatusId'] = { $in: [3, 4] }
+            } else {
+                query['user_id'] = req.query.id
+                query['StatusId'] = req.query.staustId
             }
 
             await Order.find(query).sort({ _id: -1 })
-            .populate('user_id')
-            .populate('driver_id')
-            .populate({ path: 'items.product_id', populate: { path: 'product_id' } })
-            .skip((page) * limit)
-            .limit(limit)
-            .exec(function (err, item) {
-                console.log(item)
-                const response = {
-                    status_code: 200,
-                    status: true,
-                    message: 'return succssfully',
-                    items: item,
-                    pagenation: {
-                        size: item.length,
-                        totalElements: total,
-                        totalPages: Math.floor(total / limit),
-                        pageNumber: page
+                .populate('user_id')
+                .populate('driver_id')
+                .populate({ path: 'items.product_id', populate: { path: 'product_id' } })
+                .skip((page) * limit)
+                .limit(limit)
+                .exec(function (err, item) {
+                    console.log(item)
+                    const response = {
+                        status_code: 200,
+                        status: true,
+                        message: 'return succssfully',
+                        items: item,
+                        pagenation: {
+                            size: item.length,
+                            totalElements: total,
+                            totalPages: Math.floor(total / limit),
+                            pageNumber: page
+                        }
                     }
-                }
-                reply.send(response)
-            });
+                    reply.send(response)
+                });
         }
         else {
             await Order.find({ user_id: req.query.id, StatusId: req.query.staustId }).sort({ _id: -1 })
@@ -1048,7 +1048,7 @@ exports.checkAvailableDrivers = async (req, reply) => {
                 }
                 reply.send(response)
             }
-            
+
         });
     }
     catch (err) {
@@ -1263,26 +1263,26 @@ exports.updateOrderByAdmin = async (req, reply) => {
 
         const order = await Order.findById(req.query.id).populate('user_id')
 
-        if (req.body.StatusId === 2) {
-            let msg = `جاري توصيل طلبكم رقم: ${order._id}`;
+        // if (req.body.StatusId === 2) {
+        //     let msg = `جاري توصيل طلبكم رقم: ${order._id}`;
+        //     console.log(msg)
+
+        //     let notification = CreateNotification(order.user_id.fcmToken, msg, order._id, 'ادارة تطبيق غاز', order.user_id._id);
+        // }
+
+        // if (req.body.StatusId === 3) {
+        //     let msg = `تم توصيل طلبكم رقم: ${order._id}`;
+        //     console.log(msg)
+
+        //     let notification = CreateNotification(order.user_id.fcmToken, msg, order._id, 'ادارة تطبيق غاز', order.user_id._id);
+
+        // }
+
+        if (req.body.StatusId === 6) {
+            let msg = `تم الغاء طلبكم رقم: ${order._id}`;
             console.log(msg)
 
-            let notification = CreateNotification(order.user_id.fcmToken, msg, order._id, 'ادارة تطبيق غاز', order.user_id._id);
-        }
-
-        if (req.body.StatusId === 3) {
-            let msg = `تم توصيل طلبكم رقم: ${order._id}`;
-            console.log(msg)
-
-            let notification = CreateNotification(order.user_id.fcmToken, msg, order._id, 'ادارة تطبيق غاز', order.user_id._id);
-
-        }
-
-        if (req.body.StatusId === 7) {
-            let msg = `تم الغاء طلبكم رقم: ${order._id} من قبل الادارة`;
-            console.log(msg)
-
-            let notification = CreateNotification(order.user_id.fcmToken, msg, order._id, 'ادارة تطبيق غاز', order.user_id._id);
+            CreateNotification(order.user_id.fcmToken, msg, order._id, 'ادارة تطبيق غاز', order.user_id._id);
         }
 
         return response
