@@ -1148,8 +1148,11 @@ exports.getOrdersSeacrh = async (req, reply) => {
             // .skip((page - 1) * limit)
             // .limit(limit)
             .exec(function (err, item) {
+                console.log(item)
                 var result = _.filter(item, function (itm) {
-                    return (itm.user_id.full_name.indexOf(req.body.full_name) >= 0 || itm.user_id.phone_number.indexOf(req.body.phone_number) >= 0)
+                    if (itm.user_id) {
+                        return (itm.user_id.full_name.indexOf(req.body.full_name) >= 0 || itm.user_id.phone_number.indexOf(req.body.phone_number) >= 0)
+                    }
                 });
                 var result1 = lodash(result).slice((page) * limit).take(limit).value();
                 const response = {

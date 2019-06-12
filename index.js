@@ -43,19 +43,19 @@ const start = async () => {
   //     cluster.fork();
   //   }
   // } else {
-    await fastify.listen(process.env.PORT || 3000, '0.0.0.0')
-    fastify.swagger()
-    fastify.log.info(`server listening on ${fastify.server.address().port}`)
-    // } catch (err) {
-    //   fastify.log.error(err)
-    //   // process.exit(1)
-    // }
+  await fastify.listen(process.env.PORT || 3000, '0.0.0.0')
+  fastify.swagger()
+  fastify.log.info(`server listening on ${fastify.server.address().port}`)
+  // } catch (err) {
+  //   fastify.log.error(err)
+  //   // process.exit(1)
+  // }
   // }
 }
-// if (cluster.isMaster) {
-//   for (var i = 0; i < numCPUs; i++) {
-//     cluster.fork();
-//   }
-// } else {
-start();
-// }
+if (cluster.isMaster) {
+  for (var i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
+} else {
+  start();
+}
