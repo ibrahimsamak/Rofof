@@ -969,7 +969,6 @@ exports.getDriverOrder = async (req, reply) => {
 exports.getOrderDetails = async (req, reply) => {
     try {
         const ord = await Order.find({ _id: req.query.id })
-        console.log(ord)
         if (ord.StatusId == 1) {
             await Order.find({ _id: req.query.id })
                 .sort({ _id: -1 })
