@@ -71,6 +71,39 @@ async function getAddress(lat, lng) {
     });
 }
 
+function CreateExtraNotification(deviceId, msg, order_id, from_userName, to_user_id) {
+    return new Promise(function (resolve, reject) {
+        let postModel =
+        {
+            "notification": {
+                "title": "متابعة الطلبات",
+                "body": msg,
+                "sound": "default",
+                "badge": 1
+            },
+            "data": {
+                "data": order_id,
+            },
+            "to": deviceId
+        };
+        var data = JSON.stringify(postModel);
+        var xhr = new XMLHttpRequest();
+        //xhr.withCredentials = true;
+
+        xhr.addEventListener("readystatechange", function () {
+            if (this.readyState === 4) {
+                console.log('send' + this.responseText);
+            }
+        });
+
+        xhr.open("POST", "https://fcm.googleapis.com/fcm/send");
+        xhr.setRequestHeader("Authorization", 'key=AAAAN6yOxXI:APA91bH99PN9-Cyfph4w4Tf1pWScF1M3OZOhpsM1FrTZdbjjhhPnDaSmP5MAqTsAY8hPNWx4FaCnBsqgLUlwtzc5cv4osE0uPwSvYwU31bHE_LaHMuLeB9qFcXKkIV59_Rr1eWZbWJoY');
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send(data);
+        resolve(data);
+    });
+}
+
 function CreateNotification(deviceId, msg, order_id, from_userName, to_user_id) {
     return new Promise(function (resolve, reject) {
 
@@ -520,7 +553,7 @@ exports.addOrderDriver = async (req, reply) => {
 
         let _Notification = new Notifications({
             from: 'زبون جديد',
-            user_id: order.user_id,
+            user_id: req.body.driver_id,
             title: 'متابعة الطلبات',
             msg: 'تم تلقي طلب جديد في حدود منطقتك الحالية',
             dt_date: getCurrentDateTime(),
@@ -530,12 +563,13 @@ exports.addOrderDriver = async (req, reply) => {
         });
         await _Notification.save();
 
-        CreateNotification(driverFCM, 'لديك طلب جديد في حدود منطقتك', order._id, 'زبون جديد', req.body.driver_id);
+        CreateExtraNotification(driverFCM, 'لديك طلب جديد في حدود منطقتك', order._id, 'زبون جديد', req.body.driver_id);
+
         const response = {
             status_code: 200,
             status: true,
             message: 'تم تعديل الطلب بنجاح',
-            items: sp
+            items: order
         }
         reply.send(response);
     }
