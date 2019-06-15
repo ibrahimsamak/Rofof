@@ -88,8 +88,9 @@ exports.addAdv = async (req, reply) => {
                     mimetype: files[key].mimetype
                 })
             }
-            var data = new Buffer(files.image.data);
-            fs.writeFile('./uploads/' + files.image.name, data, 'binary', function (err) {
+            console.log(files.filename.data)
+            var data = new Buffer(files.filename.data);
+            fs.writeFile('./uploads/' + files.filename.name, data, 'binary', function (err) {
                 if (err) {
                     console.log("There was an error writing the image")
                 }
@@ -99,7 +100,7 @@ exports.addAdv = async (req, reply) => {
             });
 
             let img = '';
-            await uploadImages(files.image.name).then((x) => {
+            await uploadImages(files.filename.name).then((x) => {
                 img = x;
             });
             console.log(img)

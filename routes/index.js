@@ -23,27 +23,27 @@ const routes = [
   //#region Advs 
   {
     method: 'GET',
-    url: '/adv/adv',
+    url: '/api/adv/adv',
     handler: advController.getAdv
   },
   {
     method: 'GET',
-    url: '/adv/adv/:id',
+    url: '/api/adv/adv/:id',
     handler: advController.getSingleAdv
   },
   {
     method: 'POST',
-    url: '/Adv/adv',
+    url: '/api/adv/adv',
     handler: advController.addAdv
   },
   {
     method: 'PUT',
-    url: '/Adv/adv/:id',
+    url: '/api/adv/adv/:id',
     handler: advController.updateAdv
   },
   {
     method: 'DELETE',
-    url: '/Adv/adv/:id',
+    url: '/api/adv/adv/:id',
     handler: advController.deleteAdv
   },
   //#endregion
