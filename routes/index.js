@@ -20,8 +20,8 @@ const fastify = require('fastify')({
 const routes = [
   {
     method: 'GET',
-    url: '/test/test',
-    handler: userController.testdate
+    url: '/DailyOrders',
+    handler: orderController.DailyOrders
   },
   {
     method: 'GET',
@@ -428,6 +428,11 @@ const routes = [
     method: 'GET',
     url: '/api/userprofile/:id',
     handler: userController.userprofile
+  },
+  {
+    method: 'PUT',
+    url: '/api/addOrderDriver/:id',
+    handler: orderController.addOrderDriver
   },
   {
     method: 'PUT',

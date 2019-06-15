@@ -6,6 +6,7 @@ const { Order } = require('../models/Order');
 const { Product, Supplier } = require('../models/Product');
 const { Drivers } = require('../models/Driver');
 const { Users } = require('../models/User');
+const moment = require('moment')
 
 
 //pages
@@ -164,24 +165,40 @@ exports.rpt_getOrderMaps = async (req, reply) => {
 exports.getDailyRevenu = async (req, reply) => {
     try {
         var _items = []
-        var all = await Order.find({ StatusId: 4 })
-        var DailyRevenu = lodash.sumBy(all, function (o) { return o.Total; })
-        var newOrders = await Order.find({ StatusId: 1 }).count();
-        var newComments = await Order.find({ isRate: true, isOpen: false }).count();
-        var _all = await Order.find({ StatusId: 4 }).count()
+        const dt = new Date()
+        console.log(dt.toISOString().slice(0, 10))
+
+        const today = moment().startOf('day')
+        const today_val = today.add(3, 'hours').toDate()
+        const today_val2 = moment(today.add(3, 'hours')).endOf('day').toDate()
+        console.log(today.add(3, 'hours').toDate())
+
+        // var all = await Order.find({ StatusId: 4 })
+        // var DailyRevenu = lodash.sumBy(all, function (o) { return o.Total; })
+        // var newComments = await Order.find({ isRate: true, isOpen: false }).count();
+
+        // const order =
+        // console.log(order)
+
+        const newOrders = await Order.find({ createAt: { $gte: today_val, $lte: today_val2 }, StatusId: 1 }).count()
+        const _all = await Order.find({ createAt: { $gte: today_val, $lte: today_val2 }, StatusId: 4 }).count()
+        const cancelOrder_drivers = await Order.find({ createAt: { $gte: today_val, $lte: today_val2 }, StatusId: 6 }).count()
+        const cancelOrder_users = await Order.find({ createAt: { $gte: today_val, $lte: today_val2 }, StatusId: 5 }).count()
 
         _items.push(
-            { DailyRevenu: DailyRevenu },
+            { _all: _all },
             { newOrders: newOrders },
-            { newComments: newComments },
-            { allDone: _all }
+            { cancelOrder_drivers: cancelOrder_drivers },
+            { cancelOrder_users: cancelOrder_users }
         )
+
         const response = {
             status_code: 200,
             status: true,
             message: 'return succssfully',
             items: _items,
         }
+
         reply.send(response)
     } catch (err) {
         throw boom.boomify(err)

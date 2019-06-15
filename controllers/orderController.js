@@ -8,6 +8,7 @@ const lodash = require('lodash');
 const GeoFire = require('geofire');
 const firebase = require('firebase');
 const async = require("async");
+const moment = require('moment')
 
 var config = {
     apiKey: "AIzaSyABN7HaigdqFPQx9un5pngBD7w6w2Cz5_E",
@@ -336,8 +337,8 @@ exports.addOrder = async (req, reply) => {
                         var driversToken = []
                         var keys_arr = []
                         let geoQuery = geoFire.query({
-                            center: [req.body.lat, req.body.lng],
-                            radius: 5000
+                            center: [Number(req.body.lat), Number(req.body.lng)],
+                            radius: 30000
                         })
 
                         var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
@@ -369,7 +370,6 @@ exports.addOrder = async (req, reply) => {
                                 });
                             });
                             console.log(driversToken)
-                            CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', User_id)
                             async.each(users, async function (data, callback) {
                                 let _Notification = new Notifications({
                                     from: 'زبون جديد',
@@ -385,6 +385,8 @@ exports.addOrder = async (req, reply) => {
                                 await _Notification.save();
                                 console.log('saved')
                             });
+
+                            CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', User_id)
                             // reply.send(driversToken)
                         });
 
@@ -441,8 +443,8 @@ exports.addOrder = async (req, reply) => {
                 var driversToken = []
                 var keys_arr = []
                 let geoQuery = geoFire.query({
-                    center: [req.body.lat, req.body.lng],
-                    radius: 5000
+                    center: [Number(req.body.lat), Number(req.body.lng)],
+                    radius: 30000
                 })
 
                 var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
@@ -474,7 +476,7 @@ exports.addOrder = async (req, reply) => {
                             driversToken.push(element['fcmToken'])
                         });
                     });
-                    CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', User_id)
+
                     async.each(users, async function (data, callback) {
                         let _Notification = new Notifications({
                             from: 'زبون جديد',
@@ -490,6 +492,8 @@ exports.addOrder = async (req, reply) => {
                         await _Notification.save();
                         console.log('saved')
                     });
+
+                    CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', User_id)
                     // reply.send(driversToken)
                 });
 
@@ -499,6 +503,43 @@ exports.addOrder = async (req, reply) => {
         }
         //push notification to all drivers within 30 km
     } catch (err) {
+        throw boom.boomify(err)
+    }
+}
+
+exports.addOrderDriver = async (req, reply) => {
+    try {
+
+        const driverFCM = await Drivers.find({ _id: req.body.driver_id }).select('fcmToken')
+        console.log(driverFCM)
+        // const sp = await Order.findByIdAndUpdate((req.params.id), {
+        //     driver_id: req.body.driver_id
+        // }, { new: true })
+
+        const order = await Order.find({ _id: req.params.id }).populate('user_id')
+
+        let _Notification = new Notifications({
+            from: 'زبون جديد',
+            user_id: order.user_id,
+            title: 'متابعة الطلبات',
+            msg: 'تم تلقي طلب جديد في حدود منطقتك الحالية',
+            dt_date: getCurrentDateTime(),
+            type: 1,
+            body_parms: req.params.id,
+            isRead: false
+        });
+        await _Notification.save();
+
+        CreateNotification(driverFCM, 'لديك طلب جديد في حدود منطقتك', order._id, 'زبون جديد', req.body.driver_id);
+        const response = {
+            status_code: 200,
+            status: true,
+            message: 'تم تعديل الطلب بنجاح',
+            items: sp
+        }
+        reply.send(response);
+    }
+    catch (err) {
         throw boom.boomify(err)
     }
 }
@@ -586,45 +627,55 @@ exports.updateOrderByDriver = async (req, reply) => {
         const clientFCM = order.user_id.fcmToken
         // const driverFCM = order.driver_id.fcmToken;
         if (req.body.StatusId == 2) {
-            if (order.driver_id != null && order.driver_id) {
+            if (order.StatusId == 5) {
                 const response = {
                     status_code: 404,
                     status: false,
-                    message: 'عذرا تم قبول الطلب من قبل سائق اخر',
-                    items: []
+                    message: 'عذرا تم الغاء الطلب من قبل العميل',
+                    items: sp
                 }
                 return response
             } else {
-                var acceptLimit = await setting.findById('5c921977c4410f17e1c1ac4c')
-                var val = parseInt(acceptLimit.value, 10)
-                var allCurrentOrder = await Order.find({ $and: [{ dirver_id: req.user._id }, { StatusId: 2 }] }).count()
-                if (allCurrentOrder <= val) {
-                    let msg = `تم استلام طلبكم وجاري التوصيل طلب رقم: ${order._id}`;
-                    console.log(req.user._id)
-                    const sp = await Order.findByIdAndUpdate((req.query.id), {
-                        StatusId: req.body.StatusId,
-                        Notes: req.body.Notes,
-                        driver_id: req.user._id
-                    }, { new: true })
-                    const driver = await Drivers.findById(req.user._id)
-                    let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
-
-                    const response = {
-                        status_code: 200,
-                        status: true,
-                        message: 'تم تعديل الطلب بنجاح',
-                        items: sp
-                    }
-
-                    return response
-                } else {
+                if (order.driver_id != null && order.driver_id) {
                     const response = {
                         status_code: 404,
                         status: false,
-                        message: 'عذرا .. لقد تجاوزت الحد المسموح به لقبول الطلبات الجديدة',
-                        items: sp
+                        message: 'عذرا تم قبول الطلب من قبل سائق اخر',
+                        items: []
                     }
                     return response
+                } else {
+                    var acceptLimit = await setting.findById('5c921977c4410f17e1c1ac4c')
+                    var val = parseInt(acceptLimit.value, 10)
+                    var allCurrentOrder = await Order.find({ $and: [{ dirver_id: req.user._id }, { StatusId: 2 }] }).count()
+                    if (allCurrentOrder <= val) {
+                        let msg = `تم استلام طلبكم وجاري التوصيل طلب رقم: ${order._id}`;
+                        console.log(req.user._id)
+                        const sp = await Order.findByIdAndUpdate((req.query.id), {
+                            StatusId: req.body.StatusId,
+                            Notes: req.body.Notes,
+                            driver_id: req.user._id
+                        }, { new: true })
+                        const driver = await Drivers.findById(req.user._id)
+                        let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
+
+                        const response = {
+                            status_code: 200,
+                            status: true,
+                            message: 'تم تعديل الطلب بنجاح',
+                            items: sp
+                        }
+
+                        return response
+                    } else {
+                        const response = {
+                            status_code: 404,
+                            status: false,
+                            message: 'عذرا .. لقد تجاوزت الحد المسموح به لقبول الطلبات الجديدة',
+                            items: sp
+                        }
+                        return response
+                    }
                 }
             }
         }
@@ -717,8 +768,8 @@ exports.updateOrderByDriver = async (req, reply) => {
                 var driversToken = []
                 var keys_arr = []
                 let geoQuery = geoFire.query({
-                    center: [order.lat, order.lng],
-                    radius: 5000
+                    center: [Number(order.lat), Number(order.lng)],
+                    radius: 30000
                 })
 
                 var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
@@ -1012,10 +1063,11 @@ exports.checkAvailableDrivers = async (req, reply) => {
         var geoFire = new GeoFire(database.ref('userLocation')); // Ref to 'Item Locations' table
         // geoFire.set('3',[21.400404, 23.1030303]);
         var raduis = await setting.findById('5c6758e0c65f421a494cef89')
+        console.log(Number(req.body.lat), Number(req.body.lng))
         var keys_arr = []
         let geoQuery = geoFire.query({
-            center: [req.body.lat, req.body.lng],
-            radius: 5000
+            center: [Number(req.body.lat), Number(req.body.lng)],
+            radius: 30000
 
         })
 
@@ -1290,6 +1342,38 @@ exports.updateOrderByAdmin = async (req, reply) => {
         return response
 
     } catch (err) {
+        throw boom.boomify(err)
+    }
+}
+
+
+exports.DailyOrders = async (req, reply) => {
+    try {
+        // const dt = new Date()
+        // console.log(dt.toISOString().slice(0, 10))
+
+        const today = moment().startOf('day')
+        console.log(today.add(3, 'hours').toDate())
+        const order = await Order.find({
+            $and: [{
+                createAt: {
+                    $gte: today.add(3, 'hours').toDate(),
+                    $lte: moment(today.add(3, 'hours')).endOf('day').toDate()
+                }
+            }, { staustId: 4 }]
+        })
+            .populate('user_id')
+            .populate('driver_id')
+            .populate({ path: 'items.product_id', populate: { path: 'product_id' } }).count()
+        const response = {
+            status_code: 200,
+            status: true,
+            message: 'return succssfully',
+            items: order
+        }
+        reply.send(response);
+    }
+    catch (err) {
         throw boom.boomify(err)
     }
 }
