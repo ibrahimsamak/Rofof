@@ -10,6 +10,8 @@ const companyController = require('../controllers/companyController')
 const adminController = require('../controllers/adminController')
 const driverController = require('../controllers/driverController')
 const pointController = require('../controllers/pointController')
+const advController = require('../controllers/advController')
+
 const fastify = require('fastify')({
   logger: true
 })
@@ -18,6 +20,34 @@ const fastify = require('fastify')({
 
 
 const routes = [
+  //#region Advs 
+  {
+    method: 'GET',
+    url: '/adv/adv',
+    handler: advController.getAdv
+  },
+  {
+    method: 'GET',
+    url: '/adv/adv/:id',
+    handler: advController.getSingleAdv
+  },
+  {
+    method: 'POST',
+    url: '/Adv/adv',
+    handler: advController.addAdv
+  },
+  {
+    method: 'PUT',
+    url: '/Adv/adv/:id',
+    handler: advController.updateAdv
+  },
+  {
+    method: 'DELETE',
+    url: '/Adv/adv/:id',
+    handler: advController.deleteAdv
+  },
+  //#endregion
+
   {
     method: 'GET',
     url: '/DailyOrders',
