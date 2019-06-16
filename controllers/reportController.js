@@ -183,14 +183,16 @@ exports.getDailyRevenu = async (req, reply) => {
         // const order =
         // console.log(order)
 
-        console.log(new Date(new Date().setHours(00, 00, 00)))
-        console.log(new Date().setHours(23, 59, 59))
+        console.log('today1' + new Date(new Date().setHours(00, 00, 00)))
+        console.log('today2' + new Date(new Date().setHours(23, 59, 59)))
         const newOrders = await Order.find({ createAt: { $gte: cc, $lt: cc }, StatusId: 1 }).count()
         const _all = await Order.find({
-            "createAt": {
-                $gte: new Date(new Date().setHours(00, 00, 00)),
-                $lt: new Date(new Date().setHours(23, 59, 59))
-            }, $or: [{ StatusId: 3 }, { StatusId: 4 }]
+            $and: [{
+                createAt: {
+                    $gte: new Date(new Date().setHours(00, 00, 00)),
+                    $lt: new Date(new Date().setHours(24, 00, 00))
+                }
+            },{$or: [{ StatusId: 3 }, { StatusId: 4 }]}]
         }).count()
         const cancelOrder_drivers = await Order.find({ createAt: { $gte: cc, $lt: cc }, StatusId: 6 }).count()
         const cancelOrder_users = await Order.find({ createAt: { $gte: cc, $lt: cc }, StatusId: 5 }).count()
