@@ -196,7 +196,7 @@ exports.getDailyRevenu = async (req, reply) => {
         // //         vvv.push(element)
         // //     }
         // // });
-        console.log(x.length)
+        // console.log(x.length)
         const newOrders = await Order.find({
             $and: [{
                 createAt: {
