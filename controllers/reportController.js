@@ -7,6 +7,7 @@ const { Product, Supplier } = require('../models/Product');
 const { Drivers } = require('../models/Driver');
 const { Users } = require('../models/User');
 const moment = require('moment')
+const momentTZ = require('moment-timezone');
 
 
 //pages
@@ -164,6 +165,8 @@ exports.rpt_getOrderMaps = async (req, reply) => {
 //charts
 exports.getDailyRevenu = async (req, reply) => {
     try {
+        let cc = momentTZ().tz("Asia/Riyadh").format('YYYY-MM-DD');
+        console.log(cc)
         var _items = []
         const dt = new Date()
         console.log(dt.toISOString().slice(0, 10))
@@ -171,7 +174,7 @@ exports.getDailyRevenu = async (req, reply) => {
         const today = moment().startOf('day')
         const today_val = today.add(-3, 'hours').toDate()
         const today_val2 = moment(today.add(-3, 'hours')).endOf('day').toDate()
-        console.log(today.add(-3, 'hours').toDate())
+        console.log(today.toDate())
 
         // var all = await Order.find({ StatusId: 4 })
         // var DailyRevenu = lodash.sumBy(all, function (o) { return o.Total; })
@@ -180,10 +183,10 @@ exports.getDailyRevenu = async (req, reply) => {
         // const order =
         // console.log(order)
 
-        const newOrders = await Order.find({ createAt: { $gte: today_val, $lte: today_val2 }, StatusId: 1 }).count()
-        const _all = await Order.find({ createAt: { $gte: today_val, $lte: today_val2 }, $or: [{ StatusId: 3 }, { StatusId: 4 }] }).count()
-        const cancelOrder_drivers = await Order.find({ createAt: { $gte: today_val, $lte: today_val2 }, StatusId: 6 }).count()
-        const cancelOrder_users = await Order.find({ createAt: { $gte: today_val, $lte: today_val2 }, StatusId: 5 }).count()
+        const newOrders = await Order.find({ createAt: { $gte: cc }, StatusId: 1 }).count()
+        const _all = await Order.find({ createAt: { $gte: cc }, $or: [{ StatusId: 3 }, { StatusId: 4 }] }).count()
+        const cancelOrder_drivers = await Order.find({ createAt: { $gte: cc }, StatusId: 6 }).count()
+        const cancelOrder_users = await Order.find({ createAt: { $gte: cc }, StatusId: 5 }).count()
 
         _items.push(
             { _all: _all },
