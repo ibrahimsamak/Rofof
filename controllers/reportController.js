@@ -201,7 +201,7 @@ exports.getDailyRevenu = async (req, reply) => {
             $and: [{
                 createAt: {
                     $gte: new Date(new Date().setHours(00, 00, 00)),
-                    $lt: new Date(new Date().setHours(24, 00, 00))
+                    $lt: new Date(new Date().setHours(23, 59, 59))
                 }
             }, { StatusId: 1 }]
         }).count()
@@ -209,7 +209,7 @@ exports.getDailyRevenu = async (req, reply) => {
             $and: [{
                 createAt: {
                     $gte: new Date(new Date().setHours(00, 00, 00)),
-                    $lt: new Date(new Date().setHours(24, 00, 00))
+                    $lt: new Date(new Date().setHours(23, 59, 59))
                 }
             }, { $or: [{ StatusId: 3 }, { StatusId: 4 }] }]
         }).count()
@@ -217,7 +217,7 @@ exports.getDailyRevenu = async (req, reply) => {
             $and: [{
                 createAt: {
                     $gte: new Date(new Date().setHours(00, 00, 00)),
-                    $lt: new Date(new Date().setHours(24, 00, 00))
+                    $lt: new Date(new Date().setHours(23, 59, 59))
                 }
             }, { StatusId: 6 }]
         }).count()
@@ -225,7 +225,7 @@ exports.getDailyRevenu = async (req, reply) => {
             $and: [{
                 createAt: {
                     $gte: new Date(new Date().setHours(00, 00, 00)),
-                    $lt: new Date(new Date().setHours(24, 00, 00))
+                    $lt: new Date(new Date().setHours(23, 59, 59))
                 }
             }, { StatusId: 5 }]
         }).count()
