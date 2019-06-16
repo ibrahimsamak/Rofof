@@ -1386,26 +1386,29 @@ exports.DailyOrders = async (req, reply) => {
         // const dt = new Date()
         // console.log(dt.toISOString().slice(0, 10))
 
-        const today = moment().startOf('day')
-        console.log(today.add(3, 'hours').toDate())
-        const order = await Order.find({
-            $and: [{
-                createAt: {
-                    $gte: today.add(3, 'hours').toDate(),
-                    $lte: moment(today.add(3, 'hours')).endOf('day').toDate()
-                }
-            }, { staustId: 4 }]
-        })
-            .populate('user_id')
-            .populate('driver_id')
-            .populate({ path: 'items.product_id', populate: { path: 'product_id' } }).count()
-        const response = {
-            status_code: 200,
-            status: true,
-            message: 'return succssfully',
-            items: order
-        }
-        reply.send(response);
+        var utc = new Date();
+        var current = utc.setHours(utc.getHours() + 3);
+        console.log(utc,current)
+        // const today = moment().startOf('day')
+        // console.log(today.add(3, 'hours').toDate())
+        // const order = await Order.find({
+        //     $and: [{
+        //         createAt: {
+        //             $gte: today.add(3, 'hours').toDate(),
+        //             $lte: moment(today.add(3, 'hours')).endOf('day').toDate()
+        //         }
+        //     }, { staustId: 4 }]
+        // })
+        //     .populate('user_id')
+        //     .populate('driver_id')
+        //     .populate({ path: 'items.product_id', populate: { path: 'product_id' } }).count()
+        // const response = {
+        //     status_code: 200,
+        //     status: true,
+        //     message: 'return succssfully',
+        //     items: order
+        // }
+        // reply.send(response);
     }
     catch (err) {
         throw boom.boomify(err)

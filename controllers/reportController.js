@@ -169,9 +169,9 @@ exports.getDailyRevenu = async (req, reply) => {
         console.log(dt.toISOString().slice(0, 10))
 
         const today = moment().startOf('day')
-        const today_val = today.add(3, 'hours').toDate()
-        const today_val2 = moment(today.add(3, 'hours')).endOf('day').toDate()
-        console.log(today.add(3, 'hours').toDate())
+        const today_val = today.toDate()
+        const today_val2 = moment(today).endOf('day').toDate()
+        console.log(today.toDate())
 
         // var all = await Order.find({ StatusId: 4 })
         // var DailyRevenu = lodash.sumBy(all, function (o) { return o.Total; })
