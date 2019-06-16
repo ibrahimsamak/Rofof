@@ -185,14 +185,18 @@ exports.getDailyRevenu = async (req, reply) => {
 
         console.log('today1' + new Date(new Date().setHours(00, 00, 00)))
         console.log('today2' + new Date(new Date().setHours(23, 59, 59)))
-        const test = await Order.find({ $or: [{ StatusId: 3 }, { StatusId: 4 }] })
-        var vvv = []
-        test.forEach(element => {
-            if (element.createAt.toISOString().slice(0, 10) == dt) {
-                vvv.push(element)
-            }
-        });
-        console.log(vvv.length)
+        // const test = await Order.find({ $or: [{ StatusId: 3 }, { StatusId: 4 }] })
+        // var vvv = []
+        // const  x =  test.filter(element=>{
+        //     return element.createAt.toISOString().slice(0, 10) == cc
+        // })
+        // // test.forEach(element => {
+        // //     console.log(element.createAt.toISOString().slice(0, 10), cc)
+        // //     if (element.createAt.toISOString().slice(0, 10) == cc) {
+        // //         vvv.push(element)
+        // //     }
+        // // });
+        console.log(x.length)
         const newOrders = await Order.find({
             $and: [{
                 createAt: {
