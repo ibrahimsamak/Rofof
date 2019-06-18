@@ -411,7 +411,7 @@ exports.getTop10Cities = async (req, reply) => {
 exports.importantCounters = async (req, reply) => {
     try {
         var _items = []
-        var allPostOrders = await Order.find().count()
+        var allPostOrders = await Order.find({isRate:true}).count()
         var all = await Order.find({ $or: [{ StatusId: 4 }, { StatusId: 3 }] }).count()
         var allOrders = await Order.find({ $or: [{ StatusId: 4 }, { StatusId: 3 }] })
         var DailyRevenu = lodash.sumBy(allOrders, function (o) { return o.Total; })
@@ -428,7 +428,7 @@ exports.importantCounters = async (req, reply) => {
             { name: 'الطلبات المنجزة', value: all },
             { name: 'الطلبات الملغية', value: canceledOrder },
             { name: 'الطلبات المعلقة', value: newComments },
-            { name: 'اجمالي الطلبات', value: allPostOrders },
+            { name: 'التقييمات', value: allPostOrders },
             { name: 'طلبات التعئبة', value: refillOrders },
             { name: 'الطلبات بالنقاط', value: basket },
             { name: 'المستخدمين', value: Userss },
