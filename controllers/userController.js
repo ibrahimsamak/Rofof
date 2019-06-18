@@ -833,42 +833,13 @@ exports.getAllUsers = async (req, reply) => {
 
 
 
-exports.testdate = async (req, reply) => {
-    try {
-        let aa = getCurrentDateTime();
-        // console.log(aa)
-        // var a = moment.tz(getCurrentDateTime(), "Asia/Riyadh").format('DD/MM/YYYY hh:mm:ss');
-        const dateThailand = moment.tz(Date.now(), "Asia/Riyadh");
+// exports.testdate = async (req, reply) => {
+//     try {
+//         const { Order } = require('../models/Order')
 
-        // moment.utc()
-        var utcDate = moment.utc().toDate();
-
-        console.log(dateThailand)
-        console.log(utcDate)
-        // var offset = getCurrentDateTime().getTimezoneOffset();
-        // console.log(offset)
-
-
-        var utc = getCurrentDateTime();
-        utc.setHours(utc.getHours() + 3);
-
-        let _Notification = new Notifications({
-            from: 'زبون جديد',
-            user_id: '',
-            title: 'متابعة الطلبات',
-            msg: 'تم تلقي طلب جديد في حدود منطقتك الحالية',
-            dt_date: utc,
-            type: 1,
-            body_parms: '123',
-            isRead: false
-        });
-
-        let rs = await _Notification.save();
-
-
-        console.log(utc)
-        reply.send(rs);
-    } catch (err) {
-        throw boom.boomify(err)
-    }
-}
+//        let x =  await Order.remove({StatusId:1})
+//         reply.send(x)
+//     } catch (err) {
+//         throw boom.boomify(err)
+//     }
+// }

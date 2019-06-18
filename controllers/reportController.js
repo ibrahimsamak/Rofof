@@ -259,11 +259,17 @@ exports.getProductsCount = async (req, reply) => {
         var Userss = await Users.find().count();
         var Suppliers = await Supplier.find().count()
 
+        var allOrders = await Order.find({ $or: [{ StatusId: 4 }, { StatusId: 3 }] })
+        var DailyRevenu = lodash.sumBy(allOrders, function (o) { return o.subTotal; })
+        var deliveryCostRevenu = lodash.sumBy(allOrders, function (o) { return o.deliveryCost; })
+        var TotalRevenu = lodash.sumBy(allOrders, function (o) { return o.Total; })
+
+
         _items.push(
-            { Drivers: _Drivers },
-            { Products: Products },
-            { Userss: Userss },
-            { Suppliers: Suppliers }
+            { revenu: DailyRevenu },
+            { deliveryCostRevenu: deliveryCostRevenu },
+            { TotalRevenu: TotalRevenu },
+            { Products: Products }
         )
         const response = {
             status_code: 200,
@@ -284,10 +290,12 @@ exports.getTop3Category = async (req, reply) => {
             .populate({ path: 'items.product_id', populate: { path: 'product_id' } }).select('items')
             .exec(function (err, item) {
                 item.forEach(element => {
-                    if (element.items) {
+                    if (element.items.length > 0) {
                         element.items.forEach(elm => {
+                           if (elm.product_id){
                             products.push(elm)
                             console.log(elm)
+                           }
                         });
                     }
                 });
@@ -298,7 +306,9 @@ exports.getTop3Category = async (req, reply) => {
                 var _result = lodash(products)
                     .groupBy('product_id.name')
                     .map(function (items, _name) {
-                        return { name: _name, count: items.length }
+                        if (_name != 'undefined'){
+                            return { name: _name, count: items.length }
+                        }
                     }).value()
 
                 var orderedResult = lodash.orderBy(_result, ['count'], ['desc']);
@@ -401,10 +411,12 @@ exports.getTop10Cities = async (req, reply) => {
 exports.importantCounters = async (req, reply) => {
     try {
         var _items = []
+        var allPostOrders = await Order.find().count()
         var all = await Order.find({ $or: [{ StatusId: 4 }, { StatusId: 3 }] }).count()
         var allOrders = await Order.find({ $or: [{ StatusId: 4 }, { StatusId: 3 }] })
-        var refillOrders = await Order.find({ $and: [{ orderType: 2 }, { StatusId: 4 }] }).count()
         var DailyRevenu = lodash.sumBy(allOrders, function (o) { return o.Total; })
+      
+        var refillOrders = await Order.find({ $and: [{ orderType: 2 }, { StatusId: 4 }] }).count()
         var canceledOrder = await Order.find({ $or: [{ StatusId: 5 }, { StatusId: 6 }] }).count();
         var newComments = await Order.find({ StatusId: 1 }).count();
         // var coupons = await Order.find({ coupon: { $ne: '' } }).count();
@@ -416,7 +428,7 @@ exports.importantCounters = async (req, reply) => {
             { name: 'الطلبات المنجزة', value: all },
             { name: 'الطلبات الملغية', value: canceledOrder },
             { name: 'الطلبات المعلقة', value: newComments },
-            { name: 'مجموع العائدات', value: DailyRevenu },
+            { name: 'اجمالي الطلبات', value: allPostOrders },
             { name: 'طلبات التعئبة', value: refillOrders },
             { name: 'الطلبات بالنقاط', value: basket },
             { name: 'المستخدمين', value: Userss },
