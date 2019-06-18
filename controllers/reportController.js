@@ -401,8 +401,8 @@ exports.getTop10Cities = async (req, reply) => {
 exports.importantCounters = async (req, reply) => {
     try {
         var _items = []
-        var all = await Order.find({ StatusId: 4 }).count()
-        var allOrders = await Order.find({ StatusId: 4 })
+        var all = await Order.find({ $or: [{ StatusId: 4 }, { StatusId: 3 }] }).count()
+        var allOrders = await Order.find({ $or: [{ StatusId: 4 }, { StatusId: 3 }] })
         var refillOrders = await Order.find({ $and: [{ orderType: 2 }, { StatusId: 4 }] }).count()
         var DailyRevenu = lodash.sumBy(allOrders, function (o) { return o.Total; })
         var canceledOrder = await Order.find({ $or: [{ StatusId: 5 }, { StatusId: 6 }] }).count();
