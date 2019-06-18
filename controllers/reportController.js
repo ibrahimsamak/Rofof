@@ -203,7 +203,7 @@ exports.getDailyRevenu = async (req, reply) => {
                     $gte: new Date(new Date().setHours(00, 00, 00)),
                     $lt: new Date(new Date().setHours(23, 59, 59))
                 }
-            }, { StatusId: 1 }]
+            }, { StatusId: 2 }]
         }).count()
         const _all = await Order.find({
             $and: [{
