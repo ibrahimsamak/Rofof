@@ -260,15 +260,15 @@ exports.getProductsCount = async (req, reply) => {
         var Suppliers = await Supplier.find().count()
 
         var allOrders = await Order.find({ $or: [{ StatusId: 4 }, { StatusId: 3 }] })
-        var DailyRevenu = lodash.sumBy(allOrders, function (o) { return o.subTotal; })
+        var DailyRevenu = lodash.sumBy(allOrders, function (o) { return o.Total; })
         var deliveryCostRevenu = lodash.sumBy(allOrders, function (o) { return o.deliveryCost; })
-        var TotalRevenu = lodash.sumBy(allOrders, function (o) { return o.Total; })
+        // var TotalRevenu = lodash.sumBy(allOrders, function (o) { return o.Total; })
 
 
         _items.push(
-            { revenu: DailyRevenu },
-            { deliveryCostRevenu: deliveryCostRevenu },
-            { TotalRevenu: TotalRevenu },
+            { revenu: DailyRevenu.toFixed(2) - deliveryCostRevenu.toFixed(2)  },
+            { deliveryCostRevenu: deliveryCostRevenu.toFixed(2) },
+            { Suppliers: Suppliers},
             { Products: Products }
         )
         const response = {
