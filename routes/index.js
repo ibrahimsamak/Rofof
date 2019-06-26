@@ -42,7 +42,7 @@ const routes = [
     handler: advController.updateAdv
   },
   {
-    method: 'DELETE',
+    method: 'POST',
     url: '/api/adv/adv/:id',
     handler: advController.deleteAdv
   },
@@ -59,7 +59,7 @@ const routes = [
     handler: productController.getSingleProduct
   },
   {
-    method: 'DELETE',
+    method: 'POST',
     url: '/api/product/:id',
     handler: productController.deleteProduct
   },
@@ -114,7 +114,7 @@ const routes = [
     handler: adminController.updateAdmin
   },
   {
-    method: 'DELETE',
+    method: 'POST',
     url: '/api/admin/:id',
     handler: adminController.deleteAdmin
   },
@@ -149,7 +149,7 @@ const routes = [
     handler: productController.updateSupplier
   },
   {
-    method: 'DELETE',
+    method: 'POST',
     url: '/api/supplier/:id',
     handler: productController.deleteSupplier
   },
@@ -170,7 +170,7 @@ const routes = [
     handler: productController.updateCategory
   },
   {
-    method: 'DELETE',
+    method: 'POST',
     url: '/api/category/:id',
     handler: productController.deleteCategory
   },
@@ -195,7 +195,7 @@ const routes = [
     handler: constantController.updatedelivery_time
   },
   {
-    method: 'DELETE',
+    method: 'POST',
     url: '/api/delivery_time/:id',
     handler: constantController.deletedelivery_time
   },
@@ -210,7 +210,7 @@ const routes = [
     handler: constantController.updateCity
   },
   {
-    method: 'DELETE',
+    method: 'POST',
     url: '/api/DeliveryOption/:id',
     handler: constantController.deleteCity
   },
@@ -230,7 +230,7 @@ const routes = [
     handler: constantController.updateSocial
   },
   {
-    method: 'DELETE',
+    method: 'POST',
     url: '/api/SocialOption/:id',
     handler: constantController.deleteSocial
   },
@@ -250,7 +250,7 @@ const routes = [
     handler: constantController.updateContact
   },
   {
-    method: 'DELETE',
+    method: 'POST',
     url: '/api/ContactOption/:id',
     handler: constantController.deleteContact
   },
@@ -270,7 +270,7 @@ const routes = [
     handler: constantController.updateStatic
   },
   {
-    method: 'DELETE',
+    method: 'POST',
     url: '/api/staticpage/:id',
     handler: constantController.deleteStatic
   },
@@ -616,7 +616,7 @@ const routes = [
     handler: pointController.updatePoint
   },
   {
-    method: 'DELETE',
+    method: 'POST',
     url: '/api/deletePoint/:id',
     handler: pointController.deletePoint
   },
@@ -865,7 +865,7 @@ const routes = [
     handler: companyController.updatePoint
   },
   {
-    method: 'DELETE',
+    method: 'POST',
     url: '/api/company/deletePoint',
     handler: companyController.deletePoint
   },

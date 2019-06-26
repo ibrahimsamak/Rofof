@@ -234,8 +234,7 @@ exports.getDailyRevenu = async (req, reply) => {
             { _all: _all },
             { newOrders: newOrders },
             { cancelOrder_drivers: cancelOrder_drivers },
-            { cancelOrder_users: cancelOrder_users }
-        )
+            { cancelOrder_users: cancelOrder_users })
 
         const response = {
             status_code: 200,
