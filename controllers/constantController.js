@@ -166,7 +166,7 @@ exports.getSettings = async (req, reply) => {
         //     }
         //     return response
         // }
-        const settings = await setting.find().sort({ _id: -1 });
+        const settings = await setting.find({supplier_id:req.params.id}).sort({ _id: -1 });
         // client.set('settings', JSON.stringify(settings))
         // client.expire('settings', 86400)
         const response = {
@@ -195,7 +195,7 @@ exports.getdelivery_time = async (req, reply) => {
         //     }
         //     return response
         // }
-        const settings = await delivery_time.find().sort({ isSort: 1 });
+        const settings = await delivery_time.find({supplier_id:req.params.id}).sort({ isSort: 1 });
         // client.set('delivery_time', JSON.stringify(settings))
         // client.expire('delivery_time', 86400)
         const response = {
@@ -215,7 +215,8 @@ exports.getdelivery_time = async (req, reply) => {
 exports.adddelivery_time = async (req, reply) => {
     try {
         let _setting = new delivery_time({
-            name: req.body.name
+            name: req.body.name,
+            supplier_id: req.body.supplier_id
         });
 
         let rs = await _setting.save();
@@ -234,7 +235,8 @@ exports.adddelivery_time = async (req, reply) => {
 exports.updatedelivery_time = async (req, reply) => {
     try {
         const _city = await delivery_time.findByIdAndUpdate((req.params.id), {
-            name: req.body.name
+            name: req.body.name, 
+            supplier_id: req.body.supplier_id
         }, { new: true })
 
         const response = {
@@ -269,7 +271,8 @@ exports.addSetting = async (req, reply) => {
     try {
         let _setting = new setting({
             name: req.body.name,
-            value: req.body.value
+            value: req.body.value,
+            supplier_id: req.body.supplier_id
         });
 
         let rs = await _setting.save();
@@ -289,7 +292,8 @@ exports.updateSetting = async (req, reply) => {
     try {
         const _setting = await setting.findByIdAndUpdate((req.params.id), {
             name: req.body.name,
-            value: req.body.value
+            value: req.body.value,
+            supplier_id: req.body.supplier_id
         }, { new: true })
 
         const response = {

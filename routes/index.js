@@ -11,6 +11,7 @@ const adminController = require('../controllers/adminController')
 const driverController = require('../controllers/driverController')
 const pointController = require('../controllers/pointController')
 const advController = require('../controllers/advController')
+const couponController = require('../controllers/couponController')
 
 const fastify = require('fastify')({
   logger: true
@@ -20,6 +21,42 @@ const fastify = require('fastify')({
 
 
 const routes = [
+
+  //#region Coupon
+  {
+    method: 'GET',
+    url: '/api/coupon/coupon',
+    handler: couponController.getcoupon
+  },
+  {
+    method: 'GET',
+    url: '/api/coupon/coupon/:id',
+    handler: couponController.getSinglecoupon
+  },
+  {
+    method: 'POST',
+    url: '/api/coupon/coupon',
+    handler: couponController.addcoupon
+  },
+  {
+    method: 'POST',
+    url: '/api/coupon/checkCoupon',
+    beforeHandler: [auth.getToken],
+    handler: couponController.checkCoupon
+  },
+  {
+    method: 'PUT',
+    url: '/api/coupon/coupon/:id',
+    handler: couponController.updatecoupon
+  },
+  {
+    method: 'POST',
+    url: '/api/coupon/coupon/:id',
+    handler: couponController.deletecoupon
+  },
+  //#endregion
+
+
   //#region Advs 
   {
     method: 'GET',
@@ -85,7 +122,7 @@ const routes = [
   },
   {
     method: 'GET',
-    url: '/api/product',
+    url: '/api/products/:id',
     handler: productController.getAllProducts
   },
   {
@@ -306,12 +343,12 @@ const routes = [
   },
   {
     method: 'GET',
-    url: '/api/settings',
+    url: '/api/settings/:id',
     handler: constantController.getSettings
   },
   {
     method: 'GET',
-    url: '/api/delivery_time',
+    url: '/api/delivery_time/:id',
     handler: constantController.getdelivery_time
   },
   {
@@ -514,8 +551,13 @@ const routes = [
     handler: orderController.checkAvailableDrivers
   },
   {
+    method: 'POST',
+    url: '/api/checkAvailableSupplier',
+    handler: orderController.checkAvailableSupplier
+  },  
+  {
     method: 'GET',
-    url: '/api/getOrders',
+    url: '/api/getOrders/:id',
     handler: orderController.getOrders
   },
   {
@@ -525,21 +567,21 @@ const routes = [
   },
   {
     method: 'POST',
-    url: '/api/getOrdersSeacrh',
+    url: '/api/getOrdersSeacrh/:id',
     handler: orderController.getOrdersSeacrh
   }, {
     method: 'GET',
-    url: '/api/getRatedOrders',
+    url: '/api/getRatedOrders/:id',
     handler: orderController.getRatedOrders
   },
   {
     method: 'GET',
-    url: '/api/getNewOrder',
+    url: '/api/getNewOrder/:id',
     handler: orderController.getNewOrder
   },
   {
     method: 'GET',
-    url: '/api/getNewRatedOrder',
+    url: '/api/getNewRatedOrder/:id',
     handler: orderController.getNewRatedOrder
   }, {
     method: 'PUT',
@@ -564,7 +606,7 @@ const routes = [
   },
   {
     method: 'GET',
-    url: '/api/DriverList',
+    url: '/api/DriverList/:id',
     handler: driverController.Driverlist
   },
   {
@@ -643,17 +685,17 @@ const routes = [
   },
   {
     method: 'GET',
-    url: '/api/getDailyRevenu',
+    url: '/api/getDailyRevenu/:id',
     handler: reportController.getDailyRevenu
   },
   {
     method: 'GET',
-    url: '/api/getProductsCount',
+    url: '/api/getProductsCount/:id',
     handler: reportController.getProductsCount
   },
   {
     method: 'GET',
-    url: '/api/getTop3Category',
+    url: '/api/getTop3Category/:id',
     handler: reportController.getTop3Category
   },
   {
@@ -668,7 +710,7 @@ const routes = [
   },
   {
     method: 'GET',
-    url: '/api/importantCounters',
+    url: '/api/importantCounters/:id',
     handler: reportController.importantCounters
   },
   {
@@ -688,13 +730,24 @@ const routes = [
   },
   {
     method: 'GET',
-    url: '/api/revenuPerYear',
+    url: '/api/revenuPerYear/:id',
     handler: reportController.revenuPerYear
   },
   {
     method: 'GET',
-    url: '/api/SupplierPerYear',
+    url: '/api/SupplierPerYear/:id',
     handler: reportController.SupplierPerYear
+  },
+  
+  {
+    method: 'POST',
+    url: '/api/addCompanyCommission',
+    handler: reportController.addCompanyCommission
+  },
+  {
+    method: 'GET',
+    url: '/api/rpt_getCompanyCommission',
+    handler: reportController.rpt_getCompanyCommission
   },
   {
     method: 'POST',
@@ -712,12 +765,22 @@ const routes = [
     handler: reportController.rpt_getOrderMaps
   },
 
-
+  {
+    method: 'GET',
+    url: '/api/company/settings/:id',
+    handler: constantController.getSettings
+  },
+  {
+    method: 'GET',
+    url: '/api/company/delivery_time/:id',
+    handler: constantController.getdelivery_time
+  },
   {
     method: 'POST',
     url: '/api/company/rpt_getOrderswithstatus',
     handler: companyController.rpt_getOrderswithstatus
-  }, {
+  },
+  {
     method: 'POST',
     url: '/api/company/rpt_getRevenu',
     handler: companyController.rpt_getRevenu
@@ -772,10 +835,6 @@ const routes = [
 
   {
     method: 'GET',
-    url: '/api/company/getDailyRevenu/:id',
-    handler: companyController.getDailyRevenu
-  }, {
-    method: 'GET',
     url: '/api/company/getProductsCount/:id',
     handler: companyController.getProductsCount
   }, {
@@ -790,11 +849,8 @@ const routes = [
     method: 'GET',
     url: '/api/company/getTop10Cities',
     handler: companyController.getTop10Cities
-  }, {
-    method: 'GET',
-    url: '/api/company/importantCounters',
-    handler: companyController.importantCounters
-  }, {
+  },
+  {
     method: 'GET',
     url: '/api/company/top15NewUsers',
     handler: companyController.top15NewUsers
@@ -825,23 +881,23 @@ const routes = [
     handler: companyController.getOrders
   },
   {
-    method: 'GET',
+    method: 'POST',
     url: '/api/company/getOrdersSeacrh/:id',
     handler: companyController.getOrdersSeacrh
   },
   {
     method: 'GET',
-    url: '/api/company/getRatedOrders',
+    url: '/api/company/getRatedOrders/:id',
     handler: companyController.getRatedOrders
   },
   {
     method: 'GET',
-    url: '/api/company/getNewOrder',
+    url: '/api/company/getNewOrder/:id',
     handler: companyController.getNewOrder
   },
   {
     method: 'GET',
-    url: '/api/company/getNewRatedOrder',
+    url: '/api/company/getNewRatedOrder/:id',
     handler: companyController.getNewRatedOrder
   },
   {
@@ -866,7 +922,7 @@ const routes = [
   },
   {
     method: 'POST',
-    url: '/api/company/deletePoint',
+    url: '/api/company/deletePoint/:id',
     handler: companyController.deletePoint
   },
   {
@@ -898,6 +954,82 @@ const routes = [
     method: 'GET',
     url: '/api/company/getOrderDetails',
     handler: orderController.getOrderDetails
+  },
+  {
+    method: 'POST',
+    url: '/api/company/settings',
+    handler: constantController.addSetting
+  },
+  {
+    method: 'PUT',
+    url: '/api/company/settings/:id',
+    handler: constantController.updateSetting
+  },
+  {
+    method: 'POST',
+    url: '/api/company/delivery_time',
+    handler: constantController.adddelivery_time
+  },
+  {
+    method: 'PUT',
+    url: '/api/company/delivery_time/:id',
+    handler: constantController.updatedelivery_time
+  },
+  {
+    method: 'POST',
+    url: '/api/company/delivery_time/:id',
+    handler: constantController.deletedelivery_time
+  },
+  {
+    method: 'GET',
+    url: '/api/company/getCategoriesAdmin',
+    handler: productController.getCategoriesAdmin
+  },
+
+  {
+    method: 'GET',
+    url: '/api/company/product/:id',
+    handler: productController.getSingleProduct
+  },
+  {
+    method: 'POST',
+    url: '/api/company/product/:id',
+    handler: productController.deleteProduct
+  },
+  {
+    method: 'PUT',
+    url: '/api/company/product/:id',
+    handler: productController.updateProduct
+  },
+  {
+    method: 'POST',
+    url: '/api/company/product',
+    handler: productController.addProduct
+  },
+  {
+    method: 'GET',
+    url: '/api/company/productbysubcategoryid',
+    handler: productController.productbysubcategoryid
+  },
+  {
+    method: 'POST',
+    url: '/api/company/productSearch',
+    handler: productController.productSearch
+  },
+  {
+    method: 'GET',
+    url: '/api/company/products/:id',
+    handler: productController.getAllProducts
+  },
+  {
+    method: 'GET',
+    url: '/api/company/getDailyRevenu/:id',
+    handler: companyController.getDailyRevenu
+  },
+  {
+    method: 'GET',
+    url: '/api/company/importantCounters/:id',
+    handler: reportController.importantCounters
   },
 ]
 

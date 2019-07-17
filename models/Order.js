@@ -18,6 +18,7 @@ const Orderschema = mongoose.Schema({
     delivery_time: { type: String, required: false },
     user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Users', required: true },
     driver_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Driver', required: false },
+    supplier_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Supplier', required: true },
     items: {
         type: [{
             product_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },

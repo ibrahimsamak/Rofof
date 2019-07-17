@@ -27,7 +27,6 @@ var geoFire = new GeoFire(firebaseRef);
 var ref = geoFire.ref();  // ref === firebaseRef
 
 
-
 // Get Data Models
 const { Order } = require('../models/Order')
 const { Admin } = require('../models/Admin')
@@ -39,6 +38,8 @@ const { BuyUnits, ContactOption, SocialOption, StaticPage, city, setting } = req
 const { Product, Category, Supplier } = require('../models/Product')
 const { userRate } = require('../models/userRate')
 const { getCurrentDateTime } = require('../models/Constant');
+const { coupon } = require('../models/couponmodel');
+const { companyCommision } = require('../models/companyCommision');
 
 const options = {
     provider: 'google',
@@ -212,7 +213,8 @@ exports.addOrder = async (req, reply) => {
         var arr = []
         var users = []
         var current_city = ''
-        var raduis = await setting.findById('5c6758e0c65f421a494cef89')
+        var discount_rate = 0.0
+        var raduis = await setting.findOne({ $and: [{ "authors": /البحث/i }, { supplier_id: req.body.supplier_id }] })
         console.log(raduis)
         if (req.body.orderType == 3) {
             const User_id = req.user._id
@@ -245,6 +247,7 @@ exports.addOrder = async (req, reply) => {
                             user_id: User_id,
                             items: req.body.items,
                             city: req.body.addressDetails,
+                            supplier_id: req.body.supplier_id,
                             createAt: getCurrentDateTime(),
                         });
                         let rs = await Orders.save();
@@ -300,6 +303,7 @@ exports.addOrder = async (req, reply) => {
                     user_id: User_id,
                     items: req.body.items,
                     city: req.body.addressDetails,
+                    supplier_id: req.body.supplier_id,
                     createAt: getCurrentDateTime(),
                 });
                 let rs = await Orders.save();
@@ -349,6 +353,7 @@ exports.addOrder = async (req, reply) => {
                             user_id: User_id,
                             items: req.body.items,
                             city: req.body.addressDetails,
+                            supplier_id: req.body.supplier_id,
                             createAt: getCurrentDateTime(),
                         });
                         let rs = await Orders.save();
@@ -371,7 +376,7 @@ exports.addOrder = async (req, reply) => {
                         var keys_arr = []
                         let geoQuery = geoFire.query({
                             center: [Number(req.body.lat), Number(req.body.lng)],
-                            radius: 30000
+                            radius: 1000
                         })
 
                         var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
@@ -399,7 +404,9 @@ exports.addOrder = async (req, reply) => {
                                 // console.log(users)
                                 users = _users
                                 _users.forEach(element => {
-                                    driversToken.push(element['fcmToken'])
+                                    if (element.supplier_id == req.body.supplier_id) {
+                                        driversToken.push(element['fcmToken'])
+                                    }
                                 });
                             });
                             console.log(driversToken)
@@ -443,6 +450,10 @@ exports.addOrder = async (req, reply) => {
                     reply.send(response)
                 }
             } else {
+                if (req.body.coupon && req.body.coupon != '') {
+                    const coupon_discount_rate = await coupon.findOne({ coupon: req.body.coupon }).select('discount_rate');
+                    discount_rate = ((coupon_discount_rate.discount_rate) * (parseFloat(req.body.subTotal, 10)))
+                }
                 let Orders = new Order({
                     addressDetails: req.body.addressDetails,
                     orderType: req.body.orderType,
@@ -451,7 +462,7 @@ exports.addOrder = async (req, reply) => {
                     paymentType: req.body.paymentType,
                     deliveryCost: req.body.deliveryCost,
                     subTotal: req.body.subTotal,
-                    Total: ((parseFloat(req.body.subTotal, 10))) + parseInt(req.body.deliveryCost, 10),
+                    Total: (((parseFloat(req.body.subTotal.toFixed(2), 10))) - discount_rate) + parseInt(req.body.deliveryCost, 10),
                     Notes: req.body.Notes,
                     StatusId: 1,
                     delivery_date: req.body.delivery_date,
@@ -459,6 +470,7 @@ exports.addOrder = async (req, reply) => {
                     user_id: User_id,
                     items: req.body.items,
                     city: req.body.addressDetails,
+                    supplier_id: req.body.supplier_id,
                     createAt: getCurrentDateTime(),
                 });
 
@@ -477,7 +489,7 @@ exports.addOrder = async (req, reply) => {
                 var keys_arr = []
                 let geoQuery = geoFire.query({
                     center: [Number(req.body.lat), Number(req.body.lng)],
-                    radius: 30000
+                    radius: 1000
                 })
 
                 var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
@@ -506,7 +518,9 @@ exports.addOrder = async (req, reply) => {
                         // console.log(users)
                         users = _users
                         _users.forEach(element => {
-                            driversToken.push(element['fcmToken'])
+                            if (element.supplier_id == req.body.supplier_id) {
+                                driversToken.push(element['fcmToken'])
+                            }
                         });
                     });
 
@@ -658,7 +672,8 @@ exports.updateOrderByDriver = async (req, reply) => {
     try {
         var users = []
         const order = await Order.findById(req.query.id).populate('user_id')
-        const clientFCM = order.user_id.fcmToken
+        const clientFCM = '11'
+        // const clientFCM = order.user_id.fcmToken
         // const driverFCM = order.driver_id.fcmToken;
         if (req.body.StatusId == 2) {
             if (order.StatusId == 5) {
@@ -679,44 +694,43 @@ exports.updateOrderByDriver = async (req, reply) => {
                     }
                     return response
                 } else {
-                    var acceptLimit = await setting.findById('5c921977c4410f17e1c1ac4c')
-                    var val = parseInt(acceptLimit.value, 10)
-                    var allCurrentOrder = await Order.find({ $and: [{ dirver_id: req.user._id }, { StatusId: 2 }] }).count()
-                    if (allCurrentOrder <= val) {
-                        let msg = `تم استلام طلبكم وجاري التوصيل طلب رقم: ${order._id}`;
-                        console.log(req.user._id)
-                        const sp = await Order.findByIdAndUpdate((req.query.id), {
-                            StatusId: req.body.StatusId,
-                            Notes: req.body.Notes,
-                            driver_id: req.user._id
-                        }, { new: true })
-                        const driver = await Drivers.findById(req.user._id)
-                        let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
+                    // var acceptLimit = await setting.findById('5c921977c4410f17e1c1ac4c')
+                    // var val = parseInt(acceptLimit.value, 10)
+                    // var allCurrentOrder = await Order.find({ $and: [{ dirver_id: req.user._id }, { StatusId: 2 }] }).count()
+                    // if (allCurrentOrder <= val) {
+                    let msg = `تم استلام طلبكم وجاري التوصيل طلب رقم: ${order._id}`;
+                    console.log(req.user._id)
+                    const sp = await Order.findByIdAndUpdate((req.query.id), {
+                        StatusId: req.body.StatusId,
+                        Notes: req.body.Notes,
+                        driver_id: req.user._id
+                    }, { new: true })
+                    const driver = await Drivers.findById(req.user._id)
+                    let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
 
-                        const response = {
-                            status_code: 200,
-                            status: true,
-                            message: 'تم تعديل الطلب بنجاح',
-                            items: sp
-                        }
-
-                        return response
-                    } else {
-                        const response = {
-                            status_code: 404,
-                            status: false,
-                            message: 'عذرا .. لقد تجاوزت الحد المسموح به لقبول الطلبات الجديدة',
-                            items: sp
-                        }
-                        return response
+                    const response = {
+                        status_code: 200,
+                        status: true,
+                        message: 'تم تعديل الطلب بنجاح',
+                        items: sp
                     }
+
+                    return response
+                    // } else {
+                    //     const response = {
+                    //         status_code: 404,
+                    //         status: false,
+                    //         message: 'عذرا .. لقد تجاوزت الحد المسموح به لقبول الطلبات الجديدة',
+                    //         items: sp
+                    //     }
+                    //     return response
+                    // }
                 }
             }
         }
         if (req.body.StatusId == 3) {
 
             const _order = await Order.findById(req.query.id).populate('user_id').populate('driver_id')
-
             let msg = `تم توصيل طلبكم رقم: ${_order._id}`;
             console.log(msg)
 
@@ -731,6 +745,30 @@ exports.updateOrderByDriver = async (req, reply) => {
             const _points = await Point.findOne({
                 $and: [{ 'supplier_id': _order.driver_id.supplier_id }, { 'min_value': { $lt: _order.Total } }, { 'max_value': { $gte: order.Total } },]
             })
+
+            if (_order.driver_id.supplier_id != "5c67f4ba0fb3d50d6e9f03f3") {
+                //commision
+                var commsions = await setting.findById('5d26ecdc7c213e5998ea3799')
+                var commsion_val = parseInt(commsions.value, 10)
+
+                const _comapny_commesion = await companyCommision.findOne({ 'supplier_id': _order.driver_id.supplier_id })
+
+                if (_comapny_commesion) {
+                    console.log('find')
+                    await companyCommision.findOneAndUpdate(({ supplier_id: _order.driver_id.supplier_id }), {
+                        $inc: { value: commsion_val }
+                    }, { new: true })
+                } else {
+                    console.log('not find')
+                    let ـcompanyCommision = new companyCommision({
+                        supplier_id: _order.driver_id.supplier_id,
+                        value: commsion_val,
+                        totalPay: 0,
+                        dt_date: getCurrentDateTime()
+                    });
+                    await ـcompanyCommision.save();
+                }
+            }
 
             const _user_points = await UserPoint.findOne({
                 $and: [{ 'user_id': _order.user_id._id }]
@@ -803,7 +841,7 @@ exports.updateOrderByDriver = async (req, reply) => {
                 var keys_arr = []
                 let geoQuery = geoFire.query({
                     center: [Number(order.lat), Number(order.lng)],
-                    radius: 30000
+                    radius: 1000
                 })
 
                 var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
@@ -1101,7 +1139,7 @@ exports.checkAvailableDrivers = async (req, reply) => {
         var keys_arr = []
         let geoQuery = geoFire.query({
             center: [Number(req.body.lat), Number(req.body.lng)],
-            radius: 30000
+            radius: 1000
 
         })
 
@@ -1148,17 +1186,86 @@ exports.checkAvailableDrivers = async (req, reply) => {
     }
 }
 
+//check nearest suppliers
+exports.checkAvailableSupplier = async (req, reply) => {
+    try {
+        var database = firebase.database(); // Ref to Firebase Database
+        var geoFire = new GeoFire(database.ref('userLocation'));
+        var raduis = 50
+        console.log(Number(req.body.lat), Number(req.body.lng))
+        var keys_arr = []
+        let geoQuery = geoFire.query({
+            center: [Number(req.body.lat), Number(req.body.lng)],
+            radius: 1000
 
+        })
+
+        var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
+            console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+            if (distance <= raduis) {
+                keys_arr.push({ driverID: key, Distance: distance })
+            }
+        });
+
+        var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
+            console.log(key + " exited query to " + location + " (" + distance + " km from center)");
+            onKeyEnteredRegistration.cancel();
+
+            if (keys_arr.length > 0) {
+                keys_arr.sort((one, two) => (one.Distance < two.Distance ? -1 : 1));
+                console.log(keys_arr[0]['driverID'])
+                let supplier_id = await Drivers.findById(keys_arr[0]['driverID']).select('supplier_id')
+                console.log(supplier_id)
+                let supplierObj = await Supplier.findById(supplier_id['supplier_id'])
+
+                const response = {
+                    status_code: 200,
+                    status: true,
+                    message: 'return succssfully',
+                    items: supplierObj,
+                }
+
+                reply.send(response)
+            } else {
+                const response = {
+                    status_code: 404,
+                    status: false,
+                    message: 'منطقتك غير مغطاة: نعتذر منكم منطقتكم غير مغطاة بخدمة سوق غاز نعمل جاهدين لتغطية المنظقة وخدمتكم في أقرب وقت',
+                    items: null,
+                }
+                reply.send(response)
+            }
+        });
+    }
+    catch (err) {
+        // const response = {
+        //     status_code: 404,
+        //     status: false,
+        //     message: 'عذرا منطقتك خارج التغطية الرجاء المحاولة فيما بعد',
+        //     items: null,
+        // }
+        // reply.send(response)
+        throw boom.boomify(err)
+    }
+}
 
 
 // cPanel
 exports.getOrders = async (req, reply) => {
     try {
+        var arr = []
+        const supplier_id = req.params.id
+        const _drivers_ids = await Drivers.find({ supplier_id: supplier_id }).select('_id')
+        _drivers_ids.forEach(element => {
+            arr.push(element._id)
+        });
+
+        console.log(arr)
         var page = parseInt(req.query.page, 10)
         var limit = parseInt(req.query.limit, 10)
-        const total = await Order.find({ orderType: { $ne: 3 } }).count();
+        const total = await Order.find({ $and: [{ orderType: { $ne: 3 } }, { driver_id: { $in: arr } }] }).count();
 
-        await Order.find({ orderType: { $ne: 3 } }).sort({ _id: -1 })
+        await Order.find({ $and: [{ orderType: { $ne: 3 } }, { driver_id: { $in: arr } }] }).sort({ _id: -1 })
             .populate('user_id')
             .populate('driver_id')
             .populate({ path: 'items.product_id', populate: { path: 'product_id' } })
@@ -1222,11 +1329,19 @@ exports.getTunckOrders = async (req, reply) => {
 
 exports.getOrdersSeacrh = async (req, reply) => {
     try {
+
+        var arr = []
+        const supplier_id = req.params.id
+        const _drivers_ids = await Drivers.find({ supplier_id: supplier_id }).select('_id')
+        _drivers_ids.forEach(element => {
+            arr.push(element._id)
+        });
+
         var page = parseInt(req.query.page, 10)
         var limit = parseInt(req.query.limit, 10)
         // const total = await Order.find().count();
 
-        await Order.find().sort({ _id: -1 })
+        await Order.find({ driver_id: { $in: arr } }).sort({ _id: -1 })
             .populate('driver_id')
             .populate('user_id')
             .populate({ path: 'items.product_id', populate: { path: 'product_id' } })
@@ -1261,11 +1376,18 @@ exports.getOrdersSeacrh = async (req, reply) => {
 
 exports.getRatedOrders = async (req, reply) => {
     try {
+        var arr = []
+        const supplier_id = req.params.id
+        const _drivers_ids = await Drivers.find({ supplier_id: supplier_id }).select('_id')
+        _drivers_ids.forEach(element => {
+            arr.push(element._id)
+        });
+
         var page = parseInt(req.query.page, 10)
         var limit = parseInt(req.query.limit, 10)
-        const total = await Order.find({ isRate: true }).count();
+        const total = await Order.find({ $and: [{ driver_id: { $in: arr } }, { isRate: true }] }).count();
 
-        await Order.find({ isRate: true }).sort({ _id: -1 })
+        await Order.find({ $and: [{ driver_id: { $in: arr } }, { isRate: true }] }).sort({ _id: -1 })
             .populate('user_id')
             .populate('driver_id')
             .populate({ path: 'items.product_id', populate: { path: 'product_id' } })
@@ -1288,27 +1410,39 @@ exports.getRatedOrders = async (req, reply) => {
                 reply.send(response);
             });
     }
-    catch {
+    catch (err) {
         throw boom.boomify(err)
     }
 }
 
 exports.getNewOrder = async (req, reply) => {
     try {
-        const total = await Order.find({ StatusId: 1 }).count();
-        reply.send(total)
+        var arr = []
+        const supplier_id = req.params.id
+        const _drivers_ids = await Drivers.find({ supplier_id: supplier_id }).select('_id')
+        _drivers_ids.forEach(element => {
+            arr.push(element._id)
+        });
 
+        const total = await Order.find({ $and: [{ StatusId: 1 }, { driver_id: { $in: arr } }] }).count();
+        reply.send(total)
     }
-    catch {
+    catch (err) {
         throw boom.boomify(err)
     }
 }
 
 exports.getNewRatedOrder = async (req, reply) => {
     try {
-        const total = await Order.find({ isRate: true, isOpen: false }).count();
-        reply.send(total)
+        var arr = []
+        const supplier_id = req.params.id
+        const _drivers_ids = await Drivers.find({ supplier_id: supplier_id }).select('_id')
+        _drivers_ids.forEach(element => {
+            arr.push(element._id)
+        });
 
+        const total = await Order.find({ $and: [{ driver_id: { $in: arr } }, { isRate: true }, { isOpen: false }] }).count();
+        reply.send(total)
     }
     catch {
         throw boom.boomify(err)
@@ -1380,7 +1514,6 @@ exports.updateOrderByAdmin = async (req, reply) => {
     }
 }
 
-
 exports.DailyOrders = async (req, reply) => {
     try {
         // const dt = new Date()
@@ -1388,7 +1521,7 @@ exports.DailyOrders = async (req, reply) => {
 
         var utc = new Date();
         var current = utc.setHours(utc.getHours() + 3);
-        console.log(utc,current)
+        console.log(utc, current)
         // const today = moment().startOf('day')
         // console.log(today.add(3, 'hours').toDate())
         // const order = await Order.find({

@@ -8,6 +8,9 @@ const pump = require('pump')
 const cloudinary = require('cloudinary');
 const multer = require('multer');
 const util = require('util');
+const async = require("async");
+
+
 
 cloudinary.config({
     cloud_name: 'diszvlmqq',
@@ -19,6 +22,7 @@ cloudinary.config({
 const { Product, Category, Supplier } = require('../models/Product')
 const { client } = require('../models/cache')
 const { getCurrentDateTime } = require('../models/Constant');
+const { setting } = require('../models/Constant')
 
 
 async function uploadImages(img) {
@@ -121,12 +125,13 @@ exports.getProductCateroy = async (req, reply) => {
     var page = parseInt(req.query.page, 10)
     var limit = parseInt(req.query.limit, 10)
 
-    const total = await Product.find({ $and: [{ category_id: req.body.category_id }, { isReplacement: req.body.isReplacement }, { isNewProduct: req.body.isNewProduct }] }).count();
+    const total = await Product.find({ $and: [{ supplier_id: req.body.supplier_id },{ category_id: req.body.category_id }, { isReplacement: req.body.isReplacement }, { isNewProduct: req.body.isNewProduct }] }).count();
 
     var result = [];
     var query = {}
 
     query['category_id'] = req.body.category_id
+    query['supplier_id'] = req.body.supplier_id
 
     if (req.body.isNewProduct) {
         query['isNewProduct'] = req.body.isNewProduct
@@ -178,9 +183,9 @@ exports.getProductBySearch = async (req, reply) => {
     // console.log(req)
     var page = parseInt(req.query.page, 10)
     var limit = parseInt(req.query.limit, 10)
-    const total = await Product.find({ $and: [{ name: { $regex: '.*' + req.body.name + '.*' } }, { category_id: { $nin: ['5c681f80ad8747623305f634', '5c8cb6c10a34fc002491f406'] } }] }).count();
+    const total = await Product.find({ $and: [{ supplier_id: req.body.supplier_id},{ name: { $regex: '.*' + req.body.name + '.*' } }, { category_id: { $nin: ['5c681f80ad8747623305f634', '5c8cb6c10a34fc002491f406'] } }] }).count();
     var result = [];
-    let prod = await Product.find({ $and: [{ name: { $regex: '.*' + req.body.name + '.*' } }, { category_id: { $nin: ['5c681f80ad8747623305f634', '5c8cb6c10a34fc002491f406'] } }] })
+    let prod = await Product.find({ $and: [{ supplier_id: req.body.supplier_id},{ name: { $regex: '.*' + req.body.name + '.*' } }, { category_id: { $nin: ['5c681f80ad8747623305f634', '5c8cb6c10a34fc002491f406'] } }] })
         .sort({ isSort: 1 })
         .skip((page) * limit)
         .limit(limit)
@@ -438,6 +443,19 @@ exports.addSupplier = async (req, reply) => {
             });
 
             let rs = await category.save();
+            let settings = await setting.find({ supplier_id: '5c67f4ba0fb3d50d6e9f03f3' })
+            async.each(settings, async function (data, callback) {
+                let _Notification = new setting({
+                    name: data.name,
+                    value: 0,
+                    supplier_id: rs._id
+                });
+
+                await _Notification.save();
+                console.log('saved')
+            });
+
+
             const response = {
                 status_code: 200,
                 status: true,
@@ -533,11 +551,12 @@ exports.getAllProducts = async (req, reply) => {
     try {
         var page = parseInt(req.query.page, 10)
         var limit = parseInt(req.query.limit, 10)
-        const total = await Product.find().count();
+        const total = await Product.find({ supplier_id: req.params.id }).count();
 
         const products = await Product
-            .find()
+            .find({ supplier_id: req.params.id })
             .populate('category_id')
+            .populate('supplier_id')
             .sort({ _id: -1 })
             .skip((page) * limit)
             .limit(limit)
@@ -642,7 +661,8 @@ exports.addProduct = async (req, reply) => {
                 price: req.raw.body.price,
                 price_buy_new: req.raw.body.price_buy_new,
                 isNewProduct: req.raw.body.isNewProduct,
-                isReplacement: req.raw.body.isReplacement
+                isReplacement: req.raw.body.isReplacement,
+                supplier_id: req.raw.body.supplier_id
             });
 
             let rs = await products.save();

@@ -26,6 +26,10 @@ const settings = mongoose.Schema({
   value: {
     type: String,
     required: true
+  },
+  supplier_id: {
+    type: mongoose.Schema.Types.ObjectId, ref: 'Supplier',
+    required: true
   }
 }, { versionKey: false });
 
@@ -38,6 +42,10 @@ const delivery_timeSchema = mongoose.Schema({
   isSort: {
     type: Number,
     required: false
+  },
+  supplier_id: {
+    type: mongoose.Schema.Types.ObjectId, ref: 'Supplier',
+    required: true
   }
 }, { versionKey: false });
 
