@@ -214,7 +214,7 @@ exports.addOrder = async (req, reply) => {
         var users = []
         var current_city = ''
         var discount_rate = 0.0
-        var raduis = await setting.findOne({ $and: [{ "authors": /البحث/i }, { supplier_id: req.body.supplier_id }] })
+        var raduis = await setting.findOne({ $and: [{ "name": /البحث/i }, { supplier_id: req.body.supplier_id }] })
         console.log(raduis)
         if (req.body.orderType == 3) {
             const User_id = req.user._id
