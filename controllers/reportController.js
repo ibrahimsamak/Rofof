@@ -530,7 +530,7 @@ exports.importantCounters = async (req, reply) => {
             { name: 'التقييمات', value: allPostOrders },
             { name: 'طلبات التعئبة', value: refillOrders },
             { name: 'الطلبات بالنقاط', value: basket },
-            { name: 'المستخدمين', value: 0 },
+            { name: 'المستخدمين', value: Userss },
             { name: 'السائقين', value: _Drivers })
 
         const response = {
