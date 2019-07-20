@@ -37,21 +37,7 @@ exports.getBuyUnits = async (req, reply) => {
 
 exports.getContactOption = async (req, reply) => {
     try {
-        // client.get = util.promisify(client.get)
-        // const cachedObj = await client.get('ContactOptions')
-        // if (cachedObj) {
-        //     console.log('serving from cach')
-        //     const response = {
-        //         status_code: 200,
-        //         status: true,
-        //         message: 'return succssfully',
-        //         items: JSON.parse(cachedObj)
-        //     }
-        //     return response
-        // }
         const ContactOptions = await ContactOption.find().sort({ _id: -1 });
-        // client.set('ContactOptions', JSON.stringify(ContactOptions))
-        // client.expire('ContactOptions', 86400)
         const response = {
             status_code: 200,
             status: true,
@@ -66,21 +52,7 @@ exports.getContactOption = async (req, reply) => {
 
 exports.getSocialOption = async (req, reply) => {
     try {
-        // client.get = util.promisify(client.get)
-        // const cachedObj = await client.get('SocialOptions')
-        // if (cachedObj) {
-        //     console.log('serving from cach')
-        //     const response = {
-        //         status_code: 200,
-        //         status: true,
-        //         message: 'return succssfully',
-        //         items: JSON.parse(cachedObj)
-        //     }
-        //     return response
-        // }
         const SocialOptions = await SocialOption.find().sort({ _id: -1 });
-        // client.set('SocialOptions', JSON.stringify(SocialOptions))
-        // client.expire('SocialOptions', 86400)
         const response = {
             status_code: 200,
             status: true,
@@ -95,21 +67,7 @@ exports.getSocialOption = async (req, reply) => {
 
 exports.getStaticPage = async (req, reply) => {
     try {
-        // client.get = util.promisify(client.get)
-        // const cachedObj = await client.get('staticpages')
-        // if (cachedObj) {
-        //     console.log('serving from cach')
-        //     const response = {
-        //         status_code: 200,
-        //         status: true,
-        //         message: 'return succssfully',
-        //         items: JSON.parse(cachedObj)
-        //     }
-        //     return response
-        // }
         const staticpages = await StaticPage.find().sort({ _id: -1 });
-        // client.set('staticpages', JSON.stringify(staticpages))
-        // client.expire('staticpages', 86400)
         const response = {
             status_code: 200,
             status: true,
@@ -125,21 +83,7 @@ exports.getStaticPage = async (req, reply) => {
 
 exports.getCity = async (req, reply) => {
     try {
-        // client.get = util.promisify(client.get)
-        // const cachedObj = await client.get('cities')
-        // if (cachedObj) {
-        //     console.log('serving from cach')
-        //     const response = {
-        //         status_code: 200,
-        //         status: true,
-        //         message: 'return succssfully',
-        //         items: JSON.parse(cachedObj)
-        //     }
-        //     return response
-        // }
         const cities = await city.find().sort({ _id: -1 });
-        // client.set('cities', JSON.stringify(cities))
-        // client.expire('cities', 86400)
         const response = {
             status_code: 200,
             status: true,
@@ -154,21 +98,7 @@ exports.getCity = async (req, reply) => {
 
 exports.getSettings = async (req, reply) => {
     try {
-        // client.get = util.promisify(client.get)
-        // const cachedObj = await client.get('settings')
-        // if (cachedObj) {
-        //     console.log('serving from cach')
-        //     const response = {
-        //         status_code: 200,
-        //         status: true,
-        //         message: 'return succssfully',
-        //         items: JSON.parse(cachedObj)
-        //     }
-        //     return response
-        // }
         const settings = await setting.find({supplier_id:req.params.id}).sort({ _id: -1 });
-        // client.set('settings', JSON.stringify(settings))
-        // client.expire('settings', 86400)
         const response = {
             status_code: 200,
             status: true,
@@ -183,21 +113,7 @@ exports.getSettings = async (req, reply) => {
 
 exports.getdelivery_time = async (req, reply) => {
     try {
-        // client.get = util.promisify(client.get)
-        // const cachedObj = await client.get('delivery_time')
-        // if (cachedObj) {
-        //     console.log('serving from cach')
-        //     const response = {
-        //         status_code: 200,
-        //         status: true,
-        //         message: 'return succssfully',
-        //         items: JSON.parse(cachedObj)
-        //     }
-        //     return response
-        // }
         const settings = await delivery_time.find({supplier_id:req.params.id}).sort({ isSort: 1 });
-        // client.set('delivery_time', JSON.stringify(settings))
-        // client.expire('delivery_time', 86400)
         const response = {
             status_code: 200,
             status: true,

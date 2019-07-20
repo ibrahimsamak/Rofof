@@ -1253,19 +1253,13 @@ exports.checkAvailableSupplier = async (req, reply) => {
 // cPanel
 exports.getOrders = async (req, reply) => {
     try {
-        var arr = []
         const supplier_id = req.params.id
-        const _drivers_ids = await Drivers.find({ supplier_id: supplier_id }).select('_id')
-        _drivers_ids.forEach(element => {
-            arr.push(element._id)
-        });
 
-        console.log(arr)
         var page = parseInt(req.query.page, 10)
         var limit = parseInt(req.query.limit, 10)
-        const total = await Order.find({ $and: [{ orderType: { $ne: 3 } }, { driver_id: { $in: arr } }] }).count();
+        const total = await Order.find({ $and: [{ orderType: { $ne: 3 } }, { supplier_id: supplier_id }] }).count();
 
-        await Order.find({ $and: [{ orderType: { $ne: 3 } }, { driver_id: { $in: arr } }] }).sort({ _id: -1 })
+        await Order.find({ $and: [{ orderType: { $ne: 3 } }, { supplier_id: supplier_id }] }).sort({ _id: -1 })
             .populate('user_id')
             .populate('driver_id')
             .populate({ path: 'items.product_id', populate: { path: 'product_id' } })
@@ -1329,19 +1323,13 @@ exports.getTunckOrders = async (req, reply) => {
 
 exports.getOrdersSeacrh = async (req, reply) => {
     try {
-
-        var arr = []
         const supplier_id = req.params.id
-        const _drivers_ids = await Drivers.find({ supplier_id: supplier_id }).select('_id')
-        _drivers_ids.forEach(element => {
-            arr.push(element._id)
-        });
 
         var page = parseInt(req.query.page, 10)
         var limit = parseInt(req.query.limit, 10)
         // const total = await Order.find().count();
 
-        await Order.find({ driver_id: { $in: arr } }).sort({ _id: -1 })
+        await Order.find({ supplier_id: supplier_id }).sort({ _id: -1 })
             .populate('driver_id')
             .populate('user_id')
             .populate({ path: 'items.product_id', populate: { path: 'product_id' } })
@@ -1376,18 +1364,13 @@ exports.getOrdersSeacrh = async (req, reply) => {
 
 exports.getRatedOrders = async (req, reply) => {
     try {
-        var arr = []
         const supplier_id = req.params.id
-        const _drivers_ids = await Drivers.find({ supplier_id: supplier_id }).select('_id')
-        _drivers_ids.forEach(element => {
-            arr.push(element._id)
-        });
 
         var page = parseInt(req.query.page, 10)
         var limit = parseInt(req.query.limit, 10)
-        const total = await Order.find({ $and: [{ driver_id: { $in: arr } }, { isRate: true }] }).count();
+        const total = await Order.find({ $and: [{ supplier_id: supplier_id }, { isRate: true }] }).count();
 
-        await Order.find({ $and: [{ driver_id: { $in: arr } }, { isRate: true }] }).sort({ _id: -1 })
+        await Order.find({ $and: [{ supplier_id: supplier_id }, { isRate: true }] }).sort({ _id: -1 })
             .populate('user_id')
             .populate('driver_id')
             .populate({ path: 'items.product_id', populate: { path: 'product_id' } })
@@ -1417,14 +1400,8 @@ exports.getRatedOrders = async (req, reply) => {
 
 exports.getNewOrder = async (req, reply) => {
     try {
-        var arr = []
         const supplier_id = req.params.id
-        const _drivers_ids = await Drivers.find({ supplier_id: supplier_id }).select('_id')
-        _drivers_ids.forEach(element => {
-            arr.push(element._id)
-        });
-
-        const total = await Order.find({ $and: [{ StatusId: 1 }, { driver_id: { $in: arr } }] }).count();
+        const total = await Order.find({ $and: [{ StatusId: 1 }, { supplier_id: supplier_id }] }).count();
         reply.send(total)
     }
     catch (err) {
@@ -1434,14 +1411,8 @@ exports.getNewOrder = async (req, reply) => {
 
 exports.getNewRatedOrder = async (req, reply) => {
     try {
-        var arr = []
         const supplier_id = req.params.id
-        const _drivers_ids = await Drivers.find({ supplier_id: supplier_id }).select('_id')
-        _drivers_ids.forEach(element => {
-            arr.push(element._id)
-        });
-
-        const total = await Order.find({ $and: [{ driver_id: { $in: arr } }, { isRate: true }, { isOpen: false }] }).count();
+        const total = await Order.find({ $and: [{ supplier_id: supplier_id }, { isRate: true }, { isOpen: false }] }).count();
         reply.send(total)
     }
     catch {

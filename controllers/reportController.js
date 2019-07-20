@@ -264,14 +264,7 @@ exports.addCompanyCommission = async (req, reply) => {
 //charts
 exports.getDailyRevenu = async (req, reply) => {
     try {
-        var arr = []
         const supplier_id = req.params.id
-        const _drivers_ids = await Drivers.find({ supplier_id: supplier_id }).select('_id')
-        _drivers_ids.forEach(element => {
-            arr.push(element._id)
-        });
-
-
 
         let cc = momentTZ().tz("Asia/Riyadh").format('YYYY-MM-DD');
         console.log(cc)
@@ -311,7 +304,7 @@ exports.getDailyRevenu = async (req, reply) => {
                     $gte: new Date(new Date().setHours(00, 00, 00)),
                     $lt: new Date(new Date().setHours(23, 59, 59))
                 }
-            }, { driver_id: { $in: arr } }, { StatusId: 2 }]
+            }, { supplier_id: supplier_id }, { StatusId: 2 }]
         }).count()
         const _all = await Order.find({
             $and: [{
@@ -319,7 +312,7 @@ exports.getDailyRevenu = async (req, reply) => {
                     $gte: new Date(new Date().setHours(00, 00, 00)),
                     $lt: new Date(new Date().setHours(23, 59, 59))
                 }
-            }, { driver_id: { $in: arr } }, { $or: [{ StatusId: 3 }, { StatusId: 4 }] }]
+            }, { supplier_id: supplier_id }, { $or: [{ StatusId: 3 }, { StatusId: 4 }] }]
         }).count()
         const cancelOrder_drivers = await Order.find({
             $and: [{
@@ -327,7 +320,7 @@ exports.getDailyRevenu = async (req, reply) => {
                     $gte: new Date(new Date().setHours(00, 00, 00)),
                     $lt: new Date(new Date().setHours(23, 59, 59))
                 }
-            }, { driver_id: { $in: arr } }, { StatusId: 6 }]
+            }, { supplier_id: supplier_id }, { StatusId: 6 }]
         }).count()
         const cancelOrder_users = await Order.find({
             $and: [{
@@ -335,7 +328,7 @@ exports.getDailyRevenu = async (req, reply) => {
                     $gte: new Date(new Date().setHours(00, 00, 00)),
                     $lt: new Date(new Date().setHours(23, 59, 59))
                 }
-            }, { driver_id: { $in: arr } }, { StatusId: 5 }]
+            }, { supplier_id: supplier_id}, { StatusId: 5 }]
         }).count()
 
         _items.push(
@@ -359,18 +352,13 @@ exports.getDailyRevenu = async (req, reply) => {
 
 exports.getProductsCount = async (req, reply) => {
     try {
-        var arr = []
         const supplier_id = req.params.id
-        const _drivers_ids = await Drivers.find({ supplier_id: supplier_id }).select('_id')
-        _drivers_ids.forEach(element => {
-            arr.push(element._id)
-        });
-
+        
         var _items = []
         var Products = await Product.find({ supplier_id: supplier_id }).count();
         var Suppliers = await Supplier.find().count()
 
-        var allOrders = await Order.find({ $and: [{ $or: [{ StatusId: 4 }, { StatusId: 3 }] }, { driver_id: { $in: arr } }] })
+        var allOrders = await Order.find({ $and: [{ $or: [{ StatusId: 4 }, { StatusId: 3 }] }, { supplier_id: supplier_id }] })
         var DailyRevenu = lodash.sumBy(allOrders, function (o) { return o.Total; })
         var deliveryCostRevenu = lodash.sumBy(allOrders, function (o) { return o.deliveryCost; })
 
@@ -520,24 +508,18 @@ exports.getTop10Cities = async (req, reply) => {
 
 exports.importantCounters = async (req, reply) => {
     try {
-        var arr = []
         const supplier_id = req.params.id
-        const _drivers_ids = await Drivers.find({ supplier_id: supplier_id }).select('_id')
-        _drivers_ids.forEach(element => {
-            arr.push(element._id)
-        });
-
         var _items = []
-        var allPostOrders = await Order.find({ $and: [{ isRate: true }, { driver_id: { $in: arr } }] }).count()
-        var all = await Order.find({ $and: [{ $or: [{ StatusId: 4 }, { StatusId: 3 }] }, { driver_id: { $in: arr } }] }).count()
-        var allOrders = await Order.find({ $and: [{ $or: [{ StatusId: 4 }, { StatusId: 3 }] }, { driver_id: { $in: arr } }] })
+        var allPostOrders = await Order.find({ $and: [{ isRate: true }, { supplier_id: supplier_id }] }).count()
+        var all = await Order.find({ $and: [{ $or: [{ StatusId: 4 }, { StatusId: 3 }] }, { supplier_id: supplier_id }] }).count()
+        var allOrders = await Order.find({ $and: [{ $or: [{ StatusId: 4 }, { StatusId: 3 }] }, { supplier_id: supplier_id }] })
         var DailyRevenu = lodash.sumBy(allOrders, function (o) { return o.Total; })
 
-        var refillOrders = await Order.find({ $and: [{ orderType: 2 }, { StatusId: 4 }, { driver_id: { $in: arr } }] }).count()
-        var canceledOrder = await Order.find({ $and: [{ $or: [{ StatusId: 5 }, { StatusId: 6 }] }, { driver_id: { $in: arr } }] }).count();
-        var newComments = await Order.find({ $and: [{ driver_id: { $in: arr } }, { StatusId: 1 }] }).count();
+        var refillOrders = await Order.find({ $and: [{ orderType: 2 }, { StatusId: 4 }, { supplier_id: supplier_id }] }).count()
+        var canceledOrder = await Order.find({ $and: [{ $or: [{ StatusId: 5 }, { StatusId: 6 }] }, { supplier_id: supplier_id }] }).count();
+        var newComments = await Order.find({ $and: [{ supplier_id: supplier_id }, { StatusId: 1 }] }).count();
         // var coupons = await Order.find({ coupon: { $ne: '' } }).count();
-        var basket = await Order.find({ $and: [{ driver_id: { $in: arr } }, { paymentType: 3 }] }).count();
+        var basket = await Order.find({ $and: [{ supplier_id: supplier_id }, { paymentType: 3 }] }).count();
         var Userss = await Users.find().count();
         var _Drivers = await Drivers.find({ supplier_id: supplier_id }).count();
 
@@ -651,20 +633,14 @@ exports.getTop5RegisterCities = async (req, reply) => {
 
 exports.revenuPerYear = async (req, reply) => {
     try {
-        var arr = []
         const supplier_id = req.params.id
-        const _drivers_ids = await Drivers.find({ supplier_id: supplier_id }).select('_id')
-        _drivers_ids.forEach(element => {
-            arr.push(element._id)
-        });
-
 
         const monthNames = ["January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"
         ];
 
         var items = []
-        await Order.find({ $and: [{ driver_id: { $in: arr } }, { StatusId: 4 }] })
+        await Order.find({ $and: [{ supplier_id: supplier_id }, { StatusId: 4 }] })
             .exec(function (err, result) {
                 result.forEach(element => {
                     var month_number = new Date(element.createAt).getMonth();
@@ -694,7 +670,6 @@ exports.revenuPerYear = async (req, reply) => {
 exports.SupplierPerYear = async (req, reply) => {
     try {
         const supplier_id = req.params.id
-
 
         var supplier_arr = []
         var orderedResult = []
