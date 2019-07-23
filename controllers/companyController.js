@@ -439,10 +439,11 @@ exports.getDailyRevenu = async (req, reply) => {
 exports.getProductsCount = async (req, reply) => {
     try {
         var _items = []
+        const supplier_id = req.params.id 
         var Products = await Product.find({ supplier_id: supplier_id }).count();
         var Suppliers = await Supplier.find().count()
 
-        var allOrders = await Order.find({ $and: [{ $or: [{ StatusId: 4 }, { StatusId: 3 }] }, { supplier_id: req.params.id }] })
+        var allOrders = await Order.find({ $and: [{ $or: [{ StatusId: 4 }, { StatusId: 3 }] }, { supplier_id: supplier_id }] })
         var DailyRevenu = lodash.sumBy(allOrders, function (o) { return o.Total; })
         var deliveryCostRevenu = lodash.sumBy(allOrders, function (o) { return o.deliveryCost; })
 

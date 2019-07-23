@@ -1191,7 +1191,7 @@ exports.checkAvailableSupplier = async (req, reply) => {
     try {
         var database = firebase.database(); // Ref to Firebase Database
         var geoFire = new GeoFire(database.ref('userLocation'));
-        var raduis = 50
+        var raduis = 100
         console.log(Number(req.body.lat), Number(req.body.lng))
         var keys_arr = []
         let geoQuery = geoFire.query({
@@ -1515,6 +1515,33 @@ exports.DailyOrders = async (req, reply) => {
         // reply.send(response);
     }
     catch (err) {
+        throw boom.boomify(err)
+    }
+}
+
+
+exports.updateeee = async (req, reply) => {
+    try {
+        Order.updateMany({}, { "supplier_id": "5c67f4ba0fb3d50d6e9f03f3" }, function (err, res) {
+            if (err) {
+                const response = {
+                    status_code: 400,
+                    status: false,
+                    message: 'حدث خطأ الرجاء المحاولة مرة اخرى',
+                    items: []
+                }
+                reply.send(response)
+            } else {
+                const response = {
+                    status_code: 200,
+                    status: true,
+                    message: 'تم تعديل بنجاح',
+                    items: []
+                }
+                reply.send(response)
+            }
+        })
+    } catch (err) {
         throw boom.boomify(err)
     }
 }

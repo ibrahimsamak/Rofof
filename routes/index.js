@@ -21,7 +21,12 @@ const fastify = require('fastify')({
 
 
 const routes = [
-
+  
+  {
+    method: 'GET',
+    url: '/api/updateeee',
+    handler: orderController.updateeee
+  },
   //#region Coupon
   {
     method: 'GET',
@@ -811,7 +816,7 @@ const routes = [
     handler: companyController.userlistInfo
   }, {
     method: 'PUT',
-    url: '/api/company/block',
+    url: '/api/company/block/:id',
     handler: companyController.block
   }, {
     method: 'GET',
