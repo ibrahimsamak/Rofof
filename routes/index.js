@@ -816,7 +816,7 @@ const routes = [
     handler: companyController.userlistInfo
   }, {
     method: 'PUT',
-    url: '/api/company/block/:id',
+    url: '/api/company/blockDriver/:id',
     handler: companyController.block
   }, {
     method: 'GET',
