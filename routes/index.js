@@ -1036,6 +1036,16 @@ const routes = [
     url: '/api/company/importantCounters/:id',
     handler: reportController.importantCounters
   },
+  {
+    method: 'PUT',
+    url: '/api/company/updateOrderByAdmin/:id',
+    handler: orderController.updateOrderByAdmin
+  },
+  {
+    method: 'PUT',
+    url: '/api/company/addOrderDriver/:id',
+    handler: orderController.addOrderDriver
+  },
 ]
 
 module.exports = routes

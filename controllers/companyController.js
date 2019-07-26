@@ -779,9 +779,7 @@ exports.SupplierPerYear = async (req, reply) => {
                     count++;
                     if (count === sup) {
                         count = 0
-
                         reply.send(supplier_arr)
-                        // reply.end()
                     }
                 });
             });
