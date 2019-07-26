@@ -226,9 +226,9 @@ exports.addOrder = async (req, reply) => {
                 //check points numbers
                 const userPoints = await UserPoint.findOne({ user_id: User_id });
                 if (userPoints) {
-                    const points_to_mony = parseInt(userPoints.points, 10) / parseInt(userPoints.point_price, 10)
+                    const points_to_mony = parseFloat(userPoints.points, 10) / parseFloat(userPoints.point_price, 10)
                     console.log(userPoints)
-                    let disc = (((parseFloat(req.body.subTotal, 10))) + parseInt(req.body.deliveryCost, 10))
+                    let disc = (((parseFloat(req.body.subTotal, 10))) + parseFloat(req.body.deliveryCost, 10))
 
                     if (points_to_mony >= disc) {
                         let Orders = new Order({
@@ -239,7 +239,7 @@ exports.addOrder = async (req, reply) => {
                             paymentType: req.body.paymentType,
                             deliveryCost: req.body.deliveryCost,
                             subTotal: req.body.subTotal,
-                            Total: ((parseFloat(req.body.subTotal, 10))) + parseInt(req.body.deliveryCost, 10),
+                            Total: ((parseFloat(req.body.subTotal, 10))) + parseFloat(req.body.deliveryCost, 10),
                             Notes: req.body.Notes,
                             StatusId: 1,
                             delivery_date: req.body.delivery_date,
@@ -295,7 +295,7 @@ exports.addOrder = async (req, reply) => {
                     paymentType: req.body.paymentType,
                     deliveryCost: req.body.deliveryCost,
                     subTotal: req.body.subTotal,
-                    Total: ((parseFloat(req.body.subTotal, 10))) + parseInt(req.body.deliveryCost, 10),
+                    Total: ((parseFloat(req.body.subTotal, 10))) + parseFloat(req.body.deliveryCost, 10),
                     Notes: req.body.Notes,
                     StatusId: 1,
                     delivery_date: req.body.delivery_date,
@@ -332,9 +332,9 @@ exports.addOrder = async (req, reply) => {
                 //check points numbers
                 const userPoints = await UserPoint.findOne({ user_id: User_id });
                 if (userPoints) {
-                    const points_to_mony = parseInt(userPoints.points, 10) / parseInt(userPoints.point_price, 10)
+                    const points_to_mony = parseFloat(userPoints.points, 10) / parseFloat(userPoints.point_price, 10)
                     console.log(userPoints)
-                    let disc = (((parseFloat(req.body.subTotal, 10))) + parseInt(req.body.deliveryCost, 10))
+                    let disc = (((parseFloat(req.body.subTotal, 10))) + parseFloat(req.body.deliveryCost, 10))
 
                     if (points_to_mony >= disc) {
                         let Orders = new Order({
@@ -345,7 +345,7 @@ exports.addOrder = async (req, reply) => {
                             paymentType: req.body.paymentType,
                             deliveryCost: req.body.deliveryCost,
                             subTotal: req.body.subTotal,
-                            Total: ((parseFloat(req.body.subTotal, 10))) + parseInt(req.body.deliveryCost, 10),
+                            Total: ((parseFloat(req.body.subTotal, 10))) + parseFloat(req.body.deliveryCost, 10),
                             Notes: req.body.Notes,
                             StatusId: 1,
                             delivery_date: req.body.delivery_date,
@@ -387,7 +387,7 @@ exports.addOrder = async (req, reply) => {
                                 distance: distance
                             }
 
-                            if (distance <= parseInt(raduis.value, 10)) {
+                            if (distance <= parseFloat(raduis.value, 10)) {
                                 keys_arr.push(key)
                             }
                         });
@@ -462,7 +462,7 @@ exports.addOrder = async (req, reply) => {
                     paymentType: req.body.paymentType,
                     deliveryCost: req.body.deliveryCost,
                     subTotal: req.body.subTotal,
-                    Total: (((parseFloat(req.body.subTotal.toFixed(2), 10))) - discount_rate) + parseInt(req.body.deliveryCost, 10),
+                    Total: (((parseFloat(req.body.subTotal.toFixed(2), 10))) - discount_rate) + parseFloat(req.body.deliveryCost, 10),
                     Notes: req.body.Notes,
                     StatusId: 1,
                     delivery_date: req.body.delivery_date,
@@ -500,7 +500,7 @@ exports.addOrder = async (req, reply) => {
                         distance: distance
                     }
 
-                    if (distance <= parseInt(raduis.value, 10)) {
+                    if (distance <= parseFloat(raduis.value, 10)) {
                         keys_arr.push(key)
                     }
                     console.log(key)
@@ -695,7 +695,7 @@ exports.updateOrderByDriver = async (req, reply) => {
                     return response
                 } else {
                     // var acceptLimit = await setting.findById('5c921977c4410f17e1c1ac4c')
-                    // var val = parseInt(acceptLimit.value, 10)
+                    // var val = parseFloat(acceptLimit.value, 10)
                     // var allCurrentOrder = await Order.find({ $and: [{ dirver_id: req.user._id }, { StatusId: 2 }] }).count()
                     // if (allCurrentOrder <= val) {
                     let msg = `تم استلام طلبكم وجاري التوصيل طلب رقم: ${order._id}`;
@@ -749,7 +749,7 @@ exports.updateOrderByDriver = async (req, reply) => {
             if (_order.driver_id.supplier_id != "5c67f4ba0fb3d50d6e9f03f3") {
                 //commision
                 var commsions = await setting.findById('5d26ecdc7c213e5998ea3799')
-                var commsion_val = parseInt(commsions.value, 10)
+                var commsion_val = parseFloat(commsions.value, 10)
 
                 const _comapny_commesion = await companyCommision.findOne({ 'supplier_id': _order.driver_id.supplier_id })
 
@@ -852,7 +852,7 @@ exports.updateOrderByDriver = async (req, reply) => {
                         distance: distance
                     }
                     console.log(key)
-                    if (distance <= parseInt(raduis.value, 10)) {
+                    if (distance <= parseFloat(raduis.value, 10)) {
                         keys_arr.push(key)
                     }
                 });
@@ -983,8 +983,8 @@ exports.addRate = async (req, reply) => {
 // Get user Order
 exports.getUserOrder = async (req, reply) => {
     try {
-        var page = parseInt(req.query.page, 10)
-        var limit = parseInt(req.query.limit, 10)
+        var page = parseFloat(req.query.page, 10)
+        var limit = parseFloat(req.query.limit, 10)
         const total = await Order.find({ user_id: req.query.id, StatusId: req.query.staustId }).count();
 
         var result = []
@@ -1055,8 +1055,8 @@ exports.getUserOrder = async (req, reply) => {
 // Get Driver Order
 exports.getDriverOrder = async (req, reply) => {
     try {
-        var page = parseInt(req.query.page, 10)
-        var limit = parseInt(req.query.limit, 10)
+        var page = parseFloat(req.query.page, 10)
+        var limit = parseFloat(req.query.limit, 10)
         const total = await Order.find({ driver_id: req.query.id, StatusId: req.query.staustId }).count();
 
         var result = []
@@ -1145,7 +1145,7 @@ exports.checkAvailableDrivers = async (req, reply) => {
 
         var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
             console.log(key + " entered query at " + location + " (" + distance + " km from center)");
-            if (distance <= parseInt(raduis.value, 10)) {
+            if (distance <= parseFloat(raduis.value, 10)) {
                 keys_arr.push(key)
             }
         });
@@ -1255,8 +1255,8 @@ exports.getOrders = async (req, reply) => {
     try {
         const supplier_id = req.params.id
 
-        var page = parseInt(req.query.page, 10)
-        var limit = parseInt(req.query.limit, 10)
+        var page = parseFloat(req.query.page, 10)
+        var limit = parseFloat(req.query.limit, 10)
         const total = await Order.find({ $and: [{ orderType: { $ne: 3 } }, { supplier_id: supplier_id }] }).count();
 
         await Order.find({ $and: [{ orderType: { $ne: 3 } }, { supplier_id: supplier_id }] }).sort({ _id: -1 })
@@ -1289,8 +1289,8 @@ exports.getOrders = async (req, reply) => {
 
 exports.getTunckOrders = async (req, reply) => {
     try {
-        var page = parseInt(req.query.page, 10)
-        var limit = parseInt(req.query.limit, 10)
+        var page = parseFloat(req.query.page, 10)
+        var limit = parseFloat(req.query.limit, 10)
         const total = await Order.find({ orderType: 3 }).count();
 
         await Order.find({ orderType: 3 }).sort({ _id: -1 })
@@ -1325,8 +1325,8 @@ exports.getOrdersSeacrh = async (req, reply) => {
     try {
         const supplier_id = req.params.id
 
-        var page = parseInt(req.query.page, 10)
-        var limit = parseInt(req.query.limit, 10)
+        var page = parseFloat(req.query.page, 10)
+        var limit = parseFloat(req.query.limit, 10)
         // const total = await Order.find().count();
 
         await Order.find({ supplier_id: supplier_id }).sort({ _id: -1 })
@@ -1366,8 +1366,8 @@ exports.getRatedOrders = async (req, reply) => {
     try {
         const supplier_id = req.params.id
 
-        var page = parseInt(req.query.page, 10)
-        var limit = parseInt(req.query.limit, 10)
+        var page = parseFloat(req.query.page, 10)
+        var limit = parseFloat(req.query.limit, 10)
         const total = await Order.find({ $and: [{ supplier_id: supplier_id }, { isRate: true }] }).count();
 
         await Order.find({ $and: [{ supplier_id: supplier_id }, { isRate: true }] }).sort({ _id: -1 })
