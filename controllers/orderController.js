@@ -462,7 +462,7 @@ exports.addOrder = async (req, reply) => {
                     paymentType: req.body.paymentType,
                     deliveryCost: req.body.deliveryCost,
                     subTotal: req.body.subTotal,
-                    Total: (((parseFloat(req.body.subTotal.toFixed(2), 10))) - discount_rate) + parseFloat(req.body.deliveryCost, 10),
+                    Total: (parseFloat(req.body.subTotal.toFixed(2), 10)) + (parseFloat(req.body.deliveryCost, 10) - discount_rate),
                     Notes: req.body.Notes,
                     StatusId: 1,
                     delivery_date: req.body.delivery_date,
