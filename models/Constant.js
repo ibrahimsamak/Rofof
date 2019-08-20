@@ -52,13 +52,13 @@ const delivery_timeSchema = mongoose.Schema({
 
 const update = mongoose.Schema({
   isAndroid: {
-    type: Boolean
+    type: String
   },
   isIOS: {
-    type: Boolean
+    type: String
   },
   isDriver: {
-    type: Boolean
+    type: String
   }
 }, { versionKey: false });
 
