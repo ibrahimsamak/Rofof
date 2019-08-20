@@ -217,6 +217,11 @@ const routes = [
     handler: productController.deleteCategory
   },
   {
+    method: 'GET',
+    url: '/api/getUpdates',
+    handler: constantController.getUpdates
+  },
+  {
     method: 'POST',
     url: '/api/settings',
     handler: constantController.addSetting

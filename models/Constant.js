@@ -50,6 +50,19 @@ const delivery_timeSchema = mongoose.Schema({
 }, { versionKey: false });
 
 
+const update = mongoose.Schema({
+  isAndroid: {
+    type: Boolean
+  },
+  isIOS: {
+    type: Boolean
+  },
+  isDriver: {
+    type: Boolean
+  }
+}, { versionKey: false });
+
+const updates = mongoose.model('updates', update);
 const setting = mongoose.model('options', settings);
 const BuyUnits = mongoose.model('Buyunits', schema);
 const SocialOption = mongoose.model('SocialOption', Socialschema);
@@ -84,6 +97,7 @@ function getCurrentDateTime() {
 }
 
 
+exports.update = updates;
 exports.delivery_time = delivery_time;
 exports.setting = setting;
 exports.BuyUnits = BuyUnits;

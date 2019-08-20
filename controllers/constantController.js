@@ -3,8 +3,24 @@ const util = require('util');
 
 
 // Get Data Models
-const { BuyUnits, ContactOption, SocialOption, StaticPage, city, setting, delivery_time } = require('../models/Constant')
+const { update ,BuyUnits, ContactOption, SocialOption, StaticPage, city, setting, delivery_time } = require('../models/Constant')
 const { client } = require('../models/cache')
+
+
+exports.getUpdates = async (req, reply) => {
+    try {
+        const updates = await update.find().sort({ _id: -1 });
+        const response = {
+            status_code: 200,
+            status: true,
+            message: 'return succssfully',
+            items: updates
+        }
+        return response
+    } catch (err) {
+        throw boom.boomify(err)
+    }
+}
 
 exports.getBuyUnits = async (req, reply) => {
     try {
@@ -125,7 +141,6 @@ exports.getdelivery_time = async (req, reply) => {
         throw boom.boomify(err)
     }
 }
-
 
 // cPanel
 exports.adddelivery_time = async (req, reply) => {
