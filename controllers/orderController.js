@@ -228,13 +228,13 @@ async function updateOrder(obj) {
                     resolve(response);
                 } else {
                     let msg = `تم استلام طلبكم وجاري التوصيل طلب رقم: ${order._id}`;
-                    console.log(req.user._id)
-                    const sp = await Order.findByIdAndUpdate((req.query.id), {
+                    // console.log(req.user._id)
+                    const sp = await Order.findByIdAndUpdate((order._id), {
                         StatusId: obj.StatusId,
                         Notes: obj.Notes,
-                        driver_id: req.user._id
+                        driver_id: obj.driver_id
                     }, { new: true })
-                    const driver = await Drivers.findById(req.user._id)
+                    const driver = await Drivers.findById(obj.driver_id)
                     let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
 
                     const response = {
@@ -250,13 +250,13 @@ async function updateOrder(obj) {
         }
         if (obj.StatusId == 3) {
 
-            const _order = await Order.findById(req.query.id).populate('user_id').populate('driver_id')
+            const _order = await Order.findById(order._id).populate('user_id').populate('driver_id')
             let msg = `تم توصيل طلبكم رقم: ${_order._id}`;
             console.log(msg)
 
             CreateNotification(clientFCM, msg, _order._id, _order.driver_id.name, _order.user_id._id);
 
-            const sp = await Order.findByIdAndUpdate((req.query.id), {
+            const sp = await Order.findByIdAndUpdate((order._id), {
                 StatusId: obj.StatusId,
                 Notes: obj.Notes
             }, { new: true })
@@ -319,105 +319,7 @@ async function updateOrder(obj) {
             }
             resolve(response);
         }
-        if (obj.StatusId == 6) {
-            if (order.StatusId == 1) {
-                var raduis = await setting.findById('5c6758e0c65f421a494cef89')
-
-                let msg = `قام السائق برفض الطلب رقم: ${order._id}`;
-                console.log(msg)
-                var arr = []
-                const driver = await Drivers.findById(req.user._id)
-                let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
-                const sp = await Order.findByIdAndUpdate((req.query.id), {
-                    StatusId: 1,
-                    driver_id: null,
-                    Notes: ''
-                }, { new: true })
-
-                const devicesID = await Admin.find().select('fcmToken');
-                devicesID.forEach(element => {
-                    arr.push(element['fcmToken'])
-                });
-                CreateNotificationMultiple(arr, msg, '', '', '');
-
-
-                var database = firebase.database(); // Ref to Firebase Database
-                var geoFire = new GeoFire(database.ref('userLocation')); // Ref to 'Item Locations' table
-                // geoFire.set('3',[21.400404, 23.1030303]);
-                var driversToken = []
-                var keys_arr = []
-                let geoQuery = geoFire.query({
-                    center: [Number(order.lat), Number(order.lng)],
-                    radius: 1000
-                })
-
-                var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
-                    console.log(key + " entered query at " + location + " (" + distance + " km from center)");
-                    let obj = {
-                        key: key,
-                        location: location,
-                        distance: distance
-                    }
-                    console.log(key)
-                    if (distance <= parseFloat(raduis.value, 10)) {
-                        keys_arr.push(key)
-                    }
-                });
-
-                var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
-                    console.log(key + " exited query to " + location + " (" + distance + " km from center)");
-                    onKeyEnteredRegistration.cancel();
-
-                    // const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
-                    // console.log(drivers)
-                    // drivers.forEach(element => {
-                    // });
-                    await Drivers.find({ _id: { $in: keys_arr } }, function (err, _users) {
-                        // console.log(users)
-                        users = _users
-                        _users.forEach(element => {
-                            driversToken.push(element.fcmToken)
-                        });
-                    });
-                    CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', User_id)
-                    async.each(users, async function (data, callback) {
-                        let _Notification = new Notifications({
-                            from: 'زبون جديد',
-                            user_id: data._id,
-                            title: 'متابعة الطلبات',
-                            msg: 'تم تلقي طلب جديد في حدود منطقتك الحالية',
-                            dt_date: getCurrentDateTime(),
-                            type: 1,
-                            body_parms: rs._id,
-                            isRead: false
-                        });
-
-                        await _Notification.save();
-                        console.log('saved')
-                    });
-                    // reply.send(driversToken)
-                });
-
-                const response = {
-                    status_code: 200,
-                    status: true,
-                    message: 'تم تعديل الطلب بنجاح',
-                    items: sp
-                }
-                resolve(response);
-            } else {
-                const response = {
-                    status_code: 404,
-                    status: false,
-                    message: 'عذرا لايمكن رفض الطلب بعد قبوله',
-                    items: []
-                }
-                return response
-                resolve(response);
-            }
-        }
     });
-
 }
 
 async function updateNanaOrder(obj) {
@@ -806,8 +708,9 @@ exports.addOrderFromNana = async (req, reply) => {
     try {
         let orders = await Order.findOne({ nanaOrderId: req.body.id })
         if (orders) {
+            console.log(orders)
             // update
-            
+
             //١-  بانتظار استلام السائق للطلب
             // ٢- تم استلام السائق وجاري التوصيل — السائق
             // ٣- تم التوصيل  — السائق
@@ -820,7 +723,8 @@ exports.addOrderFromNana = async (req, reply) => {
             var obj = {
                 _id: orders._id,
                 StatusId: 1,
-                Notes: ''
+                Notes: '',
+                driver_id: orders.driver_id
             }
 
             switch (req.body.new_level) {
@@ -833,37 +737,31 @@ exports.addOrderFromNana = async (req, reply) => {
                     await updateOrder(obj).then((x) => {
                         reply.send(x)
                     });
-
                     break;
-
                 case "Shopping":
                     obj.StatusId = 2
                     await updateOrder(obj).then((x) => {
                         reply.send(x)
                     });
                     break;
-
                 case "Packaged":
                     obj.StatusId = 2
                     await updateOrder(obj).then((x) => {
                         reply.send(x)
                     });
                     break;
-
                 case "Delivering":
                     obj.StatusId = 2
                     await updateOrder(obj).then((x) => {
                         reply.send(x)
                     });
                     break;
-
                 case "Delivered":
                     obj.StatusId = 3
                     await updateOrder(obj).then((x) => {
                         reply.send(x)
                     });
                     break;
-
                 case "Canceled":
                     obj.StatusId = 5
                     await updateOrder(obj).then((x) => {
@@ -954,7 +852,7 @@ exports.addOrderDriver = async (req, reply) => {
 
             const obj = {
                 order_id: order.nanaOrderId,
-                level: "Shopping",
+                level: "Waiting for Shopping",
                 token: tokenObj.token_id
             }
             console.log(obj)
@@ -1090,7 +988,7 @@ exports.updateOrderByDriver = async (req, reply) => {
                     // var allCurrentOrder = await Order.find({ $and: [{ dirver_id: req.user._id }, { StatusId: 2 }] }).count()
                     // if (allCurrentOrder <= val) {
                     let msg = `تم استلام طلبكم وجاري التوصيل طلب رقم: ${order._id}`;
-                    console.log(req.user._id)
+                    // console.log(req.user._id)
                     const sp = await Order.findByIdAndUpdate((req.query.id), {
                         StatusId: req.body.StatusId,
                         Notes: req.body.Notes,
