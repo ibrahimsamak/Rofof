@@ -401,7 +401,7 @@ exports.Driverlist = async (req, reply) => {
         //     }
         //     return response
         // }
-        const _Users = await Drivers.find({supplier_id:req.params.id}).populate('supplier_id').sort({ createAt: -1 }).select(['-token', '-password'])
+        const _Users = await Drivers.find({ supplier_id: req.params.id }).populate('supplier_id').sort({ createAt: -1 }).select(['-token', '-password'])
         // client.set('_Users', JSON.stringify(_Users))
         // client.expire('_Users', 86400)
         const response = {

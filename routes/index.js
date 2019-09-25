@@ -16,12 +16,18 @@ const couponController = require('../controllers/couponController')
 const fastify = require('fastify')({
   logger: true
 })
+
 // Import Swagger documentation
 // const documentation = require('./documentation/carApi')
 
 
 const routes = [
   
+  {
+    method: 'POST',
+    url: '/api/nana/order',
+    handler: orderController.addOrderFromNana
+  },
   {
     method: 'GET',
     url: '/api/updateeee',

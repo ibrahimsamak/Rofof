@@ -39,7 +39,7 @@ const { Product, Category, Supplier } = require('../models/Product')
 const { userRate } = require('../models/userRate')
 const { getCurrentDateTime } = require('../models/Constant');
 const { coupon } = require('../models/couponmodel');
-const { companyCommision } = require('../models/companyCommision');
+const { tokens } = require('../models/Constant');
 
 const options = {
     provider: 'google',
@@ -232,6 +232,7 @@ exports.addOrder = async (req, reply) => {
 
                     if (points_to_mony >= disc) {
                         let Orders = new Order({
+                            orderFrom: 'سوق غاز',
                             addressDetails: req.body.addressDetails,
                             orderType: req.body.orderType,
                             lat: req.body.lat,
@@ -288,6 +289,7 @@ exports.addOrder = async (req, reply) => {
                 }
             } else {
                 let Orders = new Order({
+                    orderFrom: 'سوق غاز',
                     addressDetails: req.body.addressDetails,
                     orderType: req.body.orderType,
                     lat: req.body.lat,
@@ -338,6 +340,7 @@ exports.addOrder = async (req, reply) => {
 
                     if (points_to_mony >= disc) {
                         let Orders = new Order({
+                            orderFrom: 'سوق غاز',
                             addressDetails: req.body.addressDetails,
                             orderType: req.body.orderType,
                             lat: req.body.lat,
@@ -455,6 +458,7 @@ exports.addOrder = async (req, reply) => {
                     discount_rate = ((coupon_discount_rate.discount_rate) * (parseFloat(req.body.subTotal, 10)))
                 }
                 let Orders = new Order({
+                    orderFrom: 'سوق غاز',
                     addressDetails: req.body.addressDetails,
                     orderType: req.body.orderType,
                     lat: req.body.lat,
@@ -546,8 +550,66 @@ exports.addOrder = async (req, reply) => {
 
                 reply.send(response)
             }
-
         }
+        //push notification to all drivers within 30 km
+    } catch (err) {
+        throw boom.boomify(err)
+    }
+}
+
+exports.addOrderFromNana = async (req, reply) => {
+    //paymentType: 
+    //1: cash 
+    //2: paymet getway
+    //3: points
+
+    try {
+        await getAddress(req.body.user.latitude, req.body.user.longitude).then((x) => {
+            current_city = x;
+        });
+        const supplier_token = req.headers['branch_token'];
+        const supplierData = await tokens.findOne({ token_id: supplier_token }).select('supplier_id')
+        const items = []
+        const req_items = req.body.items
+        req_items.forEach(element => {
+            let obj = {
+                product_id: element.sku,
+                price: element.price,
+                qty: element.count
+            }
+            items.push(obj)
+        });
+        let Orders = new Order({
+            nanaOrderId: req.body.id,
+            orderFrom: 'نعناع',
+            addressDetails: '',
+            orderType: req.body.uom,
+            lat: req.body.user.latitude,
+            lng: req.body.user.longitude,
+            paymentType: 1,
+            deliveryCost: (items.length * 5),
+            subTotal: (req.body.totalPrice) - (items.length * 5),
+            Total: req.body.totalPrice,
+            Notes: req.body.notes,
+            StatusId: 1,
+            // delivery_date: '',
+            // delivery_time: '',
+            user_id: '5d8a58a2e7179a022441c566',
+            items: items,
+            city: '',
+            supplier_id: supplierData.supplier_id,
+            createAt: getCurrentDateTime()
+        });
+
+        let rs = await Orders.save();
+        const response = {
+            items: rs,
+            status: true,
+            status_code: 200,
+            message: 'تمت اضافة طلبك بنجاح'
+        }
+
+        reply.send(response)
         //push notification to all drivers within 30 km
     } catch (err) {
         throw boom.boomify(err)
@@ -1518,7 +1580,6 @@ exports.DailyOrders = async (req, reply) => {
         throw boom.boomify(err)
     }
 }
-
 
 exports.updateeee = async (req, reply) => {
     try {

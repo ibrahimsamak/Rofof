@@ -37,6 +37,7 @@ const options = {
     apiKey: 'AIzaSyDP-XwnS5Daa_uSFZJvY6H0hsKaOxe2ar0', // for Mapquest, OpenCage, Google Premier
     formatter: null         // 'gpx', 'string', ...
 };
+
 const geocoder = NodeGeocoder(options);
 
 

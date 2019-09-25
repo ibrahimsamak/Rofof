@@ -8,6 +8,16 @@ const schema = mongoose.Schema({
   }
 }, { versionKey: false });
 
+const tokenschema = mongoose.Schema({
+  supplier_id: {
+    type: String,
+  },
+  token_id: {
+    type: String,
+  },
+}, { versionKey: false });
+
+
 const Socialschema = mongoose.Schema({
   name: {
     type: String,
@@ -69,6 +79,7 @@ const SocialOption = mongoose.model('SocialOption', Socialschema);
 const ContactOption = mongoose.model('ContactOption', Socialschema);
 const city = mongoose.model('city', schema);
 const delivery_time = mongoose.model('deliveryTime', delivery_timeSchema);
+const tokens = mongoose.model('tokens', tokenschema);
 
 const StaticPageSchema = mongoose.Schema({
   title: {
@@ -107,3 +118,4 @@ exports.SocialOption = SocialOption;
 exports.StaticPage = StaticPage;
 exports.validate = validateCustomer;
 exports.getCurrentDateTime = getCurrentDateTime;
+exports.tokens = tokens;
