@@ -10,6 +10,7 @@ const firebase = require('firebase');
 const async = require("async");
 const moment = require('moment')
 const request = require('request');
+const axios = require('axios');
 
 var config = {
     apiKey: "AIzaSyABN7HaigdqFPQx9un5pngBD7w6w2Cz5_E",
@@ -420,28 +421,24 @@ async function updateOrder(obj) {
 }
 
 async function updateNanaOrder(obj) {
-    // return new Promise(async function (resolve, reject) {
-    var options = {
-        url: 'https://private-anon-6d1493ff04-ordersendpoints.apiary-mock.com/api/change_order_level_by_key',
+    // let url = "http://139.59.151.199/api/sync_store_products_by_key"
+    let url = "https://nana.sa/api/change_order_level_by_key"
+    let config = {
         headers: {
             'Content-Type': 'application/json',
             'Authorization': obj.token
-        },
-    }
-    const body = JSON.stringify(obj)
-    await request.post(options, body, function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-            try {
-                var json_obj = body;
-                console.log(json_obj)
-            } catch (err) {
-                console.log(err)
-            }
-        } else {
-            console.log(error)
         }
-    });
-    // });
+    }
+
+    console.log(obj)
+    obj.token = null
+    axios.post(url, obj, config)
+        .then(function (response) {
+            console.log(response.data);
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
 }
 
 // add new order of products
@@ -810,74 +807,72 @@ exports.addOrderFromNana = async (req, reply) => {
         let orders = await Order.findOne({ nanaOrderId: req.body.id })
         if (orders) {
             // update
-            if (req.body.success == true) {
-                //١-  بانتظار استلام السائق للطلب
-                // ٢- تم استلام السائق وجاري التوصيل — السائق
-                // ٣- تم التوصيل  — السائق
-                // ٤- تم استلام الزبون — الزبون
-                // ٥- تم الغاء الطلب من الزبون — الزبون
-                // ٦- تم الغاء الطلب من السائق — السائق
+            
+            //١-  بانتظار استلام السائق للطلب
+            // ٢- تم استلام السائق وجاري التوصيل — السائق
+            // ٣- تم التوصيل  — السائق
+            // ٤- تم استلام الزبون — الزبون
+            // ٥- تم الغاء الطلب من الزبون — الزبون
+            // ٦- تم الغاء الطلب من السائق — السائق
 
-                // New Order Waiting for Shopping Shopping Packaged Delivering Delivered Canceled
+            // New Order Waiting for Shopping Shopping Packaged Delivering Delivered Canceled
 
-                var obj = {
-                    _id: orders._id,
-                    StatusId: 1,
-                    Notes: ''
-                }
+            var obj = {
+                _id: orders._id,
+                StatusId: 1,
+                Notes: ''
+            }
 
-                switch (req.body.new_level) {
-                    case "Waiting":
+            switch (req.body.new_level) {
+                case "Waiting":
+                    await updateOrder(obj).then((x) => {
+                        reply.send(x)
+                    });
+                    break;
+                case "Waiting for Shopping":
+                    await updateOrder(obj).then((x) => {
+                        reply.send(x)
+                    });
 
-                        await updateOrder(obj).then((x) => {
-                            reply.send(x)
-                        });
-                        break;
-                    case "Waiting for Shopping":
-                        await updateOrder(obj).then((x) => {
-                            reply.send(x)
-                        });
+                    break;
 
-                        break;
+                case "Shopping":
+                    obj.StatusId = 2
+                    await updateOrder(obj).then((x) => {
+                        reply.send(x)
+                    });
+                    break;
 
-                    case "Shopping":
-                        obj.StatusId = 2
-                        await updateOrder(obj).then((x) => {
-                            reply.send(x)
-                        });
-                        break;
+                case "Packaged":
+                    obj.StatusId = 2
+                    await updateOrder(obj).then((x) => {
+                        reply.send(x)
+                    });
+                    break;
 
-                    case "Packaged":
-                        obj.StatusId = 2
-                        await updateOrder(obj).then((x) => {
-                            reply.send(x)
-                        });
-                        break;
+                case "Delivering":
+                    obj.StatusId = 2
+                    await updateOrder(obj).then((x) => {
+                        reply.send(x)
+                    });
+                    break;
 
-                    case "Delivering":
-                        obj.StatusId = 2
-                        await updateOrder(obj).then((x) => {
-                            reply.send(x)
-                        });
-                        break;
+                case "Delivered":
+                    obj.StatusId = 3
+                    await updateOrder(obj).then((x) => {
+                        reply.send(x)
+                    });
+                    break;
 
-                    case "Delivered":
-                        obj.StatusId = 3
-                        await updateOrder(obj).then((x) => {
-                            reply.send(x)
-                        });
-                        break;
+                case "Canceled":
+                    obj.StatusId = 5
+                    await updateOrder(obj).then((x) => {
+                        reply.send(x)
+                    });
+                    break;
 
-                    case "Canceled":
-                        obj.StatusId = 5
-                        await updateOrder(obj).then((x) => {
-                            reply.send(x)
-                        });
-                        break;
-
-                    default:
-                        break;
-                }
+                default:
+                    break;
             }
         } else {
             // add new
@@ -950,8 +945,8 @@ exports.addOrderDriver = async (req, reply) => {
             body_parms: req.params.id,
             isRead: false
         });
-        await _Notification.save();
-        CreateExtraNotification(driverFCM, 'لديك طلب جديد في حدود منطقتك', order._id, 'زبون جديد', req.body.driver_id);
+        // await _Notification.save();
+        // CreateExtraNotification(driverFCM, 'لديك طلب جديد في حدود منطقتك', order._id, 'زبون جديد', req.body.driver_id);
 
         if (order.nanaOrderId) {
             console.log('nanaOrderId: ' + order.nanaOrderId)
@@ -959,9 +954,10 @@ exports.addOrderDriver = async (req, reply) => {
 
             const obj = {
                 order_id: order.nanaOrderId,
-                level: "Packaged",
+                level: "Shopping",
                 token: tokenObj.token_id
             }
+            console.log(obj)
             await updateNanaOrder(obj)
         }
 
