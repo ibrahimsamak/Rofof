@@ -843,8 +843,8 @@ exports.addOrderDriver = async (req, reply) => {
             body_parms: req.params.id,
             isRead: false
         });
-        // await _Notification.save();
-        // CreateExtraNotification(driverFCM, 'لديك طلب جديد في حدود منطقتك', order._id, 'زبون جديد', req.body.driver_id);
+        await _Notification.save();
+        CreateExtraNotification(driverFCM, 'لديك طلب جديد في حدود منطقتك', order._id, 'زبون جديد', req.body.driver_id);
 
         if (order.nanaOrderId) {
             console.log('nanaOrderId: ' + order.nanaOrderId)
@@ -852,11 +852,11 @@ exports.addOrderDriver = async (req, reply) => {
 
             const obj = {
                 order_id: order.nanaOrderId,
-                level: "Delivering",
+                level: "Shopping",
                 token: tokenObj.token_id
             }
             console.log(obj)
-            await updateNanaOrder(obj)
+            //await updateNanaOrder(obj)
         }
 
         const response = {
@@ -930,7 +930,7 @@ exports.updateOrderByUser = async (req, reply) => {
                     level: "Canceled",
                     token: tokenObj.token_id
                 }
-                await updateNanaOrder(obj)
+                //await updateNanaOrder(obj)
 
                 const response = {
                     status_code: 200,
@@ -1002,7 +1002,7 @@ exports.updateOrderByDriver = async (req, reply) => {
                         level: "Delivering",
                         token: tokenObj.token_id
                     }
-                    await updateNanaOrder(obj)
+                    //await updateNanaOrder(obj)
 
                     const response = {
                         status_code: 200,
@@ -1093,7 +1093,7 @@ exports.updateOrderByDriver = async (req, reply) => {
                 level: "Delivered",
                 token: tokenObj.token_id
             }
-            await updateNanaOrder(obj)
+            //await updateNanaOrder(obj)
 
             const response = {
                 status_code: 200,
