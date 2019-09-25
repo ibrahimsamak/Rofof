@@ -807,7 +807,7 @@ exports.addOrderFromNana = async (req, reply) => {
     //3: points
 
     try {
-        let orders = await orders.findOne({ nanaOrderId: req.body.id })
+        let orders = await Order.findOne({ nanaOrderId: req.body.id })
         if (orders) {
             // update
             if (req.body.success == true) {
