@@ -583,7 +583,7 @@ exports.addOrderFromNana = async (req, reply) => {
             nanaOrderId: req.body.id,
             orderFrom: 'نعناع',
             addressDetails: '',
-            orderType: req.body.uom,
+            orderType: req_items[0].uom,
             lat: req.body.user.latitude,
             lng: req.body.user.longitude,
             paymentType: 1,
