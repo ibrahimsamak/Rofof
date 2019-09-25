@@ -9,6 +9,7 @@ const GeoFire = require('geofire');
 const firebase = require('firebase');
 const async = require("async");
 const moment = require('moment')
+const request = require('request');
 
 var config = {
     apiKey: "AIzaSyABN7HaigdqFPQx9un5pngBD7w6w2Cz5_E",
@@ -199,6 +200,248 @@ function CreateNotificationMultiple(deviceId, msg, order_id, from_userName, to_u
         xhr.send(data);
         resolve(data);
     });
+}
+
+async function updateOrder(obj) {
+    var users = []
+    return new Promise(async function (resolve, reject) {
+        const order = await Order.findById(obj._id).populate('user_id')
+        const clientFCM = order.user_id.fcmToken
+        if (obj.StatusId == 2) {
+            if (order.StatusId == 5) {
+                const response = {
+                    status_code: 404,
+                    status: false,
+                    message: 'عذرا تم الغاء الطلب من قبل العميل',
+                    items: sp
+                }
+                resolve(response);
+            } else {
+                if (order.driver_id != null && order.driver_id) {
+                    const response = {
+                        status_code: 404,
+                        status: false,
+                        message: 'عذرا تم قبول الطلب من قبل سائق اخر',
+                        items: []
+                    }
+                    resolve(response);
+                } else {
+                    let msg = `تم استلام طلبكم وجاري التوصيل طلب رقم: ${order._id}`;
+                    console.log(req.user._id)
+                    const sp = await Order.findByIdAndUpdate((req.query.id), {
+                        StatusId: obj.StatusId,
+                        Notes: obj.Notes,
+                        driver_id: req.user._id
+                    }, { new: true })
+                    const driver = await Drivers.findById(req.user._id)
+                    let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
+
+                    const response = {
+                        status_code: 200,
+                        status: true,
+                        message: 'تم تعديل الطلب بنجاح',
+                        items: sp
+                    }
+
+                    resolve(response);
+                }
+            }
+        }
+        if (obj.StatusId == 3) {
+
+            const _order = await Order.findById(req.query.id).populate('user_id').populate('driver_id')
+            let msg = `تم توصيل طلبكم رقم: ${_order._id}`;
+            console.log(msg)
+
+            CreateNotification(clientFCM, msg, _order._id, _order.driver_id.name, _order.user_id._id);
+
+            const sp = await Order.findByIdAndUpdate((req.query.id), {
+                StatusId: obj.StatusId,
+                Notes: obj.Notes
+            }, { new: true })
+
+
+            const _points = await Point.findOne({
+                $and: [{ 'supplier_id': _order.driver_id.supplier_id }, { 'min_value': { $lt: _order.Total } }, { 'max_value': { $gte: order.Total } },]
+            })
+
+            if (_order.driver_id.supplier_id != "5c67f4ba0fb3d50d6e9f03f3") {
+                //commision
+                var commsions = await setting.findById('5d26ecdc7c213e5998ea3799')
+                var commsion_val = parseFloat(commsions.value, 10)
+
+                const _comapny_commesion = await companyCommision.findOne({ 'supplier_id': _order.driver_id.supplier_id })
+
+                if (_comapny_commesion) {
+                    console.log('find')
+                    await companyCommision.findOneAndUpdate(({ supplier_id: _order.driver_id.supplier_id }), {
+                        $inc: { value: commsion_val }
+                    }, { new: true })
+                } else {
+                    console.log('not find')
+                    let ـcompanyCommision = new companyCommision({
+                        supplier_id: _order.driver_id.supplier_id,
+                        value: commsion_val,
+                        totalPay: 0,
+                        dt_date: getCurrentDateTime()
+                    });
+                    await ـcompanyCommision.save();
+                }
+            }
+
+            const _user_points = await UserPoint.findOne({
+                $and: [{ 'user_id': _order.user_id._id }]
+            })
+
+            if (_points) {
+                console.log(_points)
+                if (_user_points) {
+                    const UserPoints = await UserPoint.findByIdAndUpdate((_user_points._id), {
+                        $inc: { points: _points.points }
+                    }, { new: true })
+                } else {
+                    let UserPoints = new UserPoint({
+                        user_id: _order.user_id._id,
+                        supplier_id: _order.driver_id.supplier_id,
+                        points: _points.points,
+                        point_price: _points.point_price
+                    });
+                    await UserPoints.save();
+                }
+            }
+
+            const response = {
+                status_code: 200,
+                status: true,
+                message: 'تم تعديل الطلب بنجاح',
+                items: sp
+            }
+            resolve(response);
+        }
+        if (obj.StatusId == 6) {
+            if (order.StatusId == 1) {
+                var raduis = await setting.findById('5c6758e0c65f421a494cef89')
+
+                let msg = `قام السائق برفض الطلب رقم: ${order._id}`;
+                console.log(msg)
+                var arr = []
+                const driver = await Drivers.findById(req.user._id)
+                let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
+                const sp = await Order.findByIdAndUpdate((req.query.id), {
+                    StatusId: 1,
+                    driver_id: null,
+                    Notes: ''
+                }, { new: true })
+
+                const devicesID = await Admin.find().select('fcmToken');
+                devicesID.forEach(element => {
+                    arr.push(element['fcmToken'])
+                });
+                CreateNotificationMultiple(arr, msg, '', '', '');
+
+
+                var database = firebase.database(); // Ref to Firebase Database
+                var geoFire = new GeoFire(database.ref('userLocation')); // Ref to 'Item Locations' table
+                // geoFire.set('3',[21.400404, 23.1030303]);
+                var driversToken = []
+                var keys_arr = []
+                let geoQuery = geoFire.query({
+                    center: [Number(order.lat), Number(order.lng)],
+                    radius: 1000
+                })
+
+                var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
+                    console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+                    let obj = {
+                        key: key,
+                        location: location,
+                        distance: distance
+                    }
+                    console.log(key)
+                    if (distance <= parseFloat(raduis.value, 10)) {
+                        keys_arr.push(key)
+                    }
+                });
+
+                var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
+                    console.log(key + " exited query to " + location + " (" + distance + " km from center)");
+                    onKeyEnteredRegistration.cancel();
+
+                    // const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
+                    // console.log(drivers)
+                    // drivers.forEach(element => {
+                    // });
+                    await Drivers.find({ _id: { $in: keys_arr } }, function (err, _users) {
+                        // console.log(users)
+                        users = _users
+                        _users.forEach(element => {
+                            driversToken.push(element.fcmToken)
+                        });
+                    });
+                    CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', User_id)
+                    async.each(users, async function (data, callback) {
+                        let _Notification = new Notifications({
+                            from: 'زبون جديد',
+                            user_id: data._id,
+                            title: 'متابعة الطلبات',
+                            msg: 'تم تلقي طلب جديد في حدود منطقتك الحالية',
+                            dt_date: getCurrentDateTime(),
+                            type: 1,
+                            body_parms: rs._id,
+                            isRead: false
+                        });
+
+                        await _Notification.save();
+                        console.log('saved')
+                    });
+                    // reply.send(driversToken)
+                });
+
+                const response = {
+                    status_code: 200,
+                    status: true,
+                    message: 'تم تعديل الطلب بنجاح',
+                    items: sp
+                }
+                resolve(response);
+            } else {
+                const response = {
+                    status_code: 404,
+                    status: false,
+                    message: 'عذرا لايمكن رفض الطلب بعد قبوله',
+                    items: []
+                }
+                return response
+                resolve(response);
+            }
+        }
+    });
+
+}
+
+async function updateNanaOrder(obj) {
+    // return new Promise(async function (resolve, reject) {
+    var options = {
+        url: 'https://private-anon-6d1493ff04-ordersendpoints.apiary-mock.com/api/change_order_level_by_key',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': obj.token
+        },
+    }
+    const body = JSON.stringify(obj)
+    await request.post(options, body, function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+            try {
+                var json_obj = body;
+                console.log(json_obj)
+            } catch (err) {
+                console.log(err)
+            }
+        } else {
+            console.log(error)
+        }
+    });
+    // });
 }
 
 // add new order of products
@@ -564,54 +807,129 @@ exports.addOrderFromNana = async (req, reply) => {
     //3: points
 
     try {
-        await getAddress(req.body.user.latitude, req.body.user.longitude).then((x) => {
-            current_city = x;
-        });
-        const supplier_token = req.headers['branch_token'];
-        const supplierData = await tokens.findOne({ token_id: supplier_token }).select('supplier_id')
-        const items = []
-        const req_items = req.body.items
-        req_items.forEach(element => {
-            let obj = {
-                product_id: element.sku,
-                price: element.price,
-                qty: element.count,
-                uom: element.uom
+        let orders = await orders.findOne({ nanaOrderId: req.body.id })
+        if (orders) {
+            // update
+            if (req.body.success == true) {
+                //١-  بانتظار استلام السائق للطلب
+                // ٢- تم استلام السائق وجاري التوصيل — السائق
+                // ٣- تم التوصيل  — السائق
+                // ٤- تم استلام الزبون — الزبون
+                // ٥- تم الغاء الطلب من الزبون — الزبون
+                // ٦- تم الغاء الطلب من السائق — السائق
+
+                // New Order Waiting for Shopping Shopping Packaged Delivering Delivered Canceled
+
+                var obj = {
+                    _id: orders._id,
+                    StatusId: 1,
+                    Notes: ''
+                }
+
+                switch (req.body.new_level) {
+                    case "Waiting":
+
+                        await updateOrder(obj).then((x) => {
+                            reply.send(x)
+                        });
+                        break;
+                    case "Waiting for Shopping":
+                        await updateOrder(obj).then((x) => {
+                            reply.send(x)
+                        });
+
+                        break;
+
+                    case "Shopping":
+                        obj.StatusId = 2
+                        await updateOrder(obj).then((x) => {
+                            reply.send(x)
+                        });
+                        break;
+
+                    case "Packaged":
+                        obj.StatusId = 2
+                        await updateOrder(obj).then((x) => {
+                            reply.send(x)
+                        });
+                        break;
+
+                    case "Delivering":
+                        obj.StatusId = 2
+                        await updateOrder(obj).then((x) => {
+                            reply.send(x)
+                        });
+                        break;
+
+                    case "Delivered":
+                        obj.StatusId = 3
+                        await updateOrder(obj).then((x) => {
+                            reply.send(x)
+                        });
+                        break;
+
+                    case "Canceled":
+                        obj.StatusId = 5
+                        await updateOrder(obj).then((x) => {
+                            reply.send(x)
+                        });
+                        break;
+
+                    default:
+                        break;
+                }
             }
-            items.push(obj)
-        });
-        let Orders = new Order({
-            nanaOrderId: req.body.id,
-            orderFrom: 'نعناع',
-            addressDetails: '',
-            orderType: req_items[0].uom,
-            lat: req.body.user.latitude,
-            lng: req.body.user.longitude,
-            paymentType: 1,
-            deliveryCost: (items.length * 5),
-            subTotal: (req.body.totalPrice) - (items.length * 5),
-            Total: req.body.totalPrice,
-            Notes: req.body.notes,
-            StatusId: 1,
-            // delivery_date: '',
-            // delivery_time: '',
-            user_id: '5d8a58a2e7179a022441c566',
-            items: items,
-            city: '',
-            supplier_id: supplierData.supplier_id,
-            createAt: getCurrentDateTime()
-        });
+        } else {
+            // add new
+            await getAddress(req.body.user.latitude, req.body.user.longitude).then((x) => {
+                current_city = x;
+            });
 
-        let rs = await Orders.save();
-        const response = {
-            items: rs,
-            status: true,
-            status_code: 200,
-            message: 'تمت اضافة طلبك بنجاح'
+            const supplier_token = req.headers['branch_token'];
+            const supplierData = await tokens.findOne({ token_id: supplier_token }).select('supplier_id')
+            const items = []
+            const req_items = req.body.items
+            req_items.forEach(element => {
+                let obj = {
+                    product_id: element.sku,
+                    price: element.price,
+                    qty: element.count,
+                    uom: element.uom
+                }
+                items.push(obj)
+            });
+            let Orders = new Order({
+                nanaOrderId: req.body.id,
+                orderFrom: 'نعناع',
+                addressDetails: '',
+                orderType: req_items[0].uom,
+                lat: req.body.user.latitude,
+                lng: req.body.user.longitude,
+                paymentType: 1,
+                deliveryCost: (items.length * 5),
+                subTotal: (req.body.totalPrice) - (items.length * 5),
+                Total: req.body.totalPrice,
+                Notes: req.body.notes,
+                StatusId: 1,
+                // delivery_date: '',
+                // delivery_time: '',
+                user_id: '5d8a58a2e7179a022441c566',
+                items: items,
+                city: '',
+                supplier_id: supplierData.supplier_id,
+                createAt: getCurrentDateTime()
+            });
+
+            let rs = await Orders.save();
+            const response = {
+                items: rs,
+                status: true,
+                status_code: 200,
+                message: 'تمت اضافة طلبك بنجاح'
+            }
+
+            reply.send(response)
         }
-
-        reply.send(response)
-        //push notification to all drivers within 30 km
     } catch (err) {
         throw boom.boomify(err)
     }
@@ -619,14 +937,8 @@ exports.addOrderFromNana = async (req, reply) => {
 
 exports.addOrderDriver = async (req, reply) => {
     try {
-
         const driverFCM = await Drivers.find({ _id: req.body.driver_id }).select('fcmToken')
-        console.log(driverFCM)
-        // const sp = await Order.findByIdAndUpdate((req.params.id), {
-        //     driver_id: req.body.driver_id
-        // }, { new: true })
-
-        const order = await Order.find({ _id: req.params.id }).populate('user_id')
+        const order = await Order.findOne({ _id: req.params.id }).populate('user_id')
 
         let _Notification = new Notifications({
             from: 'زبون جديد',
@@ -639,8 +951,19 @@ exports.addOrderDriver = async (req, reply) => {
             isRead: false
         });
         await _Notification.save();
-
         CreateExtraNotification(driverFCM, 'لديك طلب جديد في حدود منطقتك', order._id, 'زبون جديد', req.body.driver_id);
+
+        if (order.nanaOrderId) {
+            console.log('nanaOrderId: ' + order.nanaOrderId)
+            var tokenObj = await tokens.findOne({ supplier_id: order.supplier_id })
+
+            const obj = {
+                order_id: order.nanaOrderId,
+                level: "Packaged",
+                token: tokenObj.token_id
+            }
+            await updateNanaOrder(obj)
+        }
 
         const response = {
             status_code: 200,
@@ -690,6 +1013,8 @@ exports.updateOrderByUser = async (req, reply) => {
         }
         if (req.body.StatusId == 5) {
             const _order = await Order.findById(req.query.id).populate('user_id')
+            const tokenObj = await tokens.findOne({ supplier_id: order.supplier_id })
+
             if (_order.StatusId == 1) {
                 const order = await Order.findById(req.query.id).populate('user_id')
                 let msg = `قام العميل بالغاء الطلب رقم: ${order._id}`;
@@ -706,6 +1031,12 @@ exports.updateOrderByUser = async (req, reply) => {
                     Notes: req.body.Notes
                 }, { new: true })
 
+                const obj = {
+                    order_id: order.nanaOrderId,
+                    level: "Canceled",
+                    token: tokenObj.token_id
+                }
+                await updateNanaOrder(obj)
 
                 const response = {
                     status_code: 200,
@@ -735,8 +1066,9 @@ exports.updateOrderByDriver = async (req, reply) => {
     try {
         var users = []
         const order = await Order.findById(req.query.id).populate('user_id')
-        const clientFCM = '11'
-        // const clientFCM = order.user_id.fcmToken
+        const tokenObj = await tokens.findOne({ supplier_id: order.supplier_id })
+        // const clientFCM = '11'
+        const clientFCM = order.user_id.fcmToken
         // const driverFCM = order.driver_id.fcmToken;
         if (req.body.StatusId == 2) {
             if (order.StatusId == 5) {
@@ -770,6 +1102,13 @@ exports.updateOrderByDriver = async (req, reply) => {
                     }, { new: true })
                     const driver = await Drivers.findById(req.user._id)
                     let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
+
+                    const obj = {
+                        order_id: order.nanaOrderId,
+                        level: "Delivering",
+                        token: tokenObj.token_id
+                    }
+                    await updateNanaOrder(obj)
 
                     const response = {
                         status_code: 200,
@@ -855,17 +1194,12 @@ exports.updateOrderByDriver = async (req, reply) => {
                 }
             }
 
-            // const sp = await Order.findByIdAndUpdate((req.query.id), {
-            //     StatusId: req.body.StatusId
-            // }, { new: true })
-
-            // const devicesID = await Admin.find().select('fcmToken');
-            // devicesID.forEach(element => {
-            //     arr.push(element['fcmToken'])
-            // });
-            // CreateNotificationMultiple(arr, msg, '', '', '');
-            // console.log(devicesID)
-
+            const obj = {
+                order_id: order.nanaOrderId,
+                level: "Delivered",
+                token: tokenObj.token_id
+            }
+            await updateNanaOrder(obj)
 
             const response = {
                 status_code: 200,
