@@ -575,7 +575,8 @@ exports.addOrderFromNana = async (req, reply) => {
             let obj = {
                 product_id: element.sku,
                 price: element.price,
-                qty: element.count
+                qty: element.count,
+                uom: element.uom
             }
             items.push(obj)
         });
