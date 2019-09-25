@@ -235,7 +235,7 @@ async function updateOrder(obj) {
                         driver_id: obj.driver_id
                     }, { new: true })
                     const driver = await Drivers.findById(obj.driver_id)
-                    let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
+                    // let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
 
                     const response = {
                         status_code: 200,
@@ -852,7 +852,7 @@ exports.addOrderDriver = async (req, reply) => {
 
             const obj = {
                 order_id: order.nanaOrderId,
-                level: "Waiting for Shopping",
+                level: "Delivering",
                 token: tokenObj.token_id
             }
             console.log(obj)
