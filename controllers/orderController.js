@@ -704,6 +704,7 @@ exports.addOrderFromNana = async (req, reply) => {
     //1: cash 
     //2: paymet getway
     //3: points
+    var users = []
 
     try {
         let orders = await Order.findOne({ nanaOrderId: req.body.id })
@@ -726,12 +727,17 @@ exports.addOrderFromNana = async (req, reply) => {
                 Notes: '',
                 driver_id: orders.driver_id
             }
+            let token = await tokens.findOne({ supplier_id: orders.supplier_id })
+            let config = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token.token_id
+                }
+            }
 
             switch (req.body.new_level) {
                 case "Waiting":
-                    await updateOrder(obj).then((x) => {
-                        reply.send(x)
-                    });
+                    await axios.post('https://nana.sa/api/change_order_level_by_key', { order_id: req.body.id, level: 'Waiting for Shopping', config })
                     break;
                 case "Waiting for Shopping":
                     await updateOrder(obj).then((x) => {
@@ -739,22 +745,17 @@ exports.addOrderFromNana = async (req, reply) => {
                     });
                     break;
                 case "Shopping":
-                    obj.StatusId = 2
-                    await updateOrder(obj).then((x) => {
-                        reply.send(x)
-                    });
+                    await axios.post('https://nana.sa/api/change_order_level_by_key', { order_id: req.body.id, level: 'Packaged', config })
                     break;
                 case "Packaged":
-                    obj.StatusId = 2
-                    await updateOrder(obj).then((x) => {
-                        reply.send(x)
-                    });
+                    await axios.post('https://nana.sa/api/change_order_level_by_key', { order_id: req.body.id, level: 'Delivering', config })
                     break;
                 case "Delivering":
                     obj.StatusId = 2
                     await updateOrder(obj).then((x) => {
                         reply.send(x)
                     });
+                    // Change Here when your system's status changed .. 
                     break;
                 case "Delivered":
                     obj.StatusId = 3
@@ -768,7 +769,6 @@ exports.addOrderFromNana = async (req, reply) => {
                         reply.send(x)
                     });
                     break;
-
                 default:
                     break;
             }
@@ -821,6 +821,59 @@ exports.addOrderFromNana = async (req, reply) => {
                 message: 'تمت اضافة طلبك بنجاح'
             }
 
+            var database = firebase.database();
+            var geoFire = new GeoFire(database.ref('userLocation'));
+            var driversToken = []
+            var keys_arr = []
+            let geoQuery = geoFire.query({
+                center: [Number(req.body.user.latitude), Number(req.body.user.longitude)],
+                radius: 1000
+            })
+
+            var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
+                console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+                let obj = {
+                    key: key,
+                    location: location,
+                    distance: distance
+                }
+
+                if (distance <= parseFloat(raduis.value, 10)) {
+                    keys_arr.push(key)
+                }
+            });
+
+            var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
+                console.log(key + " exited query to " + location + " (" + distance + " km from center)");
+                onKeyEnteredRegistration.cancel();
+                await Drivers.find({ _id: { $in: keys_arr } }, function (err, _users) {
+                    users = _users
+                    _users.forEach(element => {
+                        if (element.supplier_id == req.body.supplier_id) {
+                            driversToken.push(element['fcmToken'])
+                        }
+                    });
+                });
+                async.each(users, async function (data, callback) {
+                    let _Notification = new Notifications({
+                        from: 'زبون جديد',
+                        user_id: data._id,
+                        title: 'متابعة الطلبات',
+                        msg: 'تم تلقي طلب جديد في حدود منطقتك الحالية',
+                        dt_date: getCurrentDateTime(),
+                        type: 1,
+                        body_parms: rs._id,
+                        isRead: false
+                    });
+
+                    await _Notification.save();
+                    console.log('saved')
+                });
+
+                CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', '')
+                // reply.send(driversToken)
+            });
+
             reply.send(response)
         }
     } catch (err) {
@@ -852,11 +905,11 @@ exports.addOrderDriver = async (req, reply) => {
 
             const obj = {
                 order_id: order.nanaOrderId,
-                level: "Shopping",
+                level: "Waiting",
                 token: tokenObj.token_id
             }
             console.log(obj)
-            //await updateNanaOrder(obj)
+            await updateNanaOrder(obj)
         }
 
         const response = {
@@ -930,7 +983,7 @@ exports.updateOrderByUser = async (req, reply) => {
                     level: "Canceled",
                     token: tokenObj.token_id
                 }
-                //await updateNanaOrder(obj)
+                await updateNanaOrder(obj)
 
                 const response = {
                     status_code: 200,
@@ -1002,7 +1055,7 @@ exports.updateOrderByDriver = async (req, reply) => {
                         level: "Delivering",
                         token: tokenObj.token_id
                     }
-                    //await updateNanaOrder(obj)
+                    await updateNanaOrder(obj)
 
                     const response = {
                         status_code: 200,
@@ -1093,7 +1146,7 @@ exports.updateOrderByDriver = async (req, reply) => {
                 level: "Delivered",
                 token: tokenObj.token_id
             }
-            //await updateNanaOrder(obj)
+            await updateNanaOrder(obj)
 
             const response = {
                 status_code: 200,
