@@ -738,31 +738,31 @@ exports.addOrderFromNana = async (req, reply) => {
                 }
             }
 
-            switch (req.body.level) {
-                case "Waiting for Shopping":
-                    let _req = await axios.post('https://nana.sa/api/change_order_level_by_key', { order_id: obj.order_id, level: 'Shopping' }, config);
-                    console.log({ body: _req.data })
-                case "Shopping":
-                    let req1 = await axios.post('https://nana.sa/api/change_order_level_by_key', { order_id: obj.order_id, level: 'Packaged' }, config)
-                    console.log({ body: req1.data })
-                case "Packaged":
-                    let req2 = await axios.post('https://nana.sa/api/change_order_level_by_key', { order_id: obj.order_id, level: 'Delivering' }, config)
-                    console.log({ body: req2.data })
-                case "Delivering":
-                    reply.send({ message: 'suceess level is: Delivering' })
-                case "Delivered":
-                    obj.StatusId = 3
-                    await updateOrder(obj).then((x) => {
-                        reply.send(x)
-                    });
-                case "Canceled":
-                    obj.StatusId = 5
-                    await updateOrder(obj).then((x) => {
-                        reply.send(x)
-                    });
-                default:
-                    reply.send({ message: 'error happend' })
-            }
+            // switch (req.body.level) {
+            //     case "Waiting for Shopping":
+            //         let _req = await axios.post('https://nana.sa/api/change_order_level_by_key', { order_id: obj.order_id, level: 'Shopping' }, config);
+            //         console.log({ body: _req.data })
+            //     case "Shopping":
+            //         let req1 = await axios.post('https://nana.sa/api/change_order_level_by_key', { order_id: obj.order_id, level: 'Packaged' }, config)
+            //         console.log({ body: req1.data })
+            //     case "Packaged":
+            //         let req2 = await axios.post('https://nana.sa/api/change_order_level_by_key', { order_id: obj.order_id, level: 'Delivering' }, config)
+            //         console.log({ body: req2.data })
+            //     case "Delivering":
+            //         reply.send({ message: 'suceess level is: Delivering' })
+            //     case "Delivered":
+            //         obj.StatusId = 3
+            //         await updateOrder(obj).then((x) => {
+            //             reply.send(x)
+            //         });
+            //     case "Canceled":
+            //         obj.StatusId = 5
+            //         await updateOrder(obj).then((x) => {
+            //             reply.send(x)
+            //         });
+            //     default:
+            //         reply.send({ message: 'error happend' })
+            // }
             reply.send({ message: 'finih' })
         } else {
             // add new
@@ -1047,14 +1047,11 @@ exports.updateOrderByDriver = async (req, reply) => {
             }
             await updateNanaOrder(obj)
 
-            // obj.level = "Shopping",
-            //     await updateNanaOrder(obj)
+            obj.level = "Packaged",
+                await updateNanaOrder(obj)
 
-            // obj.level = "Packaged",
-            //     await updateNanaOrder(obj)
-
-            // obj.level = "Delivering",
-            //     await updateNanaOrder(obj)
+            obj.level = "Delivering",
+                await updateNanaOrder(obj)
 
             const response = {
                 status_code: 200,
