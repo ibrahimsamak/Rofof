@@ -768,6 +768,8 @@ exports.addOrderFromNana = async (req, reply) => {
                 default:
                     break;
             }
+
+            reply.send({ message: 'finih' })
         } else {
             // add new
             await getAddress(req.body.user.latitude, req.body.user.longitude).then((x) => {
