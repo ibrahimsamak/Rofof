@@ -705,6 +705,7 @@ exports.addOrderFromNana = async (req, reply) => {
 
     try {
         let orders = await Order.findOne({ nanaOrderId: req.body.order_id })
+        console.log(orders)
         if (orders) {
             // update
 
@@ -772,6 +773,7 @@ exports.addOrderFromNana = async (req, reply) => {
             reply.send({ message: 'finih' })
         } else {
             // add new
+            var raduis = await setting.findById('5c6758e0c65f421a494cef89')
             await getAddress(req.body.user.latitude, req.body.user.longitude).then((x) => {
                 current_city = x;
             });
@@ -1036,7 +1038,6 @@ exports.updateOrderByDriver = async (req, reply) => {
             //         }
             //         return response
             //     } else {
-
             let msg = `تم استلام طلبكم وجاري التوصيل طلب رقم: ${order._id}`;
             const sp = await Order.findByIdAndUpdate((req.query.id), {
                 StatusId: req.body.StatusId,
