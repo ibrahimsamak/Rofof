@@ -204,7 +204,6 @@ function CreateNotificationMultiple(deviceId, msg, order_id, from_userName, to_u
 }
 
 async function updateOrder(obj) {
-    var users = []
     return new Promise(async function (resolve, reject) {
         const order = await Order.findById(obj._id).populate('user_id')
         const clientFCM = order.user_id.fcmToken
@@ -235,7 +234,7 @@ async function updateOrder(obj) {
                         driver_id: obj.driver_id
                     }, { new: true })
                     const driver = await Drivers.findById(obj.driver_id)
-                    let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
+                    //let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
 
                     const response = {
                         status_code: 200,
@@ -296,6 +295,40 @@ async function updateOrder(obj) {
                 items: sp
             }
             resolve(response);
+        }
+        if (obj.StatusId == 5) {
+            if (order.StatusId == 1) {
+                let msg = `قام العميل بالغاء الطلب رقم: ${order._id}`;
+
+                const arr = []
+                const devicesID = await Admin.find().select('fcmToken');
+                devicesID.forEach(element => {
+                    arr.push(element['fcmToken'])
+                });
+                CreateNotificationMultiple(arr, msg, '', '', '');
+
+                const sp = await Order.findByIdAndUpdate((req.query.id), {
+                    StatusId: 5,
+                    Notes: 'canceld from nana app !!'
+                }, { new: true })
+
+                const response = {
+                    status_code: 200,
+                    status: true,
+                    message: 'تم تعديل الطلب بنجاح',
+                    items: sp
+                }
+                return response
+            }
+            else {
+                const response = {
+                    status_code: 400,
+                    status: false,
+                    message: ' عذرا لا يمكن الغاء الطلب جاري توصيله او قد يكون تم الغاء الطلب مسبقا',
+                    items: []
+                }
+                return response
+            }
         }
     });
 }
@@ -715,38 +748,14 @@ exports.addOrderFromNana = async (req, reply) => {
                     'Authorization': token.token_id
                 }
             }
+
             if (req.body.level == 'Canceled') {
                 obj.StatusId = 5
-                await updateOrder(obj).then((x) => {
-                    reply.send(x)
+                await updateOrder(obj).then((response) => {
+                    reply.send(response)
                 });
             }
 
-            // switch (req.body.level) {
-            //     case "Waiting for Shopping":
-            //         let _req = await axios.post('https://nana.sa/api/change_order_level_by_key', { order_id: obj.order_id, level: 'Shopping' }, config);
-            //         console.log({ body: _req.data })
-            //     case "Shopping":
-            //         let req1 = await axios.post('https://nana.sa/api/change_order_level_by_key', { order_id: obj.order_id, level: 'Packaged' }, config)
-            //         console.log({ body: req1.data })
-            //     case "Packaged":
-            //         let req2 = await axios.post('https://nana.sa/api/change_order_level_by_key', { order_id: obj.order_id, level: 'Delivering' }, config)
-            //         console.log({ body: req2.data })
-            //     case "Delivering":
-            //         reply.send({ message: 'suceess level is: Delivering' })
-            //     case "Delivered":
-            //         obj.StatusId = 3
-            //         await updateOrder(obj).then((x) => {
-            //             reply.send(x)
-            //         });
-            //     case "Canceled":
-            //         obj.StatusId = 5
-            //         await updateOrder(obj).then((x) => {
-            //             reply.send(x)
-            //         });
-            //     default:
-            //         reply.send({ message: 'error happend' })
-            // }
             reply.send({ message: 'finih' })
         } else {
             // add new
@@ -957,13 +966,6 @@ exports.updateOrderByUser = async (req, reply) => {
                     Notes: req.body.Notes
                 }, { new: true })
 
-                const obj = {
-                    order_id: order.nanaOrderId,
-                    level: "Canceled",
-                    token: tokenObj.token_id
-                }
-                await updateNanaOrder(obj)
-
                 const response = {
                     status_code: 200,
                     status: true,
@@ -1015,36 +1017,44 @@ exports.updateOrderByDriver = async (req, reply) => {
                     }
                     return response
                 } else {
-                    let msg = `تم استلام طلبكم وجاري التوصيل طلب رقم: ${order._id}`;
-                    const sp = await Order.findByIdAndUpdate((req.query.id), {
-                        StatusId: req.body.StatusId,
-                        Notes: req.body.Notes,
-                        driver_id: req.user._id
-                    }, { new: true })
-                    const driver = await Drivers.findById(req.user._id)
-                    CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
+                    if (order.nanaOrderId) {
 
-                    const obj = {
-                        order_id: order.nanaOrderId,
-                        level: "Shopping",
-                        token: tokenObj.token_id
+                        const obj = {
+                            order_id: order.nanaOrderId,
+                            level: "Shopping",
+                            token: tokenObj.token_id
+                        }
+                        let status1 = await updateNanaOrder(obj)
+                        if (status1.data.result.new_level == 'Shopping') {
+                            obj.level = "Packaged"
+                            console.log(obj)
+                            let status2 = await updateNanaOrder(obj)
+                            if (status2.data.result.new_level == 'Packaged') {
+                                obj.level = "Delivering"
+                                console.log(obj)
+                                let status3 = await updateNanaOrder(obj)
+                                if (status3.data.result.new_level == 'Delivering') {
+                                    let msg = `تم استلام طلبكم وجاري التوصيل طلب رقم: ${order._id}`;
+                                    const sp = await Order.findByIdAndUpdate((req.query.id), {
+                                        StatusId: req.body.StatusId,
+                                        Notes: req.body.Notes,
+                                        driver_id: req.user._id
+                                    }, { new: true })
+                                    const driver = await Drivers.findById(req.user._id)
+                                    CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
+                                }
+                            }
+                        }
+                    } else {
+                        let msg = `تم استلام طلبكم وجاري التوصيل طلب رقم: ${order._id}`;
+                        const sp = await Order.findByIdAndUpdate((req.query.id), {
+                            StatusId: req.body.StatusId,
+                            Notes: req.body.Notes,
+                            driver_id: req.user._id
+                        }, { new: true })
+                        const driver = await Drivers.findById(req.user._id)
+                        CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
                     }
-                    console.log(obj)
-                    await updateNanaOrder(obj)
-
-                    setTimeout(async () => {
-                        obj.level = "Packaged"
-                        console.log(obj)
-                        await updateNanaOrder(obj)
-                    }, 5000);
-
-
-                    setTimeout(async () => {
-                        obj.level = "Delivering"
-                        console.log(obj)
-                        await updateNanaOrder(obj)
-                    }, 15000);
-
 
                     const response = {
                         status_code: 200,
@@ -1055,7 +1065,6 @@ exports.updateOrderByDriver = async (req, reply) => {
 
                     return response
                 }
-
             }
         }
         if (req.body.StatusId == 3) {
@@ -1063,14 +1072,7 @@ exports.updateOrderByDriver = async (req, reply) => {
             const _order = await Order.findById(req.query.id).populate('user_id').populate('driver_id')
             let msg = `تم توصيل طلبكم رقم: ${_order._id}`;
             console.log(msg)
-
             CreateNotification(clientFCM, msg, _order._id, _order.driver_id.name, _order.user_id._id);
-
-            const sp = await Order.findByIdAndUpdate((req.query.id), {
-                StatusId: req.body.StatusId,
-                Notes: req.body.Notes
-            }, { new: true })
-
 
             const _points = await Point.findOne({
                 $and: [{ 'supplier_id': _order.driver_id.supplier_id }, { 'min_value': { $lt: _order.Total } }, { 'max_value': { $gte: order.Total } },]
@@ -1122,12 +1124,25 @@ exports.updateOrderByDriver = async (req, reply) => {
                 }
             }
 
-            const obj = {
-                order_id: order.nanaOrderId,
-                level: "Delivered",
-                token: tokenObj.token_id
+            if (order.nanaOrderId) {
+                const obj = {
+                    order_id: order.nanaOrderId,
+                    level: "Delivered",
+                    token: tokenObj.token_id
+                }
+                let status = await updateNanaOrder(obj)
+                if (status.data.result.new_level == 'Delivered') {
+                    await Order.findByIdAndUpdate((req.query.id), {
+                        StatusId: req.body.StatusId,
+                        Notes: req.body.Notes
+                    }, { new: true })
+                }
+            } else {
+                await Order.findByIdAndUpdate((req.query.id), {
+                    StatusId: req.body.StatusId,
+                    Notes: req.body.Notes
+                }, { new: true })
             }
-            await updateNanaOrder(obj)
 
             const response = {
                 status_code: 200,
@@ -1137,7 +1152,6 @@ exports.updateOrderByDriver = async (req, reply) => {
             }
             return response
         }
-
         if (req.body.StatusId == 6) {
             if (order.StatusId == 1) {
                 var raduis = await setting.findById('5c6758e0c65f421a494cef89')
