@@ -704,8 +704,7 @@ exports.addOrderFromNana = async (req, reply) => {
     var users = []
 
     try {
-        let orders = await Order.findOne({ nanaOrderId: req.body.order_id })
-        console.log(orders)
+        let orders = await Order.findOne({ nanaOrderId: req.body.id })
         if (orders) {
             // update
 
