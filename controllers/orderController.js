@@ -235,7 +235,7 @@ async function updateOrder(obj) {
                         driver_id: obj.driver_id
                     }, { new: true })
                     const driver = await Drivers.findById(obj.driver_id)
-                    // let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
+                    let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
 
                     const response = {
                         status_code: 200,
@@ -323,7 +323,6 @@ async function updateOrder(obj) {
 }
 
 async function updateNanaOrder(obj) {
-    // let url = "http://139.59.151.199/api/sync_store_products_by_key"
     let url = "https://nana.sa/api/change_order_level_by_key"
     let config = {
         headers: {
@@ -332,8 +331,6 @@ async function updateNanaOrder(obj) {
         }
     }
 
-    console.log(obj)
-    obj.token = null
     axios.post(url, obj, config)
         .then(function (response) {
             console.log(response.data);
@@ -736,21 +733,36 @@ exports.addOrderFromNana = async (req, reply) => {
             }
 
             switch (req.body.new_level) {
-                case "Waiting":
-                    await axios.post('https://nana.sa/api/change_order_level_by_key', { order_id: req.body.id, level: 'Waiting for Shopping', config })
-                    break;
                 case "Waiting for Shopping":
-                    await updateOrder(obj).then((x) => {
-                        reply.send(x)
-                    });
+                    await axios.post('https://nana.sa/api/change_order_level_by_key', { order_id: req.body.id, level: 'Shopping', config })
+                        .then(function (response) {
+                            console.log(response.data);
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
                     break;
                 case "Shopping":
                     await axios.post('https://nana.sa/api/change_order_level_by_key', { order_id: req.body.id, level: 'Packaged', config })
+                        .then(function (response) {
+                            console.log(response.data);
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
                     break;
                 case "Packaged":
                     await axios.post('https://nana.sa/api/change_order_level_by_key', { order_id: req.body.id, level: 'Delivering', config })
+                        .then(function (response) {
+                            console.log(response.data);
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
                     break;
                 case "Delivering":
+                    //await axios.post('https://nana.sa/api/change_order_level_by_key', { order_id: req.body.id, level: 'Delivering', config })
+
                     obj.StatusId = 2
                     await updateOrder(obj).then((x) => {
                         reply.send(x)
@@ -1036,26 +1048,30 @@ exports.updateOrderByDriver = async (req, reply) => {
                     }
                     return response
                 } else {
-                    // var acceptLimit = await setting.findById('5c921977c4410f17e1c1ac4c')
-                    // var val = parseFloat(acceptLimit.value, 10)
-                    // var allCurrentOrder = await Order.find({ $and: [{ dirver_id: req.user._id }, { StatusId: 2 }] }).count()
-                    // if (allCurrentOrder <= val) {
                     let msg = `تم استلام طلبكم وجاري التوصيل طلب رقم: ${order._id}`;
-                    // console.log(req.user._id)
                     const sp = await Order.findByIdAndUpdate((req.query.id), {
                         StatusId: req.body.StatusId,
                         Notes: req.body.Notes,
                         driver_id: req.user._id
                     }, { new: true })
                     const driver = await Drivers.findById(req.user._id)
-                    let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
+                    CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
 
                     const obj = {
                         order_id: order.nanaOrderId,
-                        level: "Delivering",
+                        level: "Waiting for Shopping",
                         token: tokenObj.token_id
                     }
                     await updateNanaOrder(obj)
+
+                    // obj.level = "Shopping",
+                    //     await updateNanaOrder(obj)
+
+                    // obj.level = "Packaged",
+                    //     await updateNanaOrder(obj)
+
+                    // obj.level = "Delivering",
+                    //     await updateNanaOrder(obj)
 
                     const response = {
                         status_code: 200,
@@ -1065,15 +1081,6 @@ exports.updateOrderByDriver = async (req, reply) => {
                     }
 
                     return response
-                    // } else {
-                    //     const response = {
-                    //         status_code: 404,
-                    //         status: false,
-                    //         message: 'عذرا .. لقد تجاوزت الحد المسموح به لقبول الطلبات الجديدة',
-                    //         items: sp
-                    //     }
-                    //     return response
-                    // }
                 }
             }
         }
