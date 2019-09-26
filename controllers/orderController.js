@@ -254,7 +254,7 @@ async function updateOrder(obj) {
             let msg = `تم توصيل طلبكم رقم: ${_order._id}`;
             console.log(msg)
 
-            CreateNotification(clientFCM, msg, _order._id, _order.driver_id.name, _order.user_id._id);
+            //CreateNotification(clientFCM, msg, _order._id, _order.driver_id.name, _order.user_id._id);
 
             const sp = await Order.findByIdAndUpdate((order._id), {
                 StatusId: obj.StatusId,
@@ -262,54 +262,54 @@ async function updateOrder(obj) {
             }, { new: true })
 
 
-            const _points = await Point.findOne({
-                $and: [{ 'supplier_id': _order.driver_id.supplier_id }, { 'min_value': { $lt: _order.Total } }, { 'max_value': { $gte: order.Total } },]
-            })
+            // const _points = await Point.findOne({
+            //     $and: [{ 'supplier_id': _order.driver_id.supplier_id }, { 'min_value': { $lt: _order.Total } }, { 'max_value': { $gte: order.Total } },]
+            // })
 
-            if (_order.driver_id.supplier_id != "5c67f4ba0fb3d50d6e9f03f3") {
-                //commision
-                var commsions = await setting.findById('5d26ecdc7c213e5998ea3799')
-                var commsion_val = parseFloat(commsions.value, 10)
+            // if (_order.driver_id.supplier_id != "5c67f4ba0fb3d50d6e9f03f3") {
+            //     //commision
+            //     var commsions = await setting.findById('5d26ecdc7c213e5998ea3799')
+            //     var commsion_val = parseFloat(commsions.value, 10)
 
-                const _comapny_commesion = await companyCommision.findOne({ 'supplier_id': _order.driver_id.supplier_id })
+            //     const _comapny_commesion = await companyCommision.findOne({ 'supplier_id': _order.driver_id.supplier_id })
 
-                if (_comapny_commesion) {
-                    console.log('find')
-                    await companyCommision.findOneAndUpdate(({ supplier_id: _order.driver_id.supplier_id }), {
-                        $inc: { value: commsion_val }
-                    }, { new: true })
-                } else {
-                    console.log('not find')
-                    let ـcompanyCommision = new companyCommision({
-                        supplier_id: _order.driver_id.supplier_id,
-                        value: commsion_val,
-                        totalPay: 0,
-                        dt_date: getCurrentDateTime()
-                    });
-                    await ـcompanyCommision.save();
-                }
-            }
+            //     if (_comapny_commesion) {
+            //         console.log('find')
+            //         await companyCommision.findOneAndUpdate(({ supplier_id: _order.driver_id.supplier_id }), {
+            //             $inc: { value: commsion_val }
+            //         }, { new: true })
+            //     } else {
+            //         console.log('not find')
+            //         let ـcompanyCommision = new companyCommision({
+            //             supplier_id: _order.driver_id.supplier_id,
+            //             value: commsion_val,
+            //             totalPay: 0,
+            //             dt_date: getCurrentDateTime()
+            //         });
+            //         await ـcompanyCommision.save();
+            //     }
+            // }
 
             const _user_points = await UserPoint.findOne({
                 $and: [{ 'user_id': _order.user_id._id }]
             })
 
-            if (_points) {
-                console.log(_points)
-                if (_user_points) {
-                    const UserPoints = await UserPoint.findByIdAndUpdate((_user_points._id), {
-                        $inc: { points: _points.points }
-                    }, { new: true })
-                } else {
-                    let UserPoints = new UserPoint({
-                        user_id: _order.user_id._id,
-                        supplier_id: _order.driver_id.supplier_id,
-                        points: _points.points,
-                        point_price: _points.point_price
-                    });
-                    await UserPoints.save();
-                }
-            }
+            // if (_points) {
+            //     console.log(_points)
+            //     if (_user_points) {
+            //         const UserPoints = await UserPoint.findByIdAndUpdate((_user_points._id), {
+            //             $inc: { points: _points.points }
+            //         }, { new: true })
+            //     } else {
+            //         let UserPoints = new UserPoint({
+            //             user_id: _order.user_id._id,
+            //             supplier_id: _order.driver_id.supplier_id,
+            //             points: _points.points,
+            //             point_price: _points.point_price
+            //         });
+            //         await UserPoints.save();
+            //     }
+            // }
 
             const response = {
                 status_code: 200,
