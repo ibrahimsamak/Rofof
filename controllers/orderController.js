@@ -342,13 +342,23 @@ async function updateNanaOrder(obj) {
         }
     }
 
-    axios.post(url, obj, config)
-        .then(async function (response) {
-            console.log(response.data);
-        })
-        .catch(function (error) {
-            console.log(error);
-        });
+    try {
+        let requestData = axios.post(url, obj, config)
+        // .then(async function (response) {
+        //     console.log(response.data);
+        //     return response
+        // })
+        // .catch(function (error) {
+        //     console.log(error);
+        //     return error
+        // });
+        console.log(requestData.data)
+        return requestData
+    } catch (err) {
+        console.log(err)
+        return err
+    }
+
 }
 
 // add new order of products
@@ -1025,15 +1035,16 @@ exports.updateOrderByDriver = async (req, reply) => {
                             token: tokenObj.token_id
                         }
                         let status1 = await updateNanaOrder(obj)
-                        if (status1.data.result.new_level == 'Shopping') {
+                        console.log(status1)
+                        if (status1.data.result && status1.data.result.new_level == 'Shopping') {
                             obj.level = "Packaged"
                             console.log(obj)
                             let status2 = await updateNanaOrder(obj)
-                            if (status2.data.result.new_level == 'Packaged') {
+                            if (status2.data.result && status2.data.result.new_level == 'Packaged') {
                                 obj.level = "Delivering"
                                 console.log(obj)
                                 let status3 = await updateNanaOrder(obj)
-                                if (status3.data.result.new_level == 'Delivering') {
+                                if (status3.data.result && status3.data.result.new_level == 'Delivering') {
                                     let msg = `تم استلام طلبكم وجاري التوصيل طلب رقم: ${order._id}`;
                                     const sp = await Order.findByIdAndUpdate((req.query.id), {
                                         StatusId: req.body.StatusId,
@@ -1042,8 +1053,24 @@ exports.updateOrderByDriver = async (req, reply) => {
                                     }, { new: true })
                                     const driver = await Drivers.findById(req.user._id)
                                     CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
+                                    const response = {
+                                        status_code: 200,
+                                        status: true,
+                                        message: 'تم تعديل الطلب بنجاح',
+                                        items: sp
+                                    }
+                                    return response
+                                } else {
+                                    let response = status3.data
+                                    return response
                                 }
+                            } else {
+                                let response = status2.data
+                                return response
                             }
+                        } else {
+                            let response = status1.data
+                            return response
                         }
                     } else {
                         let msg = `تم استلام طلبكم وجاري التوصيل طلب رقم: ${order._id}`;
@@ -1054,16 +1081,15 @@ exports.updateOrderByDriver = async (req, reply) => {
                         }, { new: true })
                         const driver = await Drivers.findById(req.user._id)
                         CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
+                        const response = {
+                            status_code: 200,
+                            status: true,
+                            message: 'تم تعديل الطلب بنجاح',
+                            items: sp
+                        }
+                        return response
                     }
 
-                    const response = {
-                        status_code: 200,
-                        status: true,
-                        message: 'تم تعديل الطلب بنجاح',
-                        items: sp
-                    }
-
-                    return response
                 }
             }
         }
@@ -1131,26 +1157,42 @@ exports.updateOrderByDriver = async (req, reply) => {
                     token: tokenObj.token_id
                 }
                 let status = await updateNanaOrder(obj)
-                if (status.data.result.new_level == 'Delivered') {
-                    await Order.findByIdAndUpdate((req.query.id), {
+                if (status.data.result && status.data.result.new_level == 'Delivered') {
+                    const sp = await Order.findByIdAndUpdate((req.query.id), {
                         StatusId: req.body.StatusId,
                         Notes: req.body.Notes
                     }, { new: true })
+
+                    const response = {
+                        status_code: 200,
+                        status: true,
+                        message: 'تم تعديل الطلب بنجاح',
+                        items: sp
+                    }
+                    return response
+                } else {
+                    const response = {
+                        status_code: 400,
+                        status: false,
+                        message: 'حدث خطأ ما .. الرجاء المحاولة فيما بعد',
+                        items: []
+                    }
+                    return response
                 }
             } else {
-                await Order.findByIdAndUpdate((req.query.id), {
+                const sp = await Order.findByIdAndUpdate((req.query.id), {
                     StatusId: req.body.StatusId,
                     Notes: req.body.Notes
                 }, { new: true })
-            }
 
-            const response = {
-                status_code: 200,
-                status: true,
-                message: 'تم تعديل الطلب بنجاح',
-                items: sp
+                const response = {
+                    status_code: 200,
+                    status: true,
+                    message: 'تم تعديل الطلب بنجاح',
+                    items: sp
+                }
+                return response
             }
-            return response
         }
         if (req.body.StatusId == 6) {
             if (order.StatusId == 1) {
