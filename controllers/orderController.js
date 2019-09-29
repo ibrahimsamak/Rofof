@@ -791,7 +791,7 @@ exports.addOrderFromNana = async (req, reply) => {
             let Orders = new Order({
                 nanaOrderId: req.body.id,
                 orderFrom: 'نعناع',
-                addressDetails: '',
+                addressDetails: req.body.user.phone,
                 orderType: req_items[0].uom,
                 lat: req.body.user.latitude,
                 lng: req.body.user.longitude,
@@ -897,18 +897,18 @@ exports.addOrderDriver = async (req, reply) => {
         await _Notification.save();
         CreateExtraNotification(driverFCM, 'لديك طلب جديد في حدود منطقتك', order._id, 'زبون جديد', req.body.driver_id);
 
-        if (order.nanaOrderId) {
-            console.log('nanaOrderId: ' + order.nanaOrderId)
-            var tokenObj = await tokens.findOne({ supplier_id: order.supplier_id })
+        // if (order.nanaOrderId) {
+        //     console.log('nanaOrderId: ' + order.nanaOrderId)
+        //     var tokenObj = await tokens.findOne({ supplier_id: order.supplier_id })
 
-            const obj = {
-                order_id: order.nanaOrderId,
-                level: "Waiting",
-                token: tokenObj.token_id
-            }
-            console.log(obj)
-            await updateNanaOrder(obj)
-        }
+        //     const obj = {
+        //         order_id: order.nanaOrderId,
+        //         level: "Shopping",
+        //         token: tokenObj.token_id
+        //     }
+        //     console.log(obj)
+        //     await updateNanaOrder(obj)
+        // }
 
         const response = {
             status_code: 200,
