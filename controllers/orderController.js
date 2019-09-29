@@ -791,7 +791,7 @@ exports.addOrderFromNana = async (req, reply) => {
             let Orders = new Order({
                 nanaOrderId: req.body.id,
                 orderFrom: 'نعناع',
-                addressDetails:req.body.user.fullName +' '+ req.body.user.phone,
+                addressDetails: req.body.user.fullName + ' ' + req.body.user.phone,
                 orderType: req_items[0].uom,
                 lat: req.body.user.latitude,
                 lng: req.body.user.longitude,
@@ -1195,100 +1195,111 @@ exports.updateOrderByDriver = async (req, reply) => {
             }
         }
         if (req.body.StatusId == 6) {
-            if (order.StatusId == 1) {
-                var raduis = await setting.findById('5c6758e0c65f421a494cef89')
-
-                let msg = `قام السائق برفض الطلب رقم: ${order._id}`;
-                console.log(msg)
-                var arr = []
-                const driver = await Drivers.findById(req.user._id)
-                let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
-                const sp = await Order.findByIdAndUpdate((req.query.id), {
-                    StatusId: 1,
-                    driver_id: null,
-                    Notes: ''
-                }, { new: true })
-
-                const devicesID = await Admin.find().select('fcmToken');
-                devicesID.forEach(element => {
-                    arr.push(element['fcmToken'])
-                });
-                CreateNotificationMultiple(arr, msg, '', '', '');
-
-
-                var database = firebase.database(); // Ref to Firebase Database
-                var geoFire = new GeoFire(database.ref('userLocation')); // Ref to 'Item Locations' table
-                // geoFire.set('3',[21.400404, 23.1030303]);
-                var driversToken = []
-                var keys_arr = []
-                let geoQuery = geoFire.query({
-                    center: [Number(order.lat), Number(order.lng)],
-                    radius: 1000
-                })
-
-                var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
-                    console.log(key + " entered query at " + location + " (" + distance + " km from center)");
-                    let obj = {
-                        key: key,
-                        location: location,
-                        distance: distance
-                    }
-                    console.log(key)
-                    if (distance <= parseFloat(raduis.value, 10)) {
-                        keys_arr.push(key)
-                    }
-                });
-
-                var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
-                    console.log(key + " exited query to " + location + " (" + distance + " km from center)");
-                    onKeyEnteredRegistration.cancel();
-
-                    // const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
-                    // console.log(drivers)
-                    // drivers.forEach(element => {
-                    // });
-                    await Drivers.find({ _id: { $in: keys_arr } }, function (err, _users) {
-                        // console.log(users)
-                        users = _users
-                        _users.forEach(element => {
-                            driversToken.push(element.fcmToken)
-                        });
-                    });
-                    CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', User_id)
-                    async.each(users, async function (data, callback) {
-                        let _Notification = new Notifications({
-                            from: 'زبون جديد',
-                            user_id: data._id,
-                            title: 'متابعة الطلبات',
-                            msg: 'تم تلقي طلب جديد في حدود منطقتك الحالية',
-                            dt_date: getCurrentDateTime(),
-                            type: 1,
-                            body_parms: rs._id,
-                            isRead: false
-                        });
-
-                        await _Notification.save();
-                        console.log('saved')
-                    });
-                    // reply.send(driversToken)
-                });
-
-                const response = {
-                    status_code: 200,
-                    status: true,
-                    message: 'تم تعديل الطلب بنجاح',
-                    items: sp
-                }
-                return response
-            } else {
+            if (order.nanaOrderId) {
                 const response = {
                     status_code: 404,
                     status: false,
-                    message: 'عذرا لايمكن رفض الطلب بعد قبوله',
+                    message: 'لا يمكن الغاءالطلبات القادمة من نعناع الا بعد التواصل مع خدمة العملاء في نعناع',
                     items: []
                 }
                 return response
+            } else {
+                if (order.StatusId == 1) {
+                    var raduis = await setting.findById('5c6758e0c65f421a494cef89')
+
+                    let msg = `قام السائق برفض الطلب رقم: ${order._id}`;
+                    console.log(msg)
+                    var arr = []
+                    const driver = await Drivers.findById(req.user._id)
+                    let notification = CreateNotification(clientFCM, msg, order._id, driver.name, order.user_id._id);
+                    const sp = await Order.findByIdAndUpdate((req.query.id), {
+                        StatusId: 1,
+                        driver_id: null,
+                        Notes: ''
+                    }, { new: true })
+
+                    const devicesID = await Admin.find().select('fcmToken');
+                    devicesID.forEach(element => {
+                        arr.push(element['fcmToken'])
+                    });
+                    CreateNotificationMultiple(arr, msg, '', '', '');
+
+
+                    var database = firebase.database(); // Ref to Firebase Database
+                    var geoFire = new GeoFire(database.ref('userLocation')); // Ref to 'Item Locations' table
+                    // geoFire.set('3',[21.400404, 23.1030303]);
+                    var driversToken = []
+                    var keys_arr = []
+                    let geoQuery = geoFire.query({
+                        center: [Number(order.lat), Number(order.lng)],
+                        radius: 1000
+                    })
+
+                    var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
+                        console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+                        let obj = {
+                            key: key,
+                            location: location,
+                            distance: distance
+                        }
+                        console.log(key)
+                        if (distance <= parseFloat(raduis.value, 10)) {
+                            keys_arr.push(key)
+                        }
+                    });
+
+                    var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
+                        console.log(key + " exited query to " + location + " (" + distance + " km from center)");
+                        onKeyEnteredRegistration.cancel();
+
+                        // const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
+                        // console.log(drivers)
+                        // drivers.forEach(element => {
+                        // });
+                        await Drivers.find({ _id: { $in: keys_arr } }, function (err, _users) {
+                            // console.log(users)
+                            users = _users
+                            _users.forEach(element => {
+                                driversToken.push(element.fcmToken)
+                            });
+                        });
+                        CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', User_id)
+                        async.each(users, async function (data, callback) {
+                            let _Notification = new Notifications({
+                                from: 'زبون جديد',
+                                user_id: data._id,
+                                title: 'متابعة الطلبات',
+                                msg: 'تم تلقي طلب جديد في حدود منطقتك الحالية',
+                                dt_date: getCurrentDateTime(),
+                                type: 1,
+                                body_parms: rs._id,
+                                isRead: false
+                            });
+
+                            await _Notification.save();
+                            console.log('saved')
+                        });
+                        // reply.send(driversToken)
+                    });
+
+                    const response = {
+                        status_code: 200,
+                        status: true,
+                        message: 'تم تعديل الطلب بنجاح',
+                        items: sp
+                    }
+                    return response
+                } else {
+                    const response = {
+                        status_code: 404,
+                        status: false,
+                        message: 'عذرا لايمكن رفض الطلب بعد قبوله',
+                        items: []
+                    }
+                    return response
+                }
             }
+
         }
     } catch (err) {
         throw boom.boomify(err)
