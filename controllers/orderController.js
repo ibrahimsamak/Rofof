@@ -42,6 +42,7 @@ const { userRate } = require('../models/userRate')
 const { getCurrentDateTime } = require('../models/Constant');
 const { coupon } = require('../models/couponmodel');
 const { tokens } = require('../models/Constant');
+const { companyCommision } = require('../models/companyCommision');
 
 const options = {
     provider: 'google',
