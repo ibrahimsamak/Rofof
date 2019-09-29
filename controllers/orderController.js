@@ -791,7 +791,7 @@ exports.addOrderFromNana = async (req, reply) => {
             let Orders = new Order({
                 nanaOrderId: req.body.id,
                 orderFrom: 'نعناع',
-                addressDetails: req.body.user.phone,
+                addressDetails:req.body.user.fullName +' '+ req.body.user.phone,
                 orderType: req_items[0].uom,
                 lat: req.body.user.latitude,
                 lng: req.body.user.longitude,
