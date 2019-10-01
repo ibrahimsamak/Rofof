@@ -362,6 +362,10 @@ async function updateNanaOrder(obj) {
 
 }
 
+exports.testNana = async (req, reply) => {
+    const obj = Order.find({ nanaOrderId: req.params.id })
+    return obj
+}
 // add new order of products
 // order type : 1 - product , 2 - refill , 3 - gaz Tunck , 4 - gaz Product
 exports.addOrder = async (req, reply) => {
@@ -802,7 +806,7 @@ exports.addOrderFromNana = async (req, reply) => {
                 Total: req.body.totalPrice,
                 Notes: req.body.notes,
                 StatusId: 1,
-                delivery_date: new Date(req.body.receivingDate),
+                delivery_date: new Date(req.body.receivingDate * 1000),
                 // delivery_time: '',
                 user_id: '5d8a58a2e7179a022441c566',
                 items: items,
@@ -1098,8 +1102,8 @@ exports.updateOrderByDriver = async (req, reply) => {
 
             const _order = await Order.findById(req.query.id).populate('user_id').populate('driver_id')
             let msg = `تم توصيل طلبكم رقم: ${_order._id}`;
-            console.log(msg)
-            CreateNotification(clientFCM, msg, _order._id, _order.driver_id.name, _order.user_id._id);
+            console.log(_order)
+            CreateNotification(clientFCM, msg, _order._id, _order.driver_id.name || '', _order.user_id._id);
 
             const _points = await Point.findOne({
                 $and: [{ 'supplier_id': _order.driver_id.supplier_id }, { 'min_value': { $lt: _order.Total } }, { 'max_value': { $gte: order.Total } },]

@@ -24,6 +24,11 @@ const fastify = require('fastify')({
 const routes = [
   
   {
+    method: 'GET',
+    url: '/api/testNana/:id',
+    handler: orderController.testNana
+  },
+  {
     method: 'POST',
     url: '/api/nana/order',
     handler: orderController.addOrderFromNana
