@@ -802,7 +802,7 @@ exports.addOrderFromNana = async (req, reply) => {
                 Total: req.body.totalPrice,
                 Notes: req.body.notes,
                 StatusId: 1,
-                // delivery_date: '',
+                delivery_date: new Date(req.body.receivingDate),
                 // delivery_time: '',
                 user_id: '5d8a58a2e7179a022441c566',
                 items: items,
@@ -1109,7 +1109,6 @@ exports.updateOrderByDriver = async (req, reply) => {
                 //commision
                 var commsions = await setting.findById('5d26ecdc7c213e5998ea3799')
                 var commsion_val = parseFloat(commsions.value, 10)
-
                 const _comapny_commesion = await companyCommision.findOne({ 'supplier_id': _order.driver_id.supplier_id })
 
                 if (_comapny_commesion) {
