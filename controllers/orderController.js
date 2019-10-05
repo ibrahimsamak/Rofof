@@ -387,107 +387,107 @@ exports.addOrder = async (req, reply) => {
             //     current_city = x;
             // });
 
-            if (req.body.paymentType == 3) {
-                //check points numbers
-                const userPoints = await UserPoint.findOne({ user_id: User_id });
-                if (userPoints) {
-                    const points_to_mony = parseFloat(userPoints.points, 10) / parseFloat(userPoints.point_price, 10)
-                    console.log(userPoints)
-                    let disc = (((parseFloat(req.body.subTotal, 10))) + parseFloat(req.body.deliveryCost, 10))
+            // if (req.body.paymentType == 3) {
+            //     //check points numbers
+            //     const userPoints = await UserPoint.findOne({ user_id: User_id });
+            //     if (userPoints) {
+            //         const points_to_mony = parseFloat(userPoints.points, 10) / parseFloat(userPoints.point_price, 10)
+            //         console.log(userPoints)
+            //         let disc = (((parseFloat(req.body.subTotal, 10))) + parseFloat(req.body.deliveryCost, 10))
 
-                    if (points_to_mony >= disc) {
-                        let Orders = new Order({
-                            orderFrom: 'سوق غاز',
-                            addressDetails: req.body.addressDetails,
-                            orderType: req.body.orderType,
-                            lat: req.body.lat,
-                            lng: req.body.lng,
-                            paymentType: req.body.paymentType,
-                            deliveryCost: req.body.deliveryCost,
-                            subTotal: req.body.subTotal,
-                            Total: ((parseFloat(req.body.subTotal, 10))) + parseFloat(req.body.deliveryCost, 10),
-                            Notes: req.body.Notes,
-                            StatusId: 1,
-                            delivery_date: req.body.delivery_date,
-                            delivery_time: req.body.delivery_time,
-                            user_id: User_id,
-                            items: req.body.items,
-                            city: req.body.addressDetails,
-                            supplier_id: req.body.supplier_id,
-                            createAt: getCurrentDateTime(),
-                        });
-                        let rs = await Orders.save();
-                        const response = {
-                            items: rs,
-                            status: true,
-                            status_code: 200,
-                            message: 'تمت اضافة طلبك بنجاح'
-                        }
+            //         if (points_to_mony >= disc) {
+            //             let Orders = new Order({
+            //                 orderFrom: 'سوق غاز',
+            //                 addressDetails: req.body.addressDetails,
+            //                 orderType: req.body.orderType,
+            //                 lat: req.body.lat,
+            //                 lng: req.body.lng,
+            //                 paymentType: req.body.paymentType,
+            //                 deliveryCost: req.body.deliveryCost,
+            //                 subTotal: req.body.subTotal,
+            //                 Total: ((parseFloat(req.body.subTotal, 10))) + parseFloat(req.body.deliveryCost, 10),
+            //                 Notes: req.body.Notes,
+            //                 StatusId: 1,
+            //                 delivery_date: req.body.delivery_date,
+            //                 delivery_time: req.body.delivery_time,
+            //                 user_id: User_id,
+            //                 items: req.body.items,
+            //                 city: req.body.addressDetails,
+            //                 supplier_id: req.body.supplier_id,
+            //                 createAt: getCurrentDateTime(),
+            //             });
+            //             let rs = await Orders.save();
+            //             const response = {
+            //                 items: rs,
+            //                 status: true,
+            //                 status_code: 200,
+            //                 message: 'تمت اضافة طلبك بنجاح'
+            //             }
 
-                        const _userPoints = await UserPoint.findByIdAndUpdate((userPoints._id), {
-                            $inc: { points: -disc }
-                        }, { new: true })
+            //             const _userPoints = await UserPoint.findByIdAndUpdate((userPoints._id), {
+            //                 $inc: { points: -disc }
+            //             }, { new: true })
 
-                        const devicesID = await Admin.find().select('fcmToken');
-                        devicesID.forEach(element => {
-                            arr.push(element['fcmToken'])
-                        });
-                        CreateNotificationMultiple(arr, 'جديد!! لديكم طلب تعبئة خزان غاز ', '', '', '');
-                        reply.send(response)
-                    } else {
-                        const response = {
-                            items: null,
-                            status: false,
-                            status_code: 404,
-                            message: 'لاتوجد لديك نقاط كافية'
-                        }
-                        reply.send(response)
-                    }
-                } else {
-                    const response = {
-                        items: null,
-                        status: false,
-                        status_code: 404,
-                        message: 'لاتوجد لديك نقاط كافية'
-                    }
-                    reply.send(response)
-                }
-            } else {
-                let Orders = new Order({
-                    orderFrom: 'سوق غاز',
-                    addressDetails: req.body.addressDetails,
-                    orderType: req.body.orderType,
-                    lat: req.body.lat,
-                    lng: req.body.lng,
-                    paymentType: req.body.paymentType,
-                    deliveryCost: req.body.deliveryCost,
-                    subTotal: req.body.subTotal,
-                    Total: ((parseFloat(req.body.subTotal, 10))) + parseFloat(req.body.deliveryCost, 10),
-                    Notes: req.body.Notes,
-                    StatusId: 1,
-                    delivery_date: req.body.delivery_date,
-                    delivery_time: req.body.delivery_time,
-                    user_id: User_id,
-                    items: req.body.items,
-                    city: req.body.addressDetails,
-                    supplier_id: req.body.supplier_id,
-                    createAt: getCurrentDateTime(),
-                });
-                let rs = await Orders.save();
-                const response = {
-                    items: rs,
-                    status: true,
-                    status_code: 200,
-                    message: 'تمت اضافة طلبك بنجاح'
-                }
-
-                const devicesID = await Admin.find().select('fcmToken');
-                devicesID.forEach(element => {
-                    arr.push(element['fcmToken'])
-                });
-                CreateNotificationMultiple(arr, 'جديد!! لديكم طلب تعبئة خزان غاز ', '', '', '');
-                reply.send(response)
+            //             const devicesID = await Admin.find().select('fcmToken');
+            //             devicesID.forEach(element => {
+            //                 arr.push(element['fcmToken'])
+            //             });
+            //             CreateNotificationMultiple(arr, 'جديد!! لديكم طلب تعبئة خزان غاز ', '', '', '');
+            //             reply.send(response)
+            //         } else {
+            //             const response = {
+            //                 items: null,
+            //                 status: false,
+            //                 status_code: 404,
+            //                 message: 'لاتوجد لديك نقاط كافية'
+            //             }
+            //             reply.send(response)
+            //         }
+            //     } else {
+            //         const response = {
+            //             items: null,
+            //             status: false,
+            //             status_code: 404,
+            //             message: 'لاتوجد لديك نقاط كافية'
+            //         }
+            //         reply.send(response)
+            //     }
+            // } else {
+            let Orders = new Order({
+                orderFrom: 'سوق غاز',
+                addressDetails: req.body.addressDetails,
+                orderType: req.body.orderType,
+                lat: req.body.lat,
+                lng: req.body.lng,
+                paymentType: req.body.paymentType,
+                deliveryCost: req.body.deliveryCost,
+                subTotal: req.body.subTotal,
+                Total: ((parseFloat(req.body.subTotal, 10))) + parseFloat(req.body.deliveryCost, 10),
+                Notes: req.body.Notes,
+                StatusId: 1,
+                delivery_date: req.body.delivery_date,
+                delivery_time: req.body.delivery_time,
+                user_id: User_id,
+                items: req.body.items,
+                city: req.body.addressDetails,
+                supplier_id: req.body.supplier_id,
+                createAt: getCurrentDateTime(),
+            });
+            let rs = await Orders.save();
+            const response = {
+                items: rs,
+                status: true,
+                status_code: 200,
+                message: 'تمت اضافة طلبك بنجاح'
             }
+
+            const devicesID = await Admin.find().select('fcmToken');
+            devicesID.forEach(element => {
+                arr.push(element['fcmToken'])
+            });
+            CreateNotificationMultiple(arr, 'جديد!! لديكم طلب تعبئة خزان غاز ', '', '', '');
+            reply.send(response)
+            // }
         } else {
             var current_city = ''
             const User_id = req.user._id
@@ -495,226 +495,226 @@ exports.addOrder = async (req, reply) => {
                 current_city = x;
             });
 
-            if (req.body.paymentType == 3) {
-                //check points numbers
-                const userPoints = await UserPoint.findOne({ user_id: User_id });
-                if (userPoints) {
-                    const points_to_mony = parseFloat(userPoints.points, 10) / parseFloat(userPoints.point_price, 10)
-                    console.log(userPoints)
-                    let disc = (((parseFloat(req.body.subTotal, 10))) + parseFloat(req.body.deliveryCost, 10))
+            // if (req.body.paymentType == 3) {
+            //     //check points numbers
+            //     const userPoints = await UserPoint.findOne({ user_id: User_id });
+            //     if (userPoints) {
+            //         const points_to_mony = parseFloat(userPoints.points, 10) / parseFloat(userPoints.point_price, 10)
+            //         console.log(userPoints)
+            //         let disc = (((parseFloat(req.body.subTotal, 10))) + parseFloat(req.body.deliveryCost, 10))
 
-                    if (points_to_mony >= disc) {
-                        let Orders = new Order({
-                            orderFrom: 'سوق غاز',
-                            addressDetails: req.body.addressDetails,
-                            orderType: req.body.orderType,
-                            lat: req.body.lat,
-                            lng: req.body.lng,
-                            paymentType: req.body.paymentType,
-                            deliveryCost: req.body.deliveryCost,
-                            subTotal: req.body.subTotal,
-                            Total: ((parseFloat(req.body.subTotal, 10))) + parseFloat(req.body.deliveryCost, 10),
-                            Notes: req.body.Notes,
-                            StatusId: 1,
-                            delivery_date: req.body.delivery_date,
-                            delivery_time: req.body.delivery_time,
-                            user_id: User_id,
-                            items: req.body.items,
-                            city: req.body.addressDetails,
-                            supplier_id: req.body.supplier_id,
-                            createAt: getCurrentDateTime(),
-                        });
-                        let rs = await Orders.save();
-                        const response = {
-                            items: rs,
-                            status: true,
-                            status_code: 200,
-                            message: 'تمت اضافة طلبك بنجاح'
-                        }
+            //         if (points_to_mony >= disc) {
+            //             let Orders = new Order({
+            //                 orderFrom: 'سوق غاز',
+            //                 addressDetails: req.body.addressDetails,
+            //                 orderType: req.body.orderType,
+            //                 lat: req.body.lat,
+            //                 lng: req.body.lng,
+            //                 paymentType: req.body.paymentType,
+            //                 deliveryCost: req.body.deliveryCost,
+            //                 subTotal: req.body.subTotal,
+            //                 Total: ((parseFloat(req.body.subTotal, 10))) + parseFloat(req.body.deliveryCost, 10),
+            //                 Notes: req.body.Notes,
+            //                 StatusId: 1,
+            //                 delivery_date: req.body.delivery_date,
+            //                 delivery_time: req.body.delivery_time,
+            //                 user_id: User_id,
+            //                 items: req.body.items,
+            //                 city: req.body.addressDetails,
+            //                 supplier_id: req.body.supplier_id,
+            //                 createAt: getCurrentDateTime(),
+            //             });
+            //             let rs = await Orders.save();
+            //             const response = {
+            //                 items: rs,
+            //                 status: true,
+            //                 status_code: 200,
+            //                 message: 'تمت اضافة طلبك بنجاح'
+            //             }
 
-                        const _userPoints = await UserPoint.findByIdAndUpdate((userPoints._id), {
-                            $inc: { points: -disc }
-                        }, { new: true })
+            //             const _userPoints = await UserPoint.findByIdAndUpdate((userPoints._id), {
+            //                 $inc: { points: -disc }
+            //             }, { new: true })
 
-                        var database = firebase.database(); // Ref to Firebase Database
-                        var geoFire = new GeoFire(database.ref('userLocation')); // Ref to 'Item Locations' table
-                        // geoFire.set('3',[21.400404, 23.1030303]);
+            //             var database = firebase.database(); // Ref to Firebase Database
+            //             var geoFire = new GeoFire(database.ref('userLocation')); // Ref to 'Item Locations' table
+            //             // geoFire.set('3',[21.400404, 23.1030303]);
 
-                        var driversToken = []
-                        var keys_arr = []
-                        let geoQuery = geoFire.query({
-                            center: [Number(req.body.lat), Number(req.body.lng)],
-                            radius: 1000
-                        })
+            //             var driversToken = []
+            //             var keys_arr = []
+            //             let geoQuery = geoFire.query({
+            //                 center: [Number(req.body.lat), Number(req.body.lng)],
+            //                 radius: 1000
+            //             })
 
-                        var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
-                            console.log(key + " entered query at " + location + " (" + distance + " km from center)");
-                            let obj = {
-                                key: key,
-                                location: location,
-                                distance: distance
-                            }
+            //             var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
+            //                 console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+            //                 let obj = {
+            //                     key: key,
+            //                     location: location,
+            //                     distance: distance
+            //                 }
 
-                            if (distance <= parseFloat(raduis.value, 10)) {
-                                keys_arr.push(key)
-                            }
-                        });
+            //                 if (distance <= parseFloat(raduis.value, 10)) {
+            //                     keys_arr.push(key)
+            //                 }
+            //             });
 
-                        var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
-                            console.log(key + " exited query to " + location + " (" + distance + " km from center)");
-                            onKeyEnteredRegistration.cancel();
+            //             var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
+            //                 console.log(key + " exited query to " + location + " (" + distance + " km from center)");
+            //                 onKeyEnteredRegistration.cancel();
 
-                            // const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
-                            // console.log(drivers)
-                            // drivers.forEach(element => {
-                            // });
-                            await Drivers.find({ _id: { $in: keys_arr } }, function (err, _users) {
-                                // console.log(users)
-                                users = _users
-                                _users.forEach(element => {
-                                    if (element.supplier_id == req.body.supplier_id) {
-                                        driversToken.push(element['fcmToken'])
-                                    }
-                                });
-                            });
-                            console.log(driversToken)
-                            async.each(users, async function (data, callback) {
-                                let _Notification = new Notifications({
-                                    from: 'زبون جديد',
-                                    user_id: data._id,
-                                    title: 'متابعة الطلبات',
-                                    msg: 'تم تلقي طلب جديد في حدود منطقتك الحالية',
-                                    dt_date: getCurrentDateTime(),
-                                    type: 1,
-                                    body_parms: rs._id,
-                                    isRead: false
-                                });
+            //                 // const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
+            //                 // console.log(drivers)
+            //                 // drivers.forEach(element => {
+            //                 // });
+            //                 await Drivers.find({ _id: { $in: keys_arr } }, function (err, _users) {
+            //                     // console.log(users)
+            //                     users = _users
+            //                     _users.forEach(element => {
+            //                         if (element.supplier_id == req.body.supplier_id) {
+            //                             driversToken.push(element['fcmToken'])
+            //                         }
+            //                     });
+            //                 });
+            //                 console.log(driversToken)
+            //                 async.each(users, async function (data, callback) {
+            //                     let _Notification = new Notifications({
+            //                         from: 'زبون جديد',
+            //                         user_id: data._id,
+            //                         title: 'متابعة الطلبات',
+            //                         msg: 'تم تلقي طلب جديد في حدود منطقتك الحالية',
+            //                         dt_date: getCurrentDateTime(),
+            //                         type: 1,
+            //                         body_parms: rs._id,
+            //                         isRead: false
+            //                     });
 
-                                await _Notification.save();
-                                console.log('saved')
-                            });
+            //                     await _Notification.save();
+            //                     console.log('saved')
+            //                 });
 
-                            CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', User_id)
-                            // reply.send(driversToken)
-                        });
+            //                 CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', User_id)
+            //                 // reply.send(driversToken)
+            //             });
 
-                        reply.send(response)
-                    } else {
-                        const response = {
-                            items: null,
-                            status: false,
-                            status_code: 404,
-                            message: 'لاتوجد لديك نقاط كافية'
-                        }
-                        reply.send(response)
-                    }
-                } else {
-                    const response = {
-                        items: null,
-                        status: false,
-                        status_code: 404,
-                        message: 'لاتوجد لديك نقاط كافية'
-                    }
-                    reply.send(response)
-                }
-            } else {
-                if (req.body.coupon && req.body.coupon != '') {
-                    const coupon_discount_rate = await coupon.findOne({ coupon: req.body.coupon }).select('discount_rate');
-                    discount_rate = ((coupon_discount_rate.discount_rate) * (parseFloat(req.body.subTotal, 10)))
-                }
-                let Orders = new Order({
-                    orderFrom: 'سوق غاز',
-                    addressDetails: req.body.addressDetails,
-                    orderType: req.body.orderType,
-                    lat: req.body.lat,
-                    lng: req.body.lng,
-                    paymentType: req.body.paymentType,
-                    deliveryCost: req.body.deliveryCost,
-                    subTotal: req.body.subTotal,
-                    Total: (parseFloat(req.body.subTotal.toFixed(2), 10)) + (parseFloat(req.body.deliveryCost, 10) - discount_rate),
-                    Notes: req.body.Notes,
-                    StatusId: 1,
-                    delivery_date: req.body.delivery_date,
-                    delivery_time: req.body.delivery_time,
-                    user_id: User_id,
-                    items: req.body.items,
-                    city: req.body.addressDetails,
-                    supplier_id: req.body.supplier_id,
-                    createAt: getCurrentDateTime(),
-                });
-
-                let rs = await Orders.save();
-                const response = {
-                    items: rs,
-                    status: true,
-                    status_code: 200,
-                    message: 'تمت اضافة طلبك بنجاح'
-                }
-
-                var database = firebase.database(); // Ref to Firebase Database
-                var geoFire = new GeoFire(database.ref('userLocation')); // Ref to 'Item Locations' table
-                // geoFire.set('3',[21.400404, 23.1030303]);
-                var driversToken = []
-                var keys_arr = []
-                let geoQuery = geoFire.query({
-                    center: [Number(req.body.lat), Number(req.body.lng)],
-                    radius: 1000
-                })
-
-                var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
-                    console.log(key + " entered query at " + location + " (" + distance + " km from center)");
-                    let obj = {
-                        key: key,
-                        location: location,
-                        distance: distance
-                    }
-
-                    if (distance <= parseFloat(raduis.value, 10)) {
-                        keys_arr.push(key)
-                    }
-                    console.log(key)
-                });
-
-                var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
-                    console.log(key + " exited query to " + location + " (" + distance + " km from center)");
-                    onKeyEnteredRegistration.cancel();
-
-                    // const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
-                    // console.log(drivers)
-                    // drivers.forEach(element => {
-                    // });
-                    await Drivers.find({ _id: { $in: keys_arr } }, function (err, _users) {
-                        // console.log(users)
-                        users = _users
-                        _users.forEach(element => {
-                            if (element.supplier_id == req.body.supplier_id) {
-                                driversToken.push(element['fcmToken'])
-                            }
-                        });
-                    });
-
-                    async.each(users, async function (data, callback) {
-                        let _Notification = new Notifications({
-                            from: 'زبون جديد',
-                            user_id: data._id,
-                            title: 'متابعة الطلبات',
-                            msg: 'تم تلقي طلب جديد في حدود منطقتك الحالية',
-                            dt_date: getCurrentDateTime(),
-                            type: 1,
-                            body_parms: rs._id,
-                            isRead: false
-                        });
-
-                        await _Notification.save();
-                        console.log('saved')
-                    });
-
-                    CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', User_id)
-                    // reply.send(driversToken)
-                });
-
-                reply.send(response)
+            //             reply.send(response)
+            //         } else {
+            //             const response = {
+            //                 items: null,
+            //                 status: false,
+            //                 status_code: 404,
+            //                 message: 'لاتوجد لديك نقاط كافية'
+            //             }
+            //             reply.send(response)
+            //         }
+            //     } else {
+            //         const response = {
+            //             items: null,
+            //             status: false,
+            //             status_code: 404,
+            //             message: 'لاتوجد لديك نقاط كافية'
+            //         }
+            //         reply.send(response)
+            //     }
+            // } else {
+            if (req.body.coupon && req.body.coupon != '') {
+                const coupon_discount_rate = await coupon.findOne({ coupon: req.body.coupon }).select('discount_rate');
+                discount_rate = ((coupon_discount_rate.discount_rate) * (parseFloat(req.body.subTotal, 10)))
             }
+            let Orders = new Order({
+                orderFrom: 'سوق غاز',
+                addressDetails: req.body.addressDetails,
+                orderType: req.body.orderType,
+                lat: req.body.lat,
+                lng: req.body.lng,
+                paymentType: req.body.paymentType,
+                deliveryCost: req.body.deliveryCost,
+                subTotal: req.body.subTotal,
+                Total: (parseFloat(req.body.subTotal.toFixed(2), 10)) + (parseFloat(req.body.deliveryCost, 10) - discount_rate),
+                Notes: req.body.Notes,
+                StatusId: 1,
+                delivery_date: req.body.delivery_date,
+                delivery_time: req.body.delivery_time,
+                user_id: User_id,
+                items: req.body.items,
+                city: req.body.addressDetails,
+                supplier_id: req.body.supplier_id,
+                createAt: getCurrentDateTime(),
+            });
+
+            let rs = await Orders.save();
+            const response = {
+                items: rs,
+                status: true,
+                status_code: 200,
+                message: 'تمت اضافة طلبك بنجاح'
+            }
+
+            var database = firebase.database(); // Ref to Firebase Database
+            var geoFire = new GeoFire(database.ref('userLocation')); // Ref to 'Item Locations' table
+            // geoFire.set('3',[21.400404, 23.1030303]);
+            var driversToken = []
+            var keys_arr = []
+            let geoQuery = geoFire.query({
+                center: [Number(req.body.lat), Number(req.body.lng)],
+                radius: 1000
+            })
+
+            var onKeyEnteredRegistration = geoQuery.on("key_entered", function (key, location, distance) {
+                console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+                let obj = {
+                    key: key,
+                    location: location,
+                    distance: distance
+                }
+
+                if (distance <= parseFloat(raduis.value, 10)) {
+                    keys_arr.push(key)
+                }
+                console.log(key)
+            });
+
+            var onKeyExitedRegistration = geoQuery.on("ready", async function (key, location, distance) {
+                console.log(key + " exited query to " + location + " (" + distance + " km from center)");
+                onKeyEnteredRegistration.cancel();
+
+                // const drivers = await Drivers.find({ _id: { $in: keys_arr } }).select('fcmToken')
+                // console.log(drivers)
+                // drivers.forEach(element => {
+                // });
+                await Drivers.find({ _id: { $in: keys_arr } }, function (err, _users) {
+                    // console.log(users)
+                    users = _users
+                    _users.forEach(element => {
+                        if (element.supplier_id == req.body.supplier_id) {
+                            driversToken.push(element['fcmToken'])
+                        }
+                    });
+                });
+
+                async.each(users, async function (data, callback) {
+                    let _Notification = new Notifications({
+                        from: 'زبون جديد',
+                        user_id: data._id,
+                        title: 'متابعة الطلبات',
+                        msg: 'تم تلقي طلب جديد في حدود منطقتك الحالية',
+                        dt_date: getCurrentDateTime(),
+                        type: 1,
+                        body_parms: rs._id,
+                        isRead: false
+                    });
+
+                    await _Notification.save();
+                    console.log('saved')
+                });
+
+                CreateNotificationMultiple(driversToken, 'تم تلقي طلب جديد في حدود منطقتك الحالية', rs._id, '', User_id)
+                // reply.send(driversToken)
+            });
+
+            reply.send(response)
+            // }
         }
         //push notification to all drivers within 30 km
     } catch (err) {
