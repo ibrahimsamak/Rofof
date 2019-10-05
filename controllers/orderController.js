@@ -775,6 +775,7 @@ exports.addOrderFromNana = async (req, reply) => {
         } else {
             // add new
             var raduis = await setting.findById('5c6758e0c65f421a494cef89')
+            var Delivery_Price = await setting.findById('5c6758d9c65f421a494cef88')
             await getAddress(req.body.user.latitude, req.body.user.longitude).then((x) => {
                 current_city = x;
             });
@@ -793,6 +794,7 @@ exports.addOrderFromNana = async (req, reply) => {
                 }
                 items.push(obj)
             });
+            let orderDate = new Date(req.body.receivingDate * 1000)
             let Orders = new Order({
                 nanaOrderId: req.body.id,
                 orderFrom: 'نعناع',
@@ -801,12 +803,12 @@ exports.addOrderFromNana = async (req, reply) => {
                 lat: req.body.user.latitude,
                 lng: req.body.user.longitude,
                 paymentType: 1,
-                deliveryCost: (items.length * 5),
-                subTotal: (req.body.totalPrice) - (items.length * 5),
+                deliveryCost: (items.length * Delivery_Price.value),
+                subTotal: (req.body.totalPrice) - (items.length * Delivery_Price.value),
                 Total: req.body.totalPrice,
                 Notes: req.body.notes,
                 StatusId: 1,
-                delivery_date: new Date(req.body.receivingDate * 1000),
+                delivery_date: orderDate,
                 // delivery_time: '',
                 user_id: '5d8a58a2e7179a022441c566',
                 items: items,
@@ -1736,7 +1738,7 @@ exports.getOrdersSeacrh = async (req, reply) => {
                 console.log(item)
                 var result = _.filter(item, function (itm) {
                     if (itm.user_id) {
-                        return (itm.user_id.full_name.indexOf(req.body.full_name) >= 0 || itm.user_id.phone_number.indexOf(req.body.phone_number) >= 0)
+                        return (itm.user_id.full_name.indexOf(req.body.full_name) >= 0 || itm.user_id.phone_number.indexOf(req.body.phone_number) >= 0 || itm.nanaOrderId.indexOf(req.body.nanaOrderId) >= 0)
                     }
                 });
                 var result1 = lodash(result).slice((page) * limit).take(limit).value();

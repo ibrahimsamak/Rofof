@@ -741,6 +741,11 @@ const routes = [
   },
   {
     method: 'GET',
+    url: '/api/OrdersPerYear',
+    handler: reportController.OrdersPerYear
+  },
+  {
+    method: 'GET',
     url: '/api/UsersPerYear',
     handler: reportController.UsersPerYear
   },

@@ -229,12 +229,12 @@ exports.rpt_getCompanyCommission = async (req, reply) => {
 exports.addCompanyCommission = async (req, reply) => {
     try {
         const _companyCommision = await companyCommision.findOne({ supplier_id: req.body.supplier_id })
-        if (req.body.totalPay > _companyCommision.value){
+        if (req.body.totalPay > _companyCommision.value) {
             await companyCommision.findOneAndUpdate(({ supplier_id: req.body.supplier_id }), {
                 $inc: { value: -(_companyCommision.value), totalPay: (_companyCommision.value) },
                 last_date_pay: getCurrentDateTime()
             }, { new: true })
-    
+
             const response = {
                 status_code: 200,
                 status: true,
@@ -242,12 +242,12 @@ exports.addCompanyCommission = async (req, reply) => {
                 items: companyCommision
             }
             reply.send(response)
-        }else{
+        } else {
             await companyCommision.findOneAndUpdate(({ supplier_id: req.body.supplier_id }), {
                 $inc: { value: -(req.body.totalPay), totalPay: (req.body.totalPay) },
                 last_date_pay: getCurrentDateTime()
             }, { new: true })
-    
+
             const response = {
                 status_code: 200,
                 status: true,
@@ -328,7 +328,7 @@ exports.getDailyRevenu = async (req, reply) => {
                     $gte: new Date(new Date().setHours(00, 00, 00)),
                     $lt: new Date(new Date().setHours(23, 59, 59))
                 }
-            }, { supplier_id: supplier_id}, { StatusId: 5 }]
+            }, { supplier_id: supplier_id }, { StatusId: 5 }]
         }).count()
 
         _items.push(
@@ -353,7 +353,7 @@ exports.getDailyRevenu = async (req, reply) => {
 exports.getProductsCount = async (req, reply) => {
     try {
         const supplier_id = req.params.id
-        
+
         var _items = []
         var Products = await Product.find({ supplier_id: supplier_id }).count();
         var Suppliers = await Supplier.find().count()
@@ -588,6 +588,41 @@ exports.UsersPerYear = async (req, reply) => {
 
                 const response = {
                     name: 'مستخدم جديد',
+                    series: orderedResult
+                }
+                reply.send(response)
+            });
+    } catch (err) {
+        throw boom.boomify(err)
+    }
+}
+
+
+exports.OrdersPerYear = async (req, reply) => {
+    try {
+        const monthNames = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+
+        var items = []
+        await Order.find({ orderFrom: 'نعناع' }).sort({ createAt: 1 })
+            .exec(function (err, result) {
+                result.forEach(element => {
+                    var month_number = new Date(element.createAt).getMonth();
+                    var month_name = monthNames[month_number];
+                    items.push({ month: month_name, user: element._id })
+                });
+
+                var _result = lodash(items)
+                    .groupBy('month')
+                    .map(function (items, _name) {
+                        return { name: _name, value: items.length }
+                    }).value()
+
+                var orderedResult = lodash.orderBy(_result, ['count'], ['desc']);
+
+                const response = {
+                    name: 'طلب من نعناع',
                     series: orderedResult
                 }
                 reply.send(response)
