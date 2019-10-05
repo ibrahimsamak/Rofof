@@ -605,7 +605,7 @@ exports.OrdersPerYear = async (req, reply) => {
         ];
 
         var items = []
-        await Order.find({ orderFrom: 'نعناع' }).sort({ createAt: 1 })
+        await Order.find({ $and: [{ orderFrom: 'نعناع' }, { StatusId: 3 }] }).sort({ createAt: 1 })
             .exec(function (err, result) {
                 result.forEach(element => {
                     var month_number = new Date(element.createAt).getMonth();
