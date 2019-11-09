@@ -965,7 +965,7 @@ exports.updateOrderByUser = async (req, reply) => {
         }
         if (req.body.StatusId == 5) {
             const _order = await Order.findById(req.query.id).populate('user_id')
-            const tokenObj = await tokens.findOne({ supplier_id: order.supplier_id })
+            const tokenObj = await tokens.findOne({ supplier_id: _order.supplier_id })
 
             if (_order.StatusId == 1) {
                 const order = await Order.findById(req.query.id).populate('user_id')
