@@ -134,7 +134,7 @@ exports.userlistInfo = async (req, reply) => {
 
 exports.block = async (req, reply) => {
     try {
-        const user = await Drivers.findByIdAndUpdate((req.params.id), {
+        const user = await Drivers.findByIdAndUpdate((req.body._id), {
             isBlock: req.body.isBlock
         }, { new: true })
 

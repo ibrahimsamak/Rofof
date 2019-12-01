@@ -1,96 +1,92 @@
-const Joi = require('joi');
-const mongoose = require('mongoose');
+const Joi = require("joi");
+const mongoose = require("mongoose");
 
-const Productschema = mongoose.Schema({
+const Productschema = mongoose.Schema(
+  {
     name: {
-        type: String,
-        required: false
+      type: String,
+      required: false
     },
     description: {
-        type: String,
-        required: false
+      type: String,
+      required: false
+    },
+    barcode: {
+      type: String
     },
     rate: {
-        type: Number,
-        required: false
+      type: Number,
+      required: false
+    },
+    qty: {
+      type: Number,
+      required: false
     },
     price: {
-        type: Number,
-        required: false
-    },
-    price_buy_new: {
-        type: Number,
-        required: false
+      type: Number,
+      required: false
     },
     image: {
-        type: String,
-        required: false
+      type: String,
+      required: false
     },
-    warrenty: {
-        type: String,
-        required: false
+    status: {
+      type: Boolean
     },
-    category_id: {
-        type: mongoose.Schema.Types.ObjectId, ref: 'Category'
+    images: {
+      type: [String]
     },
     createat: {
-        type: Date
+      type: Date
     },
-    isNewProduct: {
-        type: Boolean,
-        required: false
+    by_user_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "renters"
     },
-    isReplacement: {
-        type: Boolean,
-        required: false
-    },
-    isSort: {
-        type: Number,
-        required: false
-    },
-    supplier_id: {
-        type: mongoose.Schema.Types.ObjectId, ref: 'Supplier',
-        required: true
+    by_admin_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "admins"
     }
-}, { versionKey: false });
+  },
+  { versionKey: false }
+);
 
 const schema = mongoose.Schema({
-    name: {
-        type: String,
-        required: true
-    },
-    image: {
-        type: String,
-        required: true
-    }
+  name: {
+    type: String,
+    required: true
+  },
+  image: {
+    type: String,
+    required: true
+  }
 });
 
 const Supplierschema = mongoose.Schema({
-    name: {
-        type: String,
-        required: true
-    },
-    image: {
-        type: String,
-        required: true
-    },
-    details: {
-        type: String
-    },
-    email: {
-        type: String
-    },
-    password: {
-        type: String
-    }
+  name: {
+    type: String,
+    required: true
+  },
+  image: {
+    type: String,
+    required: true
+  },
+  details: {
+    type: String
+  },
+  email: {
+    type: String
+  },
+  password: {
+    type: String
+  }
 });
 
+Productschema.index({ category_id: 1 });
 
-Productschema.index({ "category_id": 1 })
-
-const Category = mongoose.model('Category', schema);
-const Supplier = mongoose.model('Supplier', Supplierschema);
-const Product = mongoose.model('Product', Productschema);
+const Category = mongoose.model("Category", schema);
+const Supplier = mongoose.model("Supplier", Supplierschema);
+const Product = mongoose.model("Product", Productschema);
 
 exports.Category = Category;
 exports.Supplier = Supplier;

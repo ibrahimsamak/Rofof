@@ -1,38 +1,39 @@
+const Joi = require("joi");
+const mongoose = require("mongoose");
 
-
-const Joi = require('joi');
-const mongoose = require('mongoose');
-
-const Adminschema = mongoose.Schema({
+const Adminschema = mongoose.Schema(
+  {
     full_name: {
-        type: String,
-        required: true
+      type: String,
+      required: true
     },
     email: {
-        type: String,
-        required: true
+      type: String,
+      required: true
     },
     password: {
-        type: String,
-        required: true
+      type: String,
+      required: true
     },
     phone_number: {
-        type: String,
-        required: false
+      type: String,
+      required: false
     },
-    token:{
-        type: String,
-        required: false
+    token: {
+      type: String,
+      required: false
     },
-    fcmToken:{
-        type: String,
-        required: false
+    fcmToken: {
+      type: String,
+      required: false
     },
-    roles:{
-        type: [{name:{type:String}}]
+    roles: {
+      type: [{ name: { type: String } }]
     }
-}, { versionKey: false });
+  },
+  { versionKey: false }
+);
 
-const Admin = mongoose.model('Admin', Adminschema)
+const Admin = mongoose.model("admins", Adminschema);
 
-exports.Admin = Admin; 
+exports.Admin = Admin;

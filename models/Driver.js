@@ -1,81 +1,58 @@
+const Joi = require("joi");
+const mongoose = require("mongoose");
+const { getCurrentDateTime } = require("../models/Constant");
 
-
-const Joi = require('joi');
-const mongoose = require('mongoose');
-const { getCurrentDateTime } = require('../models/Constant');
-
-const Driverschema = mongoose.Schema({
+const renterschema = mongoose.Schema(
+  {
     name: {
-        type: String,
-        required: true
-    },
-    supplier_id: {
-        type: mongoose.Schema.Types.ObjectId, ref: 'Supplier',
-        required: true
+      type: String,
+      required: true
     },
     phone_number: {
-        type: String,
-        required: true
+      type: String,
+      required: true
     },
     image: {
-        type: String,
-        required: false
-    },
-    images: {
-        type: [String]
-    },
-    dt_dob: {
-        type: Date,
-        required: false
+      type: String,
+      required: false
     },
     email: {
-        type: String,
-        required: true
+      type: String,
+      required: true
     },
     password: {
-        type: String,
-        required: true
+      type: String,
+      required: true
     },
     address: {
-        type: String,
-        required: false
+      type: String,
+      required: false
     },
     isBlock: {
-        type: Boolean,
-        required: false
-    },
-    driver_status: {
-        type: Boolean,
-        required: false
+      type: Boolean,
+      required: false
     },
     createAt: {
-        type: Date, default: getCurrentDateTime()
+      type: Date,
+      default: getCurrentDateTime()
     },
     fcmToken: {
-        type: String,
-        required: false
+      type: String,
+      required: false
     },
     token: {
-        type: String,
-        required: false
+      type: String,
+      required: false
     },
     car_name: {
-        type: String,
-        required: false
-    },
-    car_color: {
-        type: String,
-        required: false
-    },
-    car_number: {
-        type: String,
-        required: false
+      type: String,
+      required: false
     }
-    
-}, { versionKey: false });
+  },
+  { versionKey: false }
+);
 
+renterschema.index({ supplier_id: 1 });
+const renters = mongoose.model("renters", renterschema);
 
-Driverschema.index({ "supplier_id": 1 })
-const Driver = mongoose.model('Driver', Driverschema);
-
-exports.Drivers = Driver; 
+exports.renters = renters;

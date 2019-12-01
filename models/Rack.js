@@ -1,0 +1,60 @@
+const Joi = require("joi");
+const mongoose = require("mongoose");
+
+const RackSchema = mongoose.Schema(
+  {
+    rack_no: {
+      type: String,
+      required: true
+    },
+    description: {
+      type: String,
+      required: true
+    },
+    isReserved: {
+      type: Boolean,
+      required: true
+    },
+    inventory_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "inventory"
+    }
+  },
+  { versionKey: false }
+);
+
+const RackReservationSchema = mongoose.Schema(
+  {
+    rack_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "racks"
+    },
+    contract_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "contract"
+    },
+    renter_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "renters"
+    },
+    renter_type: {
+      type: String
+    },
+    start_date: {
+      type: Date
+    },
+    end_date: {
+      type: Date
+    },
+    amount: {
+      type: Number
+    }
+  },
+  { versionKey: false }
+);
+
+const racks = mongoose.model("racks", RackSchema);
+const reserve = mongoose.model("reserve", RackReservationSchema);
+
+exports.rack = racks;
+exports.reserve = reserve;
