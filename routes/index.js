@@ -29,8 +29,18 @@ const routes = [
   },
   {
     method: "GET",
+    url: "/api/rackListNotReserved",
+    handler: rackController.rackListNotReserved
+  },
+  {
+    method: "GET",
     url: "/api/reserve/:id",
     handler: rackController.getReserveRack
+  },
+  {
+    method: "GET",
+    url: "/api/getReserveRackById/:id",
+    handler: rackController.getReserveRackById
   },
   {
     method: "POST",
@@ -383,6 +393,11 @@ const routes = [
     handler: productController.getProducts
   },
   {
+    method: "GET",
+    url: "/api/getAllProducts",
+    handler: productController.getAllProducts
+  },
+  {
     method: "POST",
     url: "/api/getProductsRenters",
     handler: productController.getProductsRenters
@@ -391,6 +406,11 @@ const routes = [
     method: "POST",
     url: "/api/getProductsForRenter",
     handler: productController.getProductsForRenter
+  },
+  {
+    method: "POST",
+    url: "/api/getProductsForRenterById",
+    handler: productController.getProductsForRenterById
   },
   {
     method: "GET",
@@ -582,6 +602,11 @@ const routes = [
   },
   {
     method: "POST",
+    url: "/api/deleteOrder/:id",
+    handler: orderController.deleteOrder
+  },
+  {
+    method: "POST",
     url: "/api/addOrder",
     handler: orderController.addOrder
   },
@@ -626,7 +651,7 @@ const routes = [
   },
   {
     method: "GET",
-    url: "/api/getOrderDetails",
+    url: "/api/getOrderDetails/:id",
     handler: orderController.getOrderDetails
   },
   {
@@ -980,7 +1005,7 @@ const routes = [
   },
   {
     method: "POST",
-    url: "/api/getProductDetailsByBarCode/",
+    url: "/api/getProductDetailsByBarCode",
     handler: productController.getProductDetailsByBarCode
   },
   {
@@ -988,7 +1013,11 @@ const routes = [
     url: "/api/makeCoverImage/:id",
     handler: productController.makeCoverImage
   },
-
+  {
+    method: "GET",
+    url: "/api/getProductsByRackId/:id",
+    handler: productController.getProductsByRackId
+  },
   {
     method: "GET",
     url: "/api/company/getDailyRevenu/:id",

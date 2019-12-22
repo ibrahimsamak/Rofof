@@ -4,6 +4,7 @@ const { getCurrentDateTime } = require("../models/Constant");
 
 const Orderschema = mongoose.Schema(
   {
+    Order_no: { type: String, required: false },
     Total: { type: Number, required: false },
     Admin_Total: { type: Number, required: false },
     Renter_Total: { type: Number, required: false },

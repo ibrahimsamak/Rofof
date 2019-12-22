@@ -46,6 +46,13 @@ const Productschema = mongoose.Schema(
     by_admin_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "admins"
+    },
+    category_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category"
+    },
+    discountPrice: {
+      type: Number
     }
   },
   { versionKey: false }

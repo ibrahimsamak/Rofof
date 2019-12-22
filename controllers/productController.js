@@ -21,6 +21,7 @@ const { Product, Category, Supplier } = require("../models/Product");
 const { client } = require("../models/cache");
 const { getCurrentDateTime } = require("../models/Constant");
 const { setting } = require("../models/Constant");
+const { rack, reserve } = require("../models/Rack");
 
 async function uploadImages(img) {
   return new Promise(function(resolve, reject) {
@@ -39,24 +40,7 @@ async function uploadImages(img) {
 // Get All Categories
 exports.getCategories = async (req, reply) => {
   try {
-    // client.del('Categories')
-    // client.get = util.promisify(client.get)
-    // const cachedObj = await client.get('Categories')
-    // if (cachedObj) {
-    //     console.log('serving from cach')
-    //     const response = {
-    //         status_code: 200,
-    //         status: true,
-    //         message: 'return succssfully',
-    //         items: JSON.parse(cachedObj)
-    //     }
-    //     return response
-    // }
-    const Categories = await Category.find({
-      _id: { $nin: ["5c681f80ad8747623305f634", "5c8cb6c10a34fc002491f406"] }
-    });
-    // client.set('Categories', JSON.stringify(Categories))
-    // client.expire('Categories', 86400)
+    const Categories = await Category.find();
     const response = {
       status_code: 200,
       status: true,
@@ -103,6 +87,54 @@ exports.getProducts = async (req, reply) => {
         };
         reply.send(response);
       });
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.getProductsByRackId = async (req, reply) => {
+  try {
+    const renter = await reserve.findOne({
+      rack_id: { $in: [req.params.id] }
+    });
+    if (renter) {
+      await Product.find({ by_user_id: renter.renter_id }).exec(function(
+        err,
+        item
+      ) {
+        const response = {
+          status_code: 200,
+          status: true,
+          message: "return succssfully",
+          items: item
+        };
+        reply.send(response);
+      });
+    } else {
+      const response = {
+        status_code: 200,
+        status: true,
+        message: "return succssfully",
+        items: []
+      };
+      reply.send(response);
+    }
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.getAllProducts = async (req, reply) => {
+  try {
+    await Product.find().exec(function(err, item) {
+      const response = {
+        status_code: 200,
+        status: true,
+        message: "return succssfully",
+        items: item
+      };
+      reply.send(response);
+    });
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -186,6 +218,24 @@ exports.getProductsForRenter = async (req, reply) => {
   }
 };
 
+exports.getProductsForRenterById = async (req, reply) => {
+  try {
+    await Product.find({ by_user_id: req.body.by_user_id })
+      .populate("by_user_id")
+      .exec(function(err, item) {
+        const response = {
+          status_code: 200,
+          status: true,
+          message: "return succssfully",
+          items: item
+        };
+        reply.send(response);
+      });
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
 // Get single Product by ID
 exports.getSingleProductClient = async (req, reply) => {
   try {
@@ -206,22 +256,7 @@ exports.getSingleProductClient = async (req, reply) => {
 //cPanel
 exports.getCategoriesAdmin = async (req, reply) => {
   try {
-    // client.del('Categories')
-    // client.get = util.promisify(client.get)
-    // const cachedObj = await client.get('Categories')
-    // if (cachedObj) {
-    //     console.log('serving from cach')
-    //     const response = {
-    //         status_code: 200,
-    //         status: true,
-    //         message: 'return succssfully',
-    //         items: JSON.parse(cachedObj)
-    //     }
-    //     return response
-    // }
     const Categories = await Category.find();
-    // client.set('Categories', JSON.stringify(Categories))
-    // client.expire('Categories', 86400)
     const response = {
       status_code: 200,
       status: true,
@@ -602,6 +637,8 @@ exports.addProduct = async (req, reply) => {
             by_user_id: req.raw.body.by_user_id,
             // by_admin_id: req.raw.body.by_admin_id,
             barcode: req.raw.body.barcode,
+            category_id: req.raw.body.category_id,
+            discountPrice: req.raw.body.discountPrice,
             createat: getCurrentDateTime(),
             status: false
           });
@@ -657,7 +694,9 @@ exports.updateProduct = async (req, reply) => {
               price: req.raw.body.price,
               // by_user_id: req.raw.body.by_user_id,
               // by_admin_id: req.raw.body.by_admin_id,
-              barcode: req.raw.body.barcode
+              barcode: req.raw.body.barcode,
+              category_id: req.raw.body.category_id,
+              discountPrice: req.raw.body.discountPrice
             },
             { upsert: true },
             function(err) {
@@ -702,7 +741,9 @@ exports.updateProduct = async (req, reply) => {
           price: req.raw.body.price,
           by_user_id: req.raw.body.by_user_id,
           by_admin_id: req.raw.body.by_admin_id,
-          barcode: req.raw.body.barcode
+          barcode: req.raw.body.barcode,
+          category_id: req.raw.body.category_id,
+          discountPrice: req.raw.body.discountPrice
         },
         { new: true }
       );
@@ -792,7 +833,9 @@ exports.getSingleProduct = async (req, reply) => {
 
 exports.getProductDetailsByBarCode = async (req, reply) => {
   try {
-    const products = await Product.findOne({ barcode: req.body.barcode });
+    const products = await Product.findOne({
+      $or: [{ barcode: req.body.barcode }, { name: req.body.name }]
+    });
     console.log(products);
     if (products) {
       const response = {

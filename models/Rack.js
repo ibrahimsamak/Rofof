@@ -15,6 +15,15 @@ const RackSchema = mongoose.Schema(
       type: Boolean,
       required: true
     },
+    length: {
+      type: Number
+    },
+    width: {
+      type: Number
+    },
+    height: {
+      type: Number
+    },
     inventory_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "inventory"
@@ -26,8 +35,12 @@ const RackSchema = mongoose.Schema(
 const RackReservationSchema = mongoose.Schema(
   {
     rack_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "racks"
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "racks"
+        }
+      ]
     },
     contract_id: {
       type: mongoose.Schema.Types.ObjectId,
@@ -48,6 +61,12 @@ const RackReservationSchema = mongoose.Schema(
     },
     amount: {
       type: Number
+    },
+    contract_no: {
+      type: String
+    },
+    isApprove: {
+      type: Boolean
     }
   },
   { versionKey: false }

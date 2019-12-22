@@ -6,9 +6,20 @@ const util = require("util");
 const cron = require("node-cron");
 const _ = require("underscore");
 const lodash = require("lodash");
+const async = require("async");
 
 // Get Data Models
 const { rack, reserve } = require("../models/Rack");
+
+function makeid() {
+  var text = "";
+  var possible = "0123456789";
+
+  for (var i = 0; i < 3; i++)
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+  return text;
+}
 
 // cron job for renting racks
 exports.FinishingRentRacks = async function FinishingRentRacks() {
@@ -89,6 +100,9 @@ exports.getSinglerack = async (req, reply) => {
 exports.addrack = async (req, reply) => {
   try {
     let _rack = new rack({
+      length: req.body.length,
+      width: req.body.width,
+      height: req.body.height,
       rack_no: req.body.rack_no,
       description: req.body.description,
       isReserved: false,
@@ -128,7 +142,10 @@ exports.updaterack = async (req, reply) => {
       {
         rack_no: req.body.rack_no,
         description: req.body.description,
-        inventory_id: req.body.inventory_id
+        inventory_id: req.body.inventory_id,
+        length: req.body.length,
+        width: req.body.width,
+        height: req.body.height
       },
       { new: true }
     );
@@ -150,9 +167,31 @@ exports.getReserveRack = async (req, reply) => {
   try {
     await reserve
       .find({ renter_id: req.params.id })
-      .populate("rack_id")
+      .populate({
+        path: "rack_id"
+      })
       .populate("renter_id")
       .populate("contract_id")
+      .sort({ _id: -1 })
+      .exec(function(err, item) {
+        console.log(item);
+        const response = {
+          status_code: 200,
+          status: true,
+          message: "return succssfully",
+          items: item
+        };
+        reply.send(response);
+      });
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.getReserveRackById = async (req, reply) => {
+  try {
+    await reserve
+      .findById(req.params.id)
       .sort({ _id: -1 })
       .exec(function(err, item) {
         console.log(item);
@@ -172,6 +211,8 @@ exports.getReserveRack = async (req, reply) => {
 // Add a new reserve rack
 exports.addReserveRack = async (req, reply) => {
   try {
+    let current_year = new Date().getFullYear();
+    let contract_no = String(current_year) + makeid();
     let _reserve = new reserve({
       rack_id: req.body.rack_id,
       renter_id: req.body.renter_id,
@@ -179,15 +220,25 @@ exports.addReserveRack = async (req, reply) => {
       start_date: req.body.start_date,
       end_date: req.body.end_date,
       amount: req.body.amount,
-      contract_id: req.body.contract_id
+      contract_id: req.body.contract_id,
+      contract_no: contract_no,
+      isApprove: req.body.isApprove
     });
 
-    await rack.findByIdAndUpdate(
+    async.eachSeries(
       req.body.rack_id,
-      { isReserved: true },
-      { new: true }
+      async function updateObject(element, done) {
+        await rack.findByIdAndUpdate(
+          element,
+          { isReserved: true },
+          { new: true }
+        );
+        await _reserve.save();
+      },
+      async function allDone(err) {
+        console.log("all done");
+      }
     );
-    await _reserve.save();
 
     const response = {
       status_code: 200,
@@ -204,12 +255,13 @@ exports.addReserveRack = async (req, reply) => {
 // Update an existing rack
 exports.updateReserveRack = async (req, reply) => {
   try {
+    console.log(req.body);
     const _reserve = await reserve.findByIdAndUpdate(
       req.params.id,
       {
         renter_type: req.body.renter_type,
         start_date: req.body.start_date,
-        ent_date: req.body.ent_date,
+        end_date: req.body.end_date,
         amount: req.body.amount,
         contract_id: req.body.contract_id
       },
@@ -264,6 +316,25 @@ exports.rackList = async (req, reply) => {
   }
 };
 
+exports.rackListNotReserved = async (req, reply) => {
+  try {
+    await rack
+      .find({ isReserved: false })
+      .sort({ _id: -1 })
+      .exec(function(err, item) {
+        const response = {
+          status_code: 200,
+          status: true,
+          message: "return succssfully",
+          items: item
+        };
+        reply.send(response);
+      });
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
 exports.getRackReserveSeacrh = async (req, reply) => {
   try {
     // const admin_id = req.params.id;
@@ -293,24 +364,26 @@ exports.getRackReserveSeacrh = async (req, reply) => {
       };
     }
 
+    console.log(query);
     await reserve
       .find(query)
       .sort({ _id: -1 })
       .populate("renter_id")
-      .populate("rack_id")
+      .populate({
+        path: "rack_id"
+      })
       .populate("contract_id")
       // .skip((page - 1) * limit)
       // .limit(limit)
       .exec(function(err, item) {
         console.log(item);
         var result = _.filter(item, function(itm) {
-          return (
-            itm.rack_id.rack_no.indexOf(req.body.name) >= 0 ||
-            itm.renter_id.name.indexOf(req.body.name) >= 0 ||
-            itm.renter_id.phone_number.indexOf(req.body.phone_number) >= 0
-          );
+          // return (
+          //   itm.renter_id.name.indexOf(req.body.name) >= 0 ||
+          //   itm.renter_id.phone_number.indexOf(req.body.phone_number) >= 0
+          // );
         });
-        var result1 = lodash(result)
+        var result1 = lodash(item)
           .slice(page * limit)
           .take(limit)
           .value();

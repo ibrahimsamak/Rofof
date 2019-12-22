@@ -58,6 +58,16 @@ const options = {
 };
 const geocoder = NodeGeocoder(options);
 
+function makeid() {
+  var text = "";
+  var possible = "0123456789";
+
+  for (var i = 0; i < 3; i++)
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+  return text;
+}
+
 async function getAddress(lat, lng) {
   var current_city = "";
   return new Promise(function(resolve, reject) {
@@ -420,6 +430,7 @@ exports.testNana = async (req, reply) => {
 };
 // add new order of products
 // order type : 1 - product , 2 - refill , 3 - gaz Tunck , 4 - gaz Product
+
 exports.addOrder = async (req, reply) => {
   try {
     var arr = [];
@@ -435,6 +446,7 @@ exports.addOrder = async (req, reply) => {
     });
 
     let Orders = new Order({
+      Order_no: req.body.Order_no,
       Total: parseFloat(req.body.Total, 10).toFixed(2),
       Admin_Total: (
         parseFloat(percentage.value).toFixed(2) *
@@ -1424,43 +1436,23 @@ exports.getDriverOrder = async (req, reply) => {
 // Get Order Details
 exports.getOrderDetails = async (req, reply) => {
   try {
-    const ord = await Order.find({ _id: req.query.id });
-    if (ord.StatusId == 1) {
-      await Order.find({ _id: req.query.id })
-        .sort({ _id: -1 })
-        .populate("user_id")
-        .populate({
-          path: "items.product_id",
-          populate: { path: "product_id" }
-        })
-        .exec(async function(err, item) {
-          const response = {
-            status_code: 200,
-            status: true,
-            message: "return succssfully",
-            items: item
-          };
-          reply.send(response);
-        });
-    } else {
-      const ord = await Order.find({ _id: req.query.id })
-        .sort({ _id: -1 })
-        .populate("user_id")
-        .populate("driver_id")
-        .populate({
-          path: "items.product_id",
-          populate: { path: "product_id" }
-        })
-        .exec(async function(err, item) {
-          const response = {
-            status_code: 200,
-            status: true,
-            message: "return succssfully",
-            items: item
-          };
-          reply.send(response);
-        });
-    }
+    console.log(req.query.id);
+    await Order.find({ Order_no: req.params.id })
+      .sort({ _id: -1 })
+      .populate("user_id")
+      .populate({
+        path: "items.product_id",
+        populate: { path: "product_id" }
+      })
+      .exec(async function(err, item) {
+        const response = {
+          status_code: 200,
+          status: true,
+          message: "return succssfully",
+          items: item
+        };
+        reply.send(response);
+      });
   } catch {
     throw boom.boomify(err);
   }
@@ -1972,6 +1964,37 @@ exports.updateeee = async (req, reply) => {
         reply.send(response);
       }
     });
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.deleteOrder = async (req, reply) => {
+  try {
+    const _order = await Order.findById(req.params.id)
+      .sort({ _id: -1 })
+      .populate("user_id")
+      .populate({
+        path: "items.product_id",
+        populate: { path: "product_id" }
+      });
+
+    async.each(_order.items, async function(data, callback) {
+      await Product.findOneAndUpdate(
+        { _id: data.product_id._id },
+        { $inc: { qty: +parseInt(data.qty) } },
+        { new: true }
+      );
+    });
+
+    await Order.findByIdAndRemove(req.params.id);
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تم ارجاع المنتج بنجاح",
+      items: []
+    };
+    return response;
   } catch (err) {
     throw boom.boomify(err);
   }
