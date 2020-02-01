@@ -155,25 +155,48 @@ exports.getRenters = async (req, reply) => {
 // Add a new renters
 exports.addrenters = async (req, reply) => {
   try {
-    let _user = new renters({
-      name: req.body.name,
-      email: req.body.email,
-      image: req.body.image,
-      address: req.body.address,
-      phone_number: req.body.phone_number,
-      password: encryptPassword(req.body.phone_number),
-      isBlock: false,
-      createAt: getCurrentDateTime()
+    const _user = await renters.findOne({
+      $or: [{ phone_number: req.body.phone_number }, { email: req.body.email }]
     });
-    let rs = await _user.save();
+    if (_user) {
+      if (_user.isBlock == true) {
+        const response = {
+          status_code: 400,
+          status: false,
+          message: "تم حظر المستخدم من قبل الادارة",
+          items: []
+        };
+        return response;
+      } else {
+        const response = {
+          status_code: 400,
+          status: false,
+          message: "البريد الالكتروني او رقم الجوال موجود لدينا مسبقا",
+          items: []
+        };
+        return response;
+      }
+    } else {
+      let _user = new renters({
+        name: req.body.name,
+        email: req.body.email,
+        image: req.body.image,
+        address: req.body.address,
+        phone_number: req.body.phone_number,
+        password: encryptPassword(req.body.phone_number),
+        isBlock: false,
+        createAt: getCurrentDateTime()
+      });
+      let rs = await _user.save();
 
-    const response = {
-      status_code: 200,
-      status: true,
-      message: "return succssfully",
-      items: rs
-    };
-    reply.send(response);
+      const response = {
+        status_code: 200,
+        status: true,
+        message: "return succssfully",
+        items: rs
+      };
+      reply.send(response);
+    }
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -284,6 +307,7 @@ exports.updateprofileFromAdmin = async (req, reply) => {
           name: req.raw.body.name,
           image: img,
           address: req.raw.body.address,
+          email: req.raw.body.email,
           phone_number: req.raw.body.phone_number
         },
         { new: true }
@@ -301,6 +325,7 @@ exports.updateprofileFromAdmin = async (req, reply) => {
         {
           name: req.raw.body.name,
           address: req.raw.body.address,
+          email: req.raw.body.email,
           phone_number: req.raw.body.phone_number
         },
         { new: true }

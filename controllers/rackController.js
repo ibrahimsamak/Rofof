@@ -50,8 +50,8 @@ exports.getrack = async (req, reply) => {
   try {
     var page = parseFloat(req.query.page, 10);
     var limit = parseFloat(req.query.limit, 10);
-    const total = await rack.find().count();
 
+    const total = await rack.find().count();
     await rack
       .find()
       .populate("inventory_id")
@@ -106,7 +106,10 @@ exports.addrack = async (req, reply) => {
       rack_no: req.body.rack_no,
       description: req.body.description,
       isReserved: false,
-      inventory_id: req.body.inventory_id
+      inventory_id: req.body.inventory_id,
+      lengthUnit: req.body.lengthUnit,
+      widthUnit: req.body.widthUnit,
+      heightUnit: req.body.heightUnit
     });
 
     let rs = await _rack.save();
@@ -145,7 +148,10 @@ exports.updaterack = async (req, reply) => {
         inventory_id: req.body.inventory_id,
         length: req.body.length,
         width: req.body.width,
-        height: req.body.height
+        height: req.body.height,
+        lengthUnit: req.body.lengthUnit,
+        widthUnit: req.body.widthUnit,
+        heightUnit: req.body.heightUnit
       },
       { new: true }
     );

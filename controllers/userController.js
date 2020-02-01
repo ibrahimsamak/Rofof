@@ -509,7 +509,8 @@ exports.updateprofileFromAdmin = async (req, reply) => {
           full_name: req.raw.body.full_name,
           image: img,
           address: req.raw.body.address,
-          phone_number: req.raw.body.phone_number
+          phone_number: req.raw.body.phone_number,
+          email: req.raw.body.email
         },
         { new: true }
       );
@@ -526,7 +527,8 @@ exports.updateprofileFromAdmin = async (req, reply) => {
         {
           full_name: req.raw.body.full_name,
           address: req.raw.body.address,
-          phone_number: req.raw.body.phone_number
+          phone_number: req.raw.body.phone_number,
+          email: req.raw.body.email
         },
         { new: true }
       );

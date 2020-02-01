@@ -27,6 +27,15 @@ const RackSchema = mongoose.Schema(
     inventory_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "inventory"
+    },
+    lengthUnit: {
+      type: String
+    },
+    widthUnit: {
+      type: String
+    },
+    heightUnit: {
+      type: String
     }
   },
   { versionKey: false }
