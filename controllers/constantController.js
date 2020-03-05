@@ -719,7 +719,7 @@ exports.updateContact = async (req, reply) => {
     const ContactOptions = await ContactOption.findByIdAndUpdate(
       req.params.id,
       {
-        name: req.body.name,
+        // name: req.body.name,
         data: req.body.data
       },
       { new: true }

@@ -12,6 +12,7 @@ const driverController = require("../controllers/driverController");
 const pointController = require("../controllers/pointController");
 const advController = require("../controllers/advController");
 const couponController = require("../controllers/couponController");
+const favoriteController = require("../controllers/favoriteController");
 const rackController = require("../controllers/rackController");
 
 const fastify = require("fastify")({
@@ -82,6 +83,21 @@ const routes = [
     url: "/api/deleterack/:id",
     handler: rackController.deleterack
   },
+  {
+    method: "GET",
+    url: "/api/Favorite/:id",
+    handler: favoriteController.getFav
+  },
+  {
+    method: "POST",
+    url: "/api/deleteFav/:id",
+    handler: favoriteController.deleteFav
+  },
+  {
+    method: "POST",
+    url: "/api/addFav",
+    handler: favoriteController.addFav
+  },
   //#region Coupon
   {
     method: "GET",
@@ -119,7 +135,7 @@ const routes = [
   //#region Advs
   {
     method: "GET",
-    url: "/api/adv/adv",
+    url: "/api/getAdvs",
     handler: advController.getAdv
   },
   {
@@ -143,7 +159,6 @@ const routes = [
     handler: advController.deleteAdv
   },
   //#endregion
-
   {
     method: "GET",
     url: "/DailyOrders",
@@ -636,8 +651,22 @@ const routes = [
   {
     method: "POST",
     url: "/api/addRate",
-    beforeHandler: [auth.getToken],
     handler: orderController.addRate
+  },
+  {
+    method: "POST",
+    url: "/api/addProcutComment",
+    handler: orderController.addProcutComment
+  },
+  {
+    method: "POST",
+    url: "/api/approveRate/:id",
+    handler: orderController.approveRate
+  },
+  {
+    method: "POST",
+    url: "/api/approveComment/:id",
+    handler: orderController.approveComment
   },
   {
     method: "GET",
@@ -671,6 +700,12 @@ const routes = [
   },
   {
     method: "GET",
+    url: "/api/getOrdersByUserId/:id",
+    handler: orderController.getOrdersByUserId
+  },
+
+  {
+    method: "GET",
     url: "/api/getTunckOrders",
     handler: orderController.getTunckOrders
   },
@@ -686,8 +721,13 @@ const routes = [
   },
   {
     method: "GET",
-    url: "/api/getRatedOrders/:id",
+    url: "/api/getRatedOrders",
     handler: orderController.getRatedOrders
+  },
+  {
+    method: "GET",
+    url: "/api/getRatedProducts",
+    handler: orderController.getRatedProducts
   },
   {
     method: "GET",
@@ -872,6 +912,11 @@ const routes = [
     method: "GET",
     url: "/api/getMostProductSellsRenter/:id",
     handler: reportController.getMostProductSellsRenter
+  },
+  {
+    method: "GET",
+    url: "/api/getProductsByCategory/:id",
+    handler: productController.getProductsByCategory
   },
   {
     method: "GET",

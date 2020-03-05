@@ -1,38 +1,43 @@
-const Joi = require('joi');
-const mongoose = require('mongoose');
+const Joi = require("joi");
+const mongoose = require("mongoose");
 
-const Advschema = mongoose.Schema({
-    name: {
-        type: String,
-        required: true
-    },
+const Advschema = mongoose.Schema(
+  {
     image: {
-        type: String,
-        required: true
+      type: String,
+      required: true
     },
-    details: {
-        type: String
+    ads_for: {
+      type: String
     },
-    type: {
-        type: String
+    createAt: {
+      type: Date
     },
-    price_after: {
-        type: Number
+    is_ads_redirect_to_store: {
+      type: Boolean
     },
-    price_before: {
-        type: Number
+    url: {
+      type: String
+    },
+    store_id: {
+      type: String
+    },
+    product_id: {
+      type: String
+    },
+    is_ads_have_expiry_date: {
+      type: Boolean
+    },
+    by: {
+      type: String
+    },
+    name: {
+      type: String
     }
-}, { versionKey: false });
+  },
+  { versionKey: false }
+);
 
-const Adv = mongoose.model('advs', Advschema);
-
-function validateAdv(c) {
-    const schema = {
-        name: Joi.string().required(),
-        image: Joi.string().required()
-    };
-    return Joi.validate(c, schema);
-}
+const Adv = mongoose.model("advs", Advschema);
 
 exports.Adv = Adv;
-exports.validateAdv = validateAdv;

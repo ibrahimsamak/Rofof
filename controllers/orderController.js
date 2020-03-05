@@ -44,7 +44,7 @@ const {
   setting
 } = require("../models/Constant");
 const { Product, Category, Supplier } = require("../models/Product");
-const { userRate } = require("../models/userRate");
+const { userRate, prodcutComment } = require("../models/userRate");
 const { getCurrentDateTime } = require("../models/Constant");
 const { coupon } = require("../models/couponmodel");
 const { tokens } = require("../models/Constant");
@@ -1235,79 +1235,109 @@ exports.updateOrderByDriver = async (req, reply) => {
 // add Rate of Orders and products
 exports.addRate = async (req, reply) => {
   try {
-    const ord = await Order.findById(req.query.id);
-    if (ord.StatusId == 3 || ord.StatusId == 4) {
-      const arr = [];
-      const devicesID = await Admin.find().select("fcmToken");
-      devicesID.forEach(element => {
-        arr.push(element["fcmToken"]);
-      });
-      console.log(arr);
-      CreateNotificationMultiple(
-        arr,
-        "تمت اضافة تقييم جديد الرجاء مراجعة قسم التقييمات",
-        "",
-        "",
-        ""
-      );
-
-      const _order = await Order.findByIdAndUpdate(
-        req.query.id,
-        {
+    const currentOrder = await Order.findById(req.body.order_id);
+    let itemProducts = currentOrder.items;
+    if (itemProducts.length > 0) {
+      itemProducts.forEach(async function(element) {
+        let _userRate = new userRate({
+          product_id: element.product_id,
+          order_id: req.body.order_id,
+          user_id: currentOrder.user_id,
           rate: req.body.rate,
+          isCommentApproved: false,
           comment: req.body.comment,
-          isRate: true,
-          rateDate: getCurrentDateTime(),
-          isOpen: false
-        },
-        { new: true }
-      );
-      const response = {
-        status_code: 200,
-        status: true,
-        message: "تم اضافة تقييمك بنجاح",
-        items: _order
-      };
-
-      const currentOrder = await Order.findById(req.query.id);
-      let itemProducts = currentOrder.items;
-      if (itemProducts.length > 0) {
-        itemProducts.forEach(async function(element) {
-          let _userRate = new userRate({
-            product_id: element.product_id,
-            order_id: req.query.id,
-            user_id: ord.user_id,
-            rate: req.body.rate
-          });
-          await _userRate.save();
-
-          const allOrderLikeItems = await userRate
-            .find({ product_id: element.product_id })
-            .count();
-          const summationOfRates = await userRate.find({
-            product_id: element.product_id
-          });
-          let sum = lodash.sumBy(summationOfRates, function(o) {
-            return o.rate;
-          });
-          console.log(sum);
-
-          await Product.findByIdAndUpdate(element.product_id, {
-            rate: Number(sum / allOrderLikeItems).toFixed(1)
-          });
+          createAt: getCurrentDateTime()
         });
-      }
+        await _userRate.save();
 
-      return response;
-    } else {
-      const response = {
-        status_code: 404,
-        status: false,
-        message: "لا يمكن تقييم الطلبية الا بعد استلامها من السائق",
-        items: null
-      };
-      return response;
+        const allOrderLikeItems = await userRate
+          .find({
+            product_id: element.product_id
+          })
+          .count();
+        console.log("allOrderLikeItems: " + allOrderLikeItems);
+        const summationOfRates = await userRate.find({
+          product_id: element.product_id
+        });
+        console.log("summationOfRates: " + summationOfRates);
+
+        let sum = lodash.sumBy(summationOfRates, function(o) {
+          return o.rate;
+        });
+        await Product.findByIdAndUpdate(element.product_id, {
+          rate: Number(sum / allOrderLikeItems).toFixed(1)
+        });
+        console.log("rate: " + Number(sum / allOrderLikeItems).toFixed(1));
+      });
     }
+
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "return succssfully",
+      items: []
+    };
+
+    return response;
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.addProcutComment = async (req, reply) => {
+  try {
+    let _userRate = new prodcutComment({
+      product_id: req.body.product_id,
+      user_id: req.body.user_id,
+      isCommentApproved: false,
+      comment: req.body.comment,
+      createAt: getCurrentDateTime()
+    });
+    await _userRate.save();
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "return succssfully",
+      items: []
+    };
+
+    return response;
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.approveRate = async (req, reply) => {
+  try {
+    await userRate.findByIdAndUpdate(req.params.id, {
+      isCommentApproved: req.params.isCommentApproved
+    });
+
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تم التعديل بنجاح",
+      items: []
+    };
+    return response;
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.approveComment = async (req, reply) => {
+  try {
+    await prodcutComment.findByIdAndUpdate(req.params.id, {
+      isCommentApproved: req.params.isCommentApproved
+    });
+
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "return succssfully",
+      items: []
+    };
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -1663,6 +1693,42 @@ exports.getOrders = async (req, reply) => {
   }
 };
 
+exports.getOrdersByUserId = async (req, reply) => {
+  try {
+    var page = parseFloat(req.query.page, 10);
+    var limit = parseFloat(req.query.limit, 10);
+    const total = await Order.find({
+      user_id: req.params.id
+    }).count();
+
+    await Order.find({
+      user_id: req.params.id
+    })
+      .sort({ _id: -1 })
+      .populate({ path: "items.product_id", populate: { path: "product_id" } })
+      .skip(page * limit)
+      .limit(limit)
+      .exec(function(err, item) {
+        // if (err) return handleError(err);
+        const response = {
+          status_code: 200,
+          status: true,
+          message: "return succssfully",
+          items: item,
+          pagenation: {
+            size: item.length,
+            totalElements: total,
+            totalPages: Math.floor(total / limit),
+            pageNumber: page
+          }
+        };
+        reply.send(response);
+      });
+  } catch {
+    throw boom.boomify(err);
+  }
+};
+
 exports.getTunckOrders = async (req, reply) => {
   try {
     var page = parseFloat(req.query.page, 10);
@@ -1772,22 +1838,54 @@ exports.getOrdersSeacrh = async (req, reply) => {
 
 exports.getRatedOrders = async (req, reply) => {
   try {
-    const supplier_id = req.params.id;
-
     var page = parseFloat(req.query.page, 10);
     var limit = parseFloat(req.query.limit, 10);
-    const total = await Order.find({
-      $and: [{ supplier_id: supplier_id }, { isRate: true }]
-    }).count();
+    const total = await userRate.find().count();
 
-    await Order.find({ $and: [{ supplier_id: supplier_id }, { isRate: true }] })
+    await userRate
+      .find()
       .sort({ _id: -1 })
       .populate("user_id")
-      .populate("driver_id")
-      .populate({ path: "items.product_id", populate: { path: "product_id" } })
+      .populate("order_id")
+      .populate("product_id")
       .skip(page * limit)
       .limit(limit)
       .exec(function(err, item) {
+        // if (err) return handleError(err);
+        const response = {
+          status_code: 200,
+          status: true,
+          message: "return succssfully",
+          items: item,
+          pagenation: {
+            size: item.length,
+            totalElements: total,
+            totalPages: Math.floor(total / limit),
+            pageNumber: page
+          }
+        };
+        reply.send(response);
+      });
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.getRatedProducts = async (req, reply) => {
+  try {
+    var page = parseFloat(req.query.page, 10);
+    var limit = parseFloat(req.query.limit, 10);
+    const total = await prodcutComment.find().count();
+
+    await prodcutComment
+      .find()
+      .sort({ _id: -1 })
+      .populate("user_id")
+      .populate("product_id")
+      .skip(page * limit)
+      .limit(limit)
+      .exec(function(err, item) {
+        console.log(item);
         // if (err) return handleError(err);
         const response = {
           status_code: 200,

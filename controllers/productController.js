@@ -124,6 +124,36 @@ exports.getProductsByRackId = async (req, reply) => {
   }
 };
 
+exports.getProductsByCategory = async (req, reply) => {
+  try {
+    var page = parseFloat(req.query.page, 10);
+    var limit = parseFloat(req.query.limit, 10);
+    const total = await Product.find({ category_id: req.params.id }).count();
+
+    await Product.find({ category_id: req.params.id })
+      .sort({ _id: 1 })
+      .skip(page * limit)
+      .limit(limit)
+      .exec(function(err, item) {
+        const response = {
+          status_code: 200,
+          status: true,
+          message: "return succssfully",
+          items: item,
+          pagenation: {
+            size: item.length,
+            totalElements: total,
+            totalPages: Math.floor(total / limit),
+            pageNumber: page
+          }
+        };
+        reply.send(response);
+      });
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
 exports.getAllProducts = async (req, reply) => {
   try {
     await Product.find().exec(function(err, item) {
@@ -640,7 +670,8 @@ exports.addProduct = async (req, reply) => {
             category_id: req.raw.body.category_id,
             discountPrice: req.raw.body.discountPrice,
             createat: getCurrentDateTime(),
-            status: false
+            status: false,
+            rate: 0
           });
           await products.save();
         }

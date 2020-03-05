@@ -176,9 +176,6 @@ exports.addUsers = async (req, reply) => {
         return response;
       }
     } else {
-      //   await getAddress(req.body.lat, req.body.lng).then(x => {
-      //     current_city = x;
-      //   });
       let user = new Users({
         phone_number: req.body.phone_number,
         verify_code: 1234,
@@ -203,7 +200,7 @@ exports.addUsers = async (req, reply) => {
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
+        message: "أهلا وسهلا بكم .. تسجيل حسابكم بنجاح",
         items: rs
       };
       return response;
@@ -218,7 +215,7 @@ exports.login = async (req, reply) => {
   try {
     let pass = encryptPassword(req.body.password);
     const _Users = await Users.findOne({
-      $and: [{ phone_number: req.body.phone_number, password: pass }]
+      $and: [{ email: req.body.email, password: pass }]
     });
     if (_Users) {
       const user = await Users.findByIdAndUpdate(
@@ -243,7 +240,7 @@ exports.login = async (req, reply) => {
       const response = {
         status_code: 404,
         status: false,
-        message: "خطأ في رقم الجوال او كلمة المرور",
+        message: "خطأ في الايميل او كلمة المرور",
         items: _Users
       };
       return response;
