@@ -170,6 +170,45 @@ exports.getAllProducts = async (req, reply) => {
   }
 };
 
+exports.getRandomProducts = async (req, reply) => {
+  try {
+    var count = await Product.find().count();
+    var random = Math.floor(Math.random() * count);
+    await Product.find()
+      // .skip(random)
+      .exec(function(err, item) {
+        const response = {
+          status_code: 200,
+          status: true,
+          message: "return succssfully",
+          items: item
+        };
+        reply.send(response);
+      });
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+// --New
+exports.getTop4RatedProducts = async (req, reply) => {
+  try {
+    await Product.find({ rate: 5 })
+      .limit(4)
+      .exec(function(err, item) {
+        const response = {
+          status_code: 200,
+          status: true,
+          message: "return succssfully",
+          items: item
+        };
+        reply.send(response);
+      });
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
 exports.getProductsRenters = async (req, reply) => {
   try {
     var page = parseFloat(req.query.page, 10);
@@ -929,6 +968,43 @@ exports.makeCoverImage = async (req, reply) => {
       items: _products
     };
     return response;
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.searchWeb = async (req, reply) => {
+  try {
+    var page = parseFloat(req.query.page, 10);
+    var limit = parseFloat(req.query.limit, 10);
+    const total = await Product.find({
+      category_id: req.body.category_id,
+      name: { $regex: ".*" + req.body.name + ".*" }
+    }).count();
+
+    await Product.find({
+      category_id: req.body.category_id,
+      name: { $regex: ".*" + req.body.name + ".*" }
+    })
+      .populate("category_id")
+      .populate("product_id")
+      .sort({ id: -1 })
+      .skip(page * limit)
+      .limit(limit)
+      .exec(function(err, xx) {
+        const response = {
+          items: xx,
+          status_code: 200,
+          message: "returned successfully",
+          pagenation: {
+            size: xx.length,
+            totalElements: total,
+            totalPages: Math.floor(total / limit),
+            pageNumber: page
+          }
+        };
+        reply.send(response);
+      });
   } catch (err) {
     throw boom.boomify(err);
   }

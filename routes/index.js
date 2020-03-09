@@ -350,7 +350,7 @@ const routes = [
   {
     method: "GET",
     url: "/api/getContactOption/:id",
-    handler: constantController.getContactOption
+    handler: constantController.getSingleContact
   },
   {
     method: "POST",
@@ -406,6 +406,11 @@ const routes = [
     method: "POST",
     url: "/api/getProducts",
     handler: productController.getProducts
+  },
+  {
+    method: "GET",
+    url: "/api/getRandomProducts",
+    handler: productController.getRandomProducts
   },
   {
     method: "GET",
@@ -726,8 +731,18 @@ const routes = [
   },
   {
     method: "GET",
+    url: "/api/getApprovedRatedOrders",
+    handler: orderController.getApproveRatedOrders
+  },
+  {
+    method: "GET",
     url: "/api/getRatedProducts",
     handler: orderController.getRatedProducts
+  },
+  {
+    method: "GET",
+    url: "/api/getRatedProductsById/:id",
+    handler: orderController.getRatedProductsById
   },
   {
     method: "GET",
@@ -917,6 +932,16 @@ const routes = [
     method: "GET",
     url: "/api/getProductsByCategory/:id",
     handler: productController.getProductsByCategory
+  },
+  {
+    method: "POST",
+    url: "/api/searchWeb",
+    handler: productController.searchWeb
+  },
+  {
+    method: "GET",
+    url: "/api/getTop4RatedProducts",
+    handler: productController.getTop4RatedProducts
   },
   {
     method: "GET",

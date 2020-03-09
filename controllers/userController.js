@@ -519,20 +519,28 @@ exports.updateprofileFromAdmin = async (req, reply) => {
       };
       return response;
     } else {
+      const userPrev = await Users.findById(req.params.id);
+      var pass;
+      if (req.raw.body.password) {
+        pass = encryptPassword(req.raw.body.password);
+      } else {
+        pass = userPrev.password;
+      }
       const categories = await Users.findByIdAndUpdate(
         req.params.id,
         {
           full_name: req.raw.body.full_name,
-          address: req.raw.body.address,
+          email: req.raw.body.email,
           phone_number: req.raw.body.phone_number,
-          email: req.raw.body.email
+          address: req.raw.body.address,
+          password: pass
         },
         { new: true }
       );
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
+        message: "تم تعديل الاعدادات بنجاح",
         items: categories
       };
       return response;

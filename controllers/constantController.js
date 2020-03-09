@@ -694,6 +694,23 @@ exports.getSingleContract = async (req, reply) => {
   }
 };
 
+exports.getSingleContact = async (req, reply) => {
+  try {
+    const ContactOptions = await ContactOption.findById(req.params.id).sort({
+      _id: -1
+    });
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "return succssfully",
+      items: ContactOptions
+    };
+    return response;
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
 exports.addContact = async (req, reply) => {
   try {
     let ContactOptions = new ContactOption({

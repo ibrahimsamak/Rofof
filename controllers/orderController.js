@@ -1274,7 +1274,7 @@ exports.addRate = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
+      message: "شكرا لك .. تم اضافة تقييمك بنجاح",
       items: []
     };
 
@@ -1297,7 +1297,7 @@ exports.addProcutComment = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
+      message: "تم اضافة تعليقك  ..  سيتم مراجعته من قبل الادارة",
       items: []
     };
 
@@ -1310,7 +1310,7 @@ exports.addProcutComment = async (req, reply) => {
 exports.approveRate = async (req, reply) => {
   try {
     await userRate.findByIdAndUpdate(req.params.id, {
-      isCommentApproved: req.params.isCommentApproved
+      isCommentApproved: req.body.isCommentApproved
     });
 
     const response = {
@@ -1328,7 +1328,7 @@ exports.approveRate = async (req, reply) => {
 exports.approveComment = async (req, reply) => {
   try {
     await prodcutComment.findByIdAndUpdate(req.params.id, {
-      isCommentApproved: req.params.isCommentApproved
+      isCommentApproved: req.body.isCommentApproved
     });
 
     const response = {
@@ -1792,7 +1792,9 @@ exports.getOrdersSeacrh = async (req, reply) => {
         createAt: { $gte: start_date, $lt: end_date }
       };
     }
-
+    if (req.body.renter_id != "" && req.body.renter_id) {
+      query = { renter_id: req.body.renter_id };
+    }
     await Order.find(query)
       .sort({ _id: -1 })
       .populate("user_id")
@@ -1804,15 +1806,18 @@ exports.getOrdersSeacrh = async (req, reply) => {
       .exec(function(err, item) {
         // console.log(item);
         var result = _.filter(item, function(itm) {
-          if (req.body.renter_id) {
-            return itm.items.some(function(x) {
-              if (x.by_user_id) {
-                return x.product_id.by_user_id == req.body.renter_id;
-              }
-            });
-          } else {
-            return item;
-          }
+          console.log(req.body.renter_id);
+          return item;
+          // if (req.body.renter_id) {
+          //   return itm.items.some(function(x) {
+          //     console.log(x);
+          //     if (x.by_user_id) {
+          //       return x.product_id.by_user_id == req.body.renter_id;
+          //     }
+          //   });
+          // } else {
+
+          // }
         });
         var result1 = lodash(result)
           .slice(page * limit)
@@ -1871,6 +1876,29 @@ exports.getRatedOrders = async (req, reply) => {
   }
 };
 
+exports.getApproveRatedOrders = async (req, reply) => {
+  try {
+    await userRate
+      .find({ isCommentApproved: true })
+      .sort({ _id: -1 })
+      .populate("user_id")
+      .populate("order_id")
+      .populate("product_id")
+      .limit(8)
+      .exec(function(err, item) {
+        const response = {
+          status_code: 200,
+          status: true,
+          message: "return succssfully",
+          items: item
+        };
+        reply.send(response);
+      });
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
 exports.getRatedProducts = async (req, reply) => {
   try {
     var page = parseFloat(req.query.page, 10);
@@ -1906,6 +1934,42 @@ exports.getRatedProducts = async (req, reply) => {
   }
 };
 
+exports.getRatedProductsById = async (req, reply) => {
+  try {
+    var page = parseFloat(req.query.page, 10);
+    var limit = parseFloat(req.query.limit, 10);
+    const total = await prodcutComment
+      .find({ product_id: req.params.id, isCommentApproved: true })
+      .count();
+
+    await prodcutComment
+      .find({ product_id: req.params.id, isCommentApproved: true })
+      .sort({ _id: -1 })
+      .populate("user_id")
+      .populate("product_id")
+      .skip(page * limit)
+      .limit(limit)
+      .exec(function(err, item) {
+        console.log(item);
+        // if (err) return handleError(err);
+        const response = {
+          status_code: 200,
+          status: true,
+          message: "return succssfully",
+          items: item,
+          pagenation: {
+            size: item.length,
+            totalElements: total,
+            totalPages: Math.floor(total / limit),
+            pageNumber: page
+          }
+        };
+        reply.send(response);
+      });
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
 exports.getNewOrder = async (req, reply) => {
   try {
     const supplier_id = req.params.id;
