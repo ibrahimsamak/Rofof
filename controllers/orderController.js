@@ -1265,9 +1265,8 @@ exports.addRate = async (req, reply) => {
           return o.rate;
         });
         await Product.findByIdAndUpdate(element.product_id, {
-          rate: Number(sum / allOrderLikeItems).toFixed(1)
+          rate: parseInt(sum / allOrderLikeItems)
         });
-        console.log("rate: " + Number(sum / allOrderLikeItems).toFixed(1));
       });
     }
 
