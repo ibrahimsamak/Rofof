@@ -461,6 +461,12 @@ exports.addOrder = async (req, reply) => {
       StatusId: 1,
       user_id: user_id,
       items: req.body.items,
+      city_id: req.body.city_id,
+      payment_id: req.body.payment_id,
+      delivery_id: req.body.delivery_id,
+      delivery_company_id: req.body.delivery_company_id,
+      Shipment: req.body.Shipment,
+      address: req.body.address,
       createAt: getCurrentDateTime()
     });
 
@@ -1237,6 +1243,15 @@ exports.addRate = async (req, reply) => {
   try {
     const currentOrder = await Order.findById(req.body.order_id);
     let itemProducts = currentOrder.items;
+
+    await Order.findByIdAndUpdate(
+      req.body.order_id,
+      {
+        StatusId: 5
+      },
+      { new: true }
+    );
+
     if (itemProducts.length > 0) {
       itemProducts.forEach(async function(element) {
         let _userRate = new userRate({
@@ -1797,6 +1812,7 @@ exports.getOrdersSeacrh = async (req, reply) => {
     await Order.find(query)
       .sort({ _id: -1 })
       .populate("user_id")
+      .populate("city_id")
       .populate({ path: "items.product_id", populate: { path: "product_id" } })
       .populate({ path: "items.by_admin_id", populate: { path: "admins" } })
       .populate({ path: "items.by_user_id", populate: { path: "renters" } })
@@ -2032,7 +2048,7 @@ exports.updateOrderByAdmin = async (req, reply) => {
       items: sp
     };
 
-    const order = await Order.findById(req.params.id).populate("user_id");
+    // const order = await Order.findById(req.params.id).populate("user_id");
 
     // if (req.body.StatusId === 2) {
     //     let msg = `جاري توصيل طلبكم رقم: ${order._id}`;
@@ -2049,18 +2065,18 @@ exports.updateOrderByAdmin = async (req, reply) => {
 
     // }
 
-    if (req.body.StatusId === 6) {
-      let msg = `تم الغاء طلبكم رقم: ${order._id}`;
-      console.log(msg);
+    // if (req.body.StatusId === 6) {
+    //   let msg = `تم الغاء طلبكم رقم: ${order._id}`;
+    //   console.log(msg);
 
-      CreateNotification(
-        order.user_id.fcmToken,
-        msg,
-        order._id,
-        "ادارة تطبيق غاز",
-        order.user_id._id
-      );
-    }
+    //   CreateNotification(
+    //     order.user_id.fcmToken,
+    //     msg,
+    //     order._id,
+    //     "ادارة تطبيق غاز",
+    //     order.user_id._id
+    //   );
+    // }
 
     return response;
   } catch (err) {

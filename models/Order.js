@@ -10,6 +10,12 @@ const Orderschema = mongoose.Schema(
     Renter_Total: { type: Number, required: false },
     StatusId: { type: Number },
     user_id: { type: mongoose.Schema.Types.ObjectId, ref: "Users" },
+    city_id: { type: mongoose.Schema.Types.ObjectId, ref: "city" },
+    address: { type: String },
+    payment_id: { type: Number },
+    delivery_id: { type: Number },
+    delivery_company_id: { type: String },
+    Shipment: { type: Number },
     items: {
       type: [
         {

@@ -12,7 +12,8 @@ const {
   setting,
   delivery_time,
   inventory,
-  contract
+  contract,
+  transport
 } = require("../models/Constant");
 const { client } = require("../models/cache");
 
@@ -167,12 +168,45 @@ exports.getContractDetails = async (req, reply) => {
   }
 };
 
+exports.getTransport = async (req, reply) => {
+  try {
+    const cities = await transport
+      .find()
+      .populate("city_id")
+      .sort({ _id: -1 });
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "return succssfully",
+      items: cities
+    };
+    return response;
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
 exports.getInventory = async (req, reply) => {
   try {
     const cities = await inventory
       .find()
       .populate("city_id")
       .sort({ _id: -1 });
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "return succssfully",
+      items: cities
+    };
+    return response;
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.getSingleTransport = async (req, reply) => {
+  try {
+    const cities = await transport.findById(req.params.id).sort({ _id: -1 });
     const response = {
       status_code: 200,
       status: true,
@@ -508,6 +542,26 @@ exports.addInventory = async (req, reply) => {
   }
 };
 
+exports.addTransport = async (req, reply) => {
+  try {
+    let _city = new transport({
+      name: req.body.name,
+      value: req.body.value
+    });
+
+    let rs = await _city.save();
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "return succssfully",
+      items: rs
+    };
+    return response;
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
 exports.updateInventory = async (req, reply) => {
   try {
     const _city = await inventory.findByIdAndUpdate(
@@ -531,9 +585,48 @@ exports.updateInventory = async (req, reply) => {
   }
 };
 
+exports.updateTransport = async (req, reply) => {
+  try {
+    const _city = await transport.findByIdAndUpdate(
+      req.params.id,
+      {
+        name: req.body.name,
+        value: req.body.value
+      },
+      { new: true }
+    );
+
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "return succssfully",
+      items: _city
+    };
+    return response;
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
 exports.deleteInventory = async (req, reply) => {
   try {
     const _city = await inventory.findByIdAndRemove(req.params.id);
+
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "return succssfully",
+      items: []
+    };
+    return response;
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.deleteTransport = async (req, reply) => {
+  try {
+    const _city = await transport.findByIdAndRemove(req.params.id);
 
     const response = {
       status_code: 200,

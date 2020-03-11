@@ -296,7 +296,11 @@ const routes = [
     url: "/api/addInventory",
     handler: constantController.addInventory
   },
-
+  {
+    method: "POST",
+    url: "/api/addTransport",
+    handler: constantController.addTransport
+  },
   {
     method: "POST",
     url: "/api/updateDeliveryOption/:id",
@@ -314,6 +318,11 @@ const routes = [
   },
   {
     method: "POST",
+    url: "/api/updateTransport/:id",
+    handler: constantController.updateTransport
+  },
+  {
+    method: "POST",
     url: "/api/deleteDeliveryOption/:id",
     handler: constantController.deleteCity
   },
@@ -326,6 +335,11 @@ const routes = [
     method: "POST",
     url: "/api/deleteinventory/:id",
     handler: constantController.deleteInventory
+  },
+  {
+    method: "POST",
+    url: "/api/deleteTransport/:id",
+    handler: constantController.deleteTransport
   },
   {
     method: "GET",
@@ -454,6 +468,11 @@ const routes = [
   },
   {
     method: "GET",
+    url: "/api/getTransport",
+    handler: constantController.getTransport
+  },
+  {
+    method: "GET",
     url: "/api/getSingleCity/:id",
     handler: constantController.getSingleCity
   },
@@ -466,6 +485,11 @@ const routes = [
     method: "GET",
     url: "/api/getSingleInventory/:id",
     handler: constantController.getSingleInventory
+  },
+  {
+    method: "GET",
+    url: "/api/getSingleTransport/:id",
+    handler: constantController.getSingleTransport
   },
   {
     method: "GET",

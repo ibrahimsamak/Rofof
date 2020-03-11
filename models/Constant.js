@@ -131,7 +131,17 @@ const contractSchema = mongoose.Schema(
   },
   { versionKey: false }
 );
-
+const transportSchema = mongoose.Schema(
+  {
+    name: {
+      type: String
+    },
+    value: {
+      type: Number
+    }
+  },
+  { versionKey: false }
+);
 const updates = mongoose.model("updates", update);
 const setting = mongoose.model("options", settings);
 const BuyUnits = mongoose.model("Buyunits", schema);
@@ -143,7 +153,7 @@ const delivery_time = mongoose.model("deliveryTime", delivery_timeSchema);
 const tokens = mongoose.model("tokens", tokenschema);
 const StaticPage = mongoose.model("StaticPage", StaticPageSchema);
 const inventory = mongoose.model("inventory", inventorySchema);
-
+const transport = mongoose.model("transport", transportSchema);
 function validateCustomer(customer) {
   const schema = {
     name: Joi.required()
@@ -171,3 +181,4 @@ exports.getCurrentDateTime = getCurrentDateTime;
 exports.tokens = tokens;
 exports.inventory = inventory;
 exports.contract = contract;
+exports.transport = transport;

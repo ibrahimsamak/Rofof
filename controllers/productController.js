@@ -172,9 +172,11 @@ exports.getAllProducts = async (req, reply) => {
 
 exports.getRandomProducts = async (req, reply) => {
   try {
-    var count = await Product.find().count();
-    var random = Math.floor(Math.random() * count);
+    // var count = await Product.find().count();
+    // var random = Math.floor(Math.random() * count);
     await Product.find()
+      .sort({ createat: -1 })
+      .limit(20)
       // .skip(random)
       .exec(function(err, item) {
         const response = {
