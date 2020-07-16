@@ -9,7 +9,7 @@ exports.getFav = async (req, reply) => {
   try {
     const user_id = req.params.id;
     const _Notification = await Favorit.find({
-      user_id: user_id
+      user_id: user_id,
     })
       .sort({ _id: -1 })
       .populate("user_id")
@@ -17,8 +17,8 @@ exports.getFav = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: _Notification
+      message: "تمت العملية بنجاح",
+      items: _Notification,
     };
     return response;
   } catch (err) {
@@ -34,7 +34,7 @@ exports.deleteFav = async (req, reply) => {
       status_code: 200,
       status: true,
       message: "تم ازالة المنتج من المفضلة",
-      items: null
+      items: null,
     };
     return response;
   } catch (err) {
@@ -46,14 +46,17 @@ exports.deleteFav = async (req, reply) => {
 exports.addFav = async (req, reply) => {
   try {
     const checkObj = await Favorit.findOne({
-      $and: [{ user_id: req.body.user_id }, { product_id: req.body.product_id }]
+      $and: [
+        { user_id: req.body.user_id },
+        { product_id: req.body.product_id },
+      ],
     });
     console.log(checkObj);
     if (!checkObj) {
       let _Favorit = new Favorit({
         user_id: req.body.user_id,
         product_id: req.body.product_id,
-        createAt: getCurrentDateTime()
+        createAt: getCurrentDateTime(),
       });
 
       let rs = await _Favorit.save();
@@ -61,7 +64,7 @@ exports.addFav = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "تم اضافة المنتج الى المفضلة",
-        items: rs
+        items: rs,
       };
       return response;
     } else {
@@ -69,7 +72,7 @@ exports.addFav = async (req, reply) => {
         status_code: 200,
         status: false,
         message: "المنتج موجود مسبقا",
-        items: []
+        items: [],
       };
       return response;
     }

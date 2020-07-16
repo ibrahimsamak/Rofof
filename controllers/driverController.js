@@ -13,7 +13,7 @@ const multer = require("multer");
 cloudinary.config({
   cloud_name: "diszvlmqq",
   api_key: "626239833572272",
-  api_secret: "1ZkJK1IN2eUhF2qVEc-M2QOAI0I"
+  api_secret: "1ZkJK1IN2eUhF2qVEc-M2QOAI0I",
 });
 
 const options = {
@@ -21,7 +21,7 @@ const options = {
   // Optional depending on the providers
   httpAdapter: "https", // Default
   apiKey: "AIzaSyDP-XwnS5Daa_uSFZJvY6H0hsKaOxe2ar0", // for Mapquest, OpenCage, Google Premier
-  formatter: null // 'gpx', 'string', ...
+  formatter: null, // 'gpx', 'string', ...
 };
 const geocoder = NodeGeocoder(options);
 
@@ -30,13 +30,14 @@ const { renters } = require("../models/Driver");
 const { client } = require("../models/cache");
 const { getCurrentDateTime } = require("../models/Constant");
 const { encryptPassword } = require("../utils/utils");
+const { reserve } = require("../models/Rack");
 
 async function getAddress(lat, lng) {
   var current_city = "";
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     geocoder
       .reverse({ lat: lat, lon: lng })
-      .then(async function(res) {
+      .then(async function (res) {
         if (res) {
           console.log(res[0]);
           console.log(
@@ -50,7 +51,7 @@ async function getAddress(lat, lng) {
           resolve(current_city);
         }
       })
-      .catch(function(err) {
+      .catch(function (err) {
         console.log(err);
         reject(err);
         current_city = "";
@@ -59,8 +60,8 @@ async function getAddress(lat, lng) {
 }
 
 async function uploadImages(img) {
-  return new Promise(function(resolve, reject) {
-    cloudinary.v2.uploader.upload("./uploads/" + img, function(error, result) {
+  return new Promise(function (resolve, reject) {
+    cloudinary.v2.uploader.upload("./uploads/" + img, function (error, result) {
       if (error) {
         reject(error);
       } else {
@@ -93,29 +94,102 @@ exports.getrenters = async (req, reply) => {
     let search_value = req.body.search_value;
 
     let query1 = {};
-    query1[search_field] = { $regex: new RegExp(search_value, "i") };
-
-    const total = await renters.find(query1).count();
-    await renters
-      .find(query1)
-      .skip(page * limit)
-      .limit(limit)
-      .exec(function(err, item) {
-        console.log(item);
-        const response = {
-          status_code: 200,
-          status: true,
-          message: "return succssfully",
-          items: item,
-          pagenation: {
-            size: item.length,
-            totalElements: total,
-            totalPages: Math.floor(total / limit),
-            pageNumber: page
-          }
-        };
-        reply.send(response);
+    var contracts = [];
+    var _renters = [];
+    if (search_field == "no") {
+      contracts = await reserve.find({ contract_no: search_value });
+      contracts.forEach((element) => {
+        _renters.push(element.renter_id);
       });
+      const total = await renters.find({ _id: { $in: _renters } }).count();
+      await renters
+        .find({ _id: { $in: _renters } })
+        .sort({ createAt: -1 })
+        .skip(page * limit)
+        .limit(limit)
+        .exec(async function (err, item) {
+          var newArray = [];
+          for await (const newItem of item) {
+            var newObject = newItem.toObject();
+            var _reserve = await reserve
+              .findOne({
+                $and: [{ renter_id: newItem._id }, { isApprove: true }],
+              })
+              .sort({ _id: -1 });
+            if (_reserve) {
+              newObject.contract_no = _reserve.contract_no;
+              newObject.amount = _reserve.amount;
+              newObject.start_date = _reserve.start_date;
+              newObject.end_date = _reserve.end_date;
+            } else {
+              newObject.contract_no = "";
+              newObject.amount = "";
+              newObject.start_date = "";
+              newObject.end_date = "";
+            }
+
+            newArray.push(newObject);
+          }
+          const response = {
+            status_code: 200,
+            status: true,
+            message: "تمت العملية بنجاح",
+            items: newArray,
+            pagenation: {
+              size: newArray.length,
+              totalElements: total,
+              totalPages: Math.floor(total / limit),
+              pageNumber: page,
+            },
+          };
+          reply.send(response);
+        });
+    } else {
+      query1[search_field] = { $regex: new RegExp(search_value, "i") };
+      const total = await renters.find(query1).count();
+
+      await renters
+        .find(query1)
+        .sort({ createAt: -1 })
+        .skip(page * limit)
+        .limit(limit)
+        .exec(async function (err, item) {
+          var newArray = [];
+          for await (const newItem of item) {
+            var newObject = newItem.toObject();
+            var _reserve = await reserve
+              .findOne({
+                $and: [{ renter_id: newItem._id }, { isApprove: true }],
+              })
+              .sort({ _id: -1 });
+            if (_reserve) {
+              newObject.contract_no = _reserve.contract_no;
+              newObject.amount = _reserve.amount;
+              newObject.start_date = _reserve.start_date;
+              newObject.end_date = _reserve.end_date;
+            } else {
+              newObject.contract_no = "";
+              newObject.amount = "";
+              newObject.start_date = "";
+              newObject.end_date = "";
+            }
+            newArray.push(newObject);
+          }
+          const response = {
+            status_code: 200,
+            status: true,
+            message: "تمت العملية بنجاح",
+            items: newArray,
+            pagenation: {
+              size: newArray.length,
+              totalElements: total,
+              totalPages: Math.floor(total / limit),
+              pageNumber: page,
+            },
+          };
+          reply.send(response);
+        });
+    }
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -129,7 +203,7 @@ exports.getSinglerenters = async (req, reply) => {
       status_code: 200,
       status: true,
       message: "تمت العملية بنجاح",
-      items: _renters
+      items: _renters,
     };
     return response;
   } catch (err) {
@@ -144,7 +218,7 @@ exports.getRenters = async (req, reply) => {
       status_code: 200,
       status: true,
       message: "تمت العملية بنجاح",
-      items: _renters
+      items: _renters,
     };
     return response;
   } catch (err) {
@@ -156,7 +230,7 @@ exports.getRenters = async (req, reply) => {
 exports.addrenters = async (req, reply) => {
   try {
     const _user = await renters.findOne({
-      $or: [{ phone_number: req.body.phone_number }, { email: req.body.email }]
+      $or: [{ phone_number: req.body.phone_number }, { email: req.body.email }],
     });
     if (_user) {
       if (_user.isBlock == true) {
@@ -164,7 +238,7 @@ exports.addrenters = async (req, reply) => {
           status_code: 400,
           status: false,
           message: "تم حظر المستخدم من قبل الادارة",
-          items: []
+          items: [],
         };
         return response;
       } else {
@@ -172,7 +246,7 @@ exports.addrenters = async (req, reply) => {
           status_code: 400,
           status: false,
           message: "البريد الالكتروني او رقم الجوال موجود لدينا مسبقا",
-          items: []
+          items: [],
         };
         return response;
       }
@@ -185,15 +259,18 @@ exports.addrenters = async (req, reply) => {
         phone_number: req.body.phone_number,
         password: encryptPassword(req.body.phone_number),
         isBlock: false,
-        createAt: getCurrentDateTime()
+        createAt: getCurrentDateTime(),
+        isOnlineSupport: req.body.isOnlineSupport,
+        IBAN: req.body.IBAN,
+        BankName: req.body.BankName,
       });
       let rs = await _user.save();
 
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
-        items: rs
+        message: "تمت العملية بنجاح",
+        items: rs,
       };
       reply.send(response);
     }
@@ -208,14 +285,14 @@ exports.login = async (req, reply) => {
     let pass = encryptPassword(req.body.password);
     const user = await renters.findOne({
       email: req.body.email,
-      password: pass
+      password: pass,
     });
     if (!user) {
       const response = {
         status_code: 404,
         status: false,
         message: "خطأ في البريد الالكتروني او كلمة المرور",
-        items: []
+        items: [],
       };
       reply.send(response);
     } else {
@@ -224,8 +301,8 @@ exports.login = async (req, reply) => {
         {
           fcmToken: req.body.fcmToken,
           token: jwt.sign({ _id: user.id }, config.get("jwtPrivateKey"), {
-            expiresIn: "365d"
-          })
+            expiresIn: "365d",
+          }),
         },
         { new: true }
       );
@@ -233,7 +310,7 @@ exports.login = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "تم تسجيل الدخول بنجاح",
-        items: ـuser
+        items: ـuser,
       };
       reply.send(response);
     }
@@ -257,7 +334,7 @@ exports.forgetPassword = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "تم ارسال كلمة المرور الى البريد الالكتروني بنجاح",
-        items: update
+        items: update,
       };
       return response;
     } else {
@@ -265,7 +342,7 @@ exports.forgetPassword = async (req, reply) => {
         status_code: 404,
         status: false,
         message: "البريد الالكتروني غير مسجل لدينا",
-        items: []
+        items: [],
       };
       return response;
     }
@@ -283,11 +360,11 @@ exports.updateprofileFromAdmin = async (req, reply) => {
       for (let key in files) {
         fileArr.push({
           name: files[key].name,
-          mimetype: files[key].mimetype
+          mimetype: files[key].mimetype,
         });
       }
       var data = new Buffer(files.image.data);
-      fs.writeFile("./uploads/" + files.image.name, data, "binary", function(
+      fs.writeFile("./uploads/" + files.image.name, data, "binary", function (
         err
       ) {
         if (err) {
@@ -298,7 +375,7 @@ exports.updateprofileFromAdmin = async (req, reply) => {
       });
 
       let img = "";
-      await uploadImages(files.image.name).then(x => {
+      await uploadImages(files.image.name).then((x) => {
         img = x;
       });
       const categories = await renters.findByIdAndUpdate(
@@ -308,15 +385,18 @@ exports.updateprofileFromAdmin = async (req, reply) => {
           image: img,
           address: req.raw.body.address,
           email: req.raw.body.email,
-          phone_number: req.raw.body.phone_number
+          phone_number: req.raw.body.phone_number,
+          isOnlineSupport: req.raw.body.isOnlineSupport,
+          IBAN: req.raw.body.IBAN,
+          BankName: req.raw.body.BankName,
         },
         { new: true }
       );
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
-        items: categories
+        message: "تمت العملية بنجاح",
+        items: categories,
       };
       return response;
     } else {
@@ -326,15 +406,18 @@ exports.updateprofileFromAdmin = async (req, reply) => {
           name: req.raw.body.name,
           address: req.raw.body.address,
           email: req.raw.body.email,
-          phone_number: req.raw.body.phone_number
+          phone_number: req.raw.body.phone_number,
+          isOnlineSupport: req.raw.body.isOnlineSupport,
+          IBAN: req.raw.body.IBAN,
+          BankName: req.raw.body.BankName,
         },
         { new: true }
       );
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
-        items: categories
+        message: "تمت العملية بنجاح",
+        items: categories,
       };
       return response;
     }
@@ -359,7 +442,7 @@ exports.changePassword = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "تم تعديل كلمة المرور بنجاح بنجاح",
-        items: update
+        items: update,
       };
       return response;
     } else {
@@ -367,7 +450,7 @@ exports.changePassword = async (req, reply) => {
         status_code: 404,
         status: false,
         message: "المستخدم غير موجود",
-        items: []
+        items: [],
       };
       return response;
     }
@@ -382,7 +465,7 @@ exports.updateStatus = async (req, reply) => {
     const user = await renters.findByIdAndUpdate(
       Driver_id,
       {
-        driver_status: req.body.driver_status
+        driver_status: req.body.driver_status,
       },
       { new: true }
     );
@@ -391,7 +474,7 @@ exports.updateStatus = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "تمت العملية بنجاح",
-        items: user
+        items: user,
       };
       return response;
     }
@@ -408,7 +491,7 @@ exports.logout = async (req, reply) => {
       Driver_id,
       {
         fcmToken: "",
-        token: ""
+        token: "",
       },
       { new: true }
     );
@@ -418,7 +501,7 @@ exports.logout = async (req, reply) => {
         status_code: 404,
         status: false,
         message: "حدث خطأ الرجاء المحاولة مرة اخرى",
-        items: []
+        items: [],
       };
       reply.send(response);
     } else {
@@ -426,7 +509,7 @@ exports.logout = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "تم تسجيل الخروج بنجاح",
-        items: user
+        items: user,
       };
       reply.send(response);
     }
@@ -442,7 +525,7 @@ exports.refreshTokenDriver = async (req, reply) => {
     const _user = await renters.findByIdAndUpdate(
       Driver_id,
       {
-        fcmToken: req.body.fcmToken
+        fcmToken: req.body.fcmToken,
       },
       { new: true }
     );
@@ -452,7 +535,7 @@ exports.refreshTokenDriver = async (req, reply) => {
         status_code: 404,
         status: false,
         message: "حدث خطأ الرجاء المحاولة مرة اخرى",
-        items: []
+        items: [],
       };
       reply.send(response);
     } else {
@@ -460,7 +543,7 @@ exports.refreshTokenDriver = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "",
-        items: _user
+        items: _user,
       };
       reply.send(response);
     }
@@ -477,15 +560,15 @@ exports.rentersearch = async (req, reply) => {
       .find({
         $or: [
           { full_name: { $regex: ".*" + req.body.full_name + ".*" } },
-          { phone_number: { $regex: ".*" + req.body.phone_number + ".*" } }
-        ]
+          { phone_number: { $regex: ".*" + req.body.phone_number + ".*" } },
+        ],
       })
-      .exec(function(err, xx) {
+      .exec(function (err, xx) {
         result = xx;
         const response = {
           items: result,
           status_code: 200,
-          message: "returned successfully"
+          message: "returned successfully",
         };
         reply.send(response);
       });
@@ -503,8 +586,8 @@ exports.Driverlist = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: _Users
+      message: "تمت العملية بنجاح",
+      items: _Users,
     };
     return response;
   } catch (err) {
@@ -518,7 +601,7 @@ exports.userlistInfo = async (req, reply) => {
     const response = {
       items: ـrenters,
       status_code: 200,
-      message: "returned successfully"
+      message: "returned successfully",
     };
     return response;
   } catch (err) {
@@ -531,7 +614,7 @@ exports.block = async (req, reply) => {
     const user = await renters.findByIdAndUpdate(
       req.body._id,
       {
-        isBlock: req.body.isBlock
+        isBlock: req.body.isBlock,
       },
       { new: true }
     );
@@ -540,7 +623,7 @@ exports.block = async (req, reply) => {
       status_code: 200,
       status: true,
       message: "تمت العملية بنجاح",
-      items: user
+      items: user,
     };
     return response;
   } catch (err) {
@@ -558,7 +641,7 @@ exports.userprofile = async (req, reply) => {
       status_code: 200,
       status: true,
       message: "",
-      items: user
+      items: user,
     };
     reply.send(response);
   } catch (err) {
@@ -573,11 +656,11 @@ exports.uploadRenterPhoto = async (req, reply) => {
     for (let key in files) {
       fileArr.push({
         name: files[key].name,
-        mimetype: files[key].mimetype
+        mimetype: files[key].mimetype,
       });
     }
     var data = new Buffer(files.image.data);
-    fs.writeFile("./uploads/" + files.image.name, data, "binary", function(
+    fs.writeFile("./uploads/" + files.image.name, data, "binary", function (
       err
     ) {
       if (err) {
@@ -587,7 +670,7 @@ exports.uploadRenterPhoto = async (req, reply) => {
       }
     });
 
-    cloudinary.v2.uploader.upload("./uploads/" + files.image.name, function(
+    cloudinary.v2.uploader.upload("./uploads/" + files.image.name, function (
       error,
       result
     ) {

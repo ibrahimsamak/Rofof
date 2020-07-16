@@ -21,8 +21,8 @@ exports.rpt_getOrderswithstatus = async (req, reply) => {
       query = {
         $and: [
           { createAt: { $lte: new Date(req.body.dt_end) } },
-          { createAt: { $gte: new Date(req.body.dt_start) } }
-        ]
+          { createAt: { $gte: new Date(req.body.dt_start) } },
+        ],
       };
     }
 
@@ -59,18 +59,18 @@ exports.rpt_getOrderswithstatus = async (req, reply) => {
       .populate({ path: "driver_id", populate: { path: "supplier_id" } })
       .skip(page * limit)
       .limit(limit)
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
+          message: "تمت العملية بنجاح",
           items: item,
           pagenation: {
             size: item.length,
             totalElements: total,
             totalPages: Math.floor(total / limit),
-            pageNumber: page
-          }
+            pageNumber: page,
+          },
         };
         reply.send(response);
       });
@@ -87,8 +87,8 @@ exports.rpt_getRevenu = async (req, reply) => {
       query = {
         $and: [
           { createAt: { $lte: new Date(req.body.dt_end) } },
-          { createAt: { $gte: new Date(req.body.dt_start) } }
-        ]
+          { createAt: { $gte: new Date(req.body.dt_start) } },
+        ],
       };
     }
     if (req.body.driver_id) {
@@ -122,25 +122,25 @@ exports.rpt_getRevenu = async (req, reply) => {
       .populate({ path: "items.product_id", populate: { path: "product_id" } })
       .populate({
         path: "items.supplier_id",
-        populate: { path: "supplier_id" }
+        populate: { path: "supplier_id" },
       })
       .skip(page * limit)
       .limit(limit)
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
+          message: "تمت العملية بنجاح",
           items: item,
-          sum: lodash.sumBy(all, function(o) {
+          sum: lodash.sumBy(all, function (o) {
             return o.Admin_Total;
           }),
           pagenation: {
             size: item.length,
             totalElements: total,
             totalPages: Math.floor(total / limit),
-            pageNumber: page
-          }
+            pageNumber: page,
+          },
         };
         reply.send(response);
       });
@@ -157,8 +157,8 @@ exports.rpt_getOrderMaps = async (req, reply) => {
       query = {
         $and: [
           { createAt: { $lte: new Date(req.body.dt_end) } },
-          { createAt: { $gte: new Date(req.body.dt_start) } }
-        ]
+          { createAt: { $gte: new Date(req.body.dt_start) } },
+        ],
       };
     }
 
@@ -171,12 +171,12 @@ exports.rpt_getOrderMaps = async (req, reply) => {
       .populate("user_id")
       // .skip((page) * limit)
       // .limit(limit)
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
-          items: item
+          message: "تمت العملية بنجاح",
+          items: item,
         };
         reply.send(response);
       });
@@ -193,8 +193,8 @@ exports.rpt_getOrderMaps = async (req, reply) => {
       query = {
         $and: [
           { createAt: { $lte: new Date(req.body.dt_end) } },
-          { createAt: { $gte: new Date(req.body.dt_start) } }
-        ]
+          { createAt: { $gte: new Date(req.body.dt_start) } },
+        ],
       };
     }
 
@@ -207,12 +207,12 @@ exports.rpt_getOrderMaps = async (req, reply) => {
       .populate("user_id")
       // .skip((page) * limit)
       // .limit(limit)
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
-          items: item
+          message: "تمت العملية بنجاح",
+          items: item,
         };
         reply.send(response);
       });
@@ -230,18 +230,18 @@ exports.rpt_getCompanyCommission = async (req, reply) => {
     await companyCommision
       .find()
       .populate("supplier_id")
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
+          message: "تمت العملية بنجاح",
           items: item,
           pagenation: {
             size: item.length,
             totalElements: total,
             totalPages: Math.floor(total / limit),
-            pageNumber: page
-          }
+            pageNumber: page,
+          },
         };
         reply.send(response);
       });
@@ -253,7 +253,7 @@ exports.rpt_getCompanyCommission = async (req, reply) => {
 exports.addCompanyCommission = async (req, reply) => {
   try {
     const _companyCommision = await companyCommision.findOne({
-      supplier_id: req.body.supplier_id
+      supplier_id: req.body.supplier_id,
     });
     if (req.body.totalPay > _companyCommision.value) {
       await companyCommision.findOneAndUpdate(
@@ -261,9 +261,9 @@ exports.addCompanyCommission = async (req, reply) => {
         {
           $inc: {
             value: -_companyCommision.value,
-            totalPay: _companyCommision.value
+            totalPay: _companyCommision.value,
           },
-          last_date_pay: getCurrentDateTime()
+          last_date_pay: getCurrentDateTime(),
         },
         { new: true }
       );
@@ -271,8 +271,8 @@ exports.addCompanyCommission = async (req, reply) => {
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
-        items: companyCommision
+        message: "تمت العملية بنجاح",
+        items: companyCommision,
       };
       reply.send(response);
     } else {
@@ -280,7 +280,7 @@ exports.addCompanyCommission = async (req, reply) => {
         { supplier_id: req.body.supplier_id },
         {
           $inc: { value: -req.body.totalPay, totalPay: req.body.totalPay },
-          last_date_pay: getCurrentDateTime()
+          last_date_pay: getCurrentDateTime(),
         },
         { new: true }
       );
@@ -288,8 +288,8 @@ exports.addCompanyCommission = async (req, reply) => {
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
-        items: companyCommision
+        message: "تمت العملية بنجاح",
+        items: companyCommision,
       };
       reply.send(response);
     }
@@ -303,9 +303,7 @@ exports.getDailyRevenu = async (req, reply) => {
   try {
     const supplier_id = req.params.id;
 
-    let cc = momentTZ()
-      .tz("Asia/Riyadh")
-      .format("YYYY-MM-DD");
+    let cc = momentTZ().tz("Asia/Riyadh").format("YYYY-MM-DD");
     console.log(cc);
     var _items = [];
     const dt = new Date();
@@ -313,9 +311,7 @@ exports.getDailyRevenu = async (req, reply) => {
 
     const today = moment().startOf("day");
     const today_val = today.add(-3, "hours").toDate();
-    const today_val2 = moment(today.add(-3, "hours"))
-      .endOf("day")
-      .toDate();
+    const today_val2 = moment(today.add(-3, "hours")).endOf("day").toDate();
     console.log(today.toDate());
 
     // var all = await Order.find({ StatusId: 4 })
@@ -344,48 +340,48 @@ exports.getDailyRevenu = async (req, reply) => {
         {
           createAt: {
             $gte: new Date(new Date().setHours(00, 00, 00)),
-            $lt: new Date(new Date().setHours(23, 59, 59))
-          }
+            $lt: new Date(new Date().setHours(23, 59, 59)),
+          },
         },
         ,
-        { StatusId: 2 }
-      ]
+        { StatusId: 2 },
+      ],
     }).count();
     const _all = await Order.find({
       $and: [
         {
           createAt: {
             $gte: new Date(new Date().setHours(00, 00, 00)),
-            $lt: new Date(new Date().setHours(23, 59, 59))
-          }
+            $lt: new Date(new Date().setHours(23, 59, 59)),
+          },
         },
         ,
-        { $or: [{ StatusId: 3 }, { StatusId: 4 }] }
-      ]
+        { $or: [{ StatusId: 3 }, { StatusId: 4 }] },
+      ],
     }).count();
     const cancelOrder_drivers = await Order.find({
       $and: [
         {
           createAt: {
             $gte: new Date(new Date().setHours(00, 00, 00)),
-            $lt: new Date(new Date().setHours(23, 59, 59))
-          }
+            $lt: new Date(new Date().setHours(23, 59, 59)),
+          },
         },
         ,
-        { StatusId: 6 }
-      ]
+        { StatusId: 6 },
+      ],
     }).count();
     const cancelOrder_users = await Order.find({
       $and: [
         {
           createAt: {
             $gte: new Date(new Date().setHours(00, 00, 00)),
-            $lt: new Date(new Date().setHours(23, 59, 59))
-          }
+            $lt: new Date(new Date().setHours(23, 59, 59)),
+          },
         },
         ,
-        { StatusId: 5 }
-      ]
+        { StatusId: 5 },
+      ],
     }).count();
 
     _items.push(
@@ -398,8 +394,8 @@ exports.getDailyRevenu = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: _items
+      message: "تمت العملية بنجاح",
+      items: _items,
     };
 
     reply.send(response);
@@ -417,12 +413,12 @@ exports.getProductsCount = async (req, reply) => {
     var Suppliers = await Supplier.find().count();
 
     var allOrders = await Order.find({
-      $and: [{ $or: [{ StatusId: 4 }, { StatusId: 3 }] }]
+      $and: [{ $or: [{ StatusId: 4 }, { StatusId: 3 }] }],
     });
-    var DailyRevenu = lodash.sumBy(allOrders, function(o) {
+    var DailyRevenu = lodash.sumBy(allOrders, function (o) {
       return o.Total;
     });
-    var deliveryCostRevenu = lodash.sumBy(allOrders, function(o) {
+    var deliveryCostRevenu = lodash.sumBy(allOrders, function (o) {
       return o.deliveryCost;
     });
 
@@ -435,8 +431,8 @@ exports.getProductsCount = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: _items
+      message: "تمت العملية بنجاح",
+      items: _items,
     };
     reply.send(response);
   } catch (err) {
@@ -447,8 +443,8 @@ exports.getProductsCount = async (req, reply) => {
 exports.getTop10Cities = async (req, reply) => {
   try {
     var products = [];
-    await Order.find({ StatusId: 4 }).exec(function(err, item) {
-      item.forEach(element => {
+    await Order.find({ StatusId: 4 }).exec(function (err, item) {
+      item.forEach((element) => {
         // if (element.items) {
         // element.forEach(elm => {
         products.push(element);
@@ -462,7 +458,7 @@ exports.getTop10Cities = async (req, reply) => {
 
       var _result = lodash(products)
         .groupBy("city")
-        .map(function(items, _name) {
+        .map(function (items, _name) {
           return { name: _name, value: items.length };
         })
         .value();
@@ -473,8 +469,8 @@ exports.getTop10Cities = async (req, reply) => {
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
-        items: FinalResult
+        message: "تمت العملية بنجاح",
+        items: FinalResult,
       };
       reply.send(response);
     });
@@ -504,14 +500,14 @@ exports.importantCounters = async (req, reply) => {
       orders: allOrders,
       reserve: _reserve,
       products: _Product,
-      city: _city
+      city: _city,
     });
 
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: _items
+      message: "تمت العملية بنجاح",
+      items: _items,
     };
 
     reply.send(response);
@@ -530,14 +526,14 @@ exports.importantCountersForRenter = async (req, reply) => {
 
     _items.push({
       reserve: _reserve,
-      products: _Product
+      products: _Product,
     });
 
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: _items
+      message: "تمت العملية بنجاح",
+      items: _items,
     };
 
     reply.send(response);
@@ -548,15 +544,13 @@ exports.importantCountersForRenter = async (req, reply) => {
 
 exports.top15NewUsers = async (req, reply) => {
   try {
-    var Userss = await Users.find()
-      .sort({ createAt: -1 })
-      .limit(15);
+    var Userss = await Users.find().sort({ createAt: -1 }).limit(15);
 
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: Userss
+      message: "تمت العملية بنجاح",
+      items: Userss,
     };
 
     reply.send(response);
@@ -579,15 +573,15 @@ exports.UsersRenterPerYear = async (req, reply) => {
       "September",
       "October",
       "November",
-      "December"
+      "December",
     ];
 
     var items = [];
     var items2 = [];
     await Users.find()
       .sort({ createAt: 1 })
-      .exec(async function(err, result) {
-        result.forEach(element => {
+      .exec(async function (err, result) {
+        result.forEach((element) => {
           var month_number = new Date(element.createAt).getMonth();
           var month_name = monthNames[month_number];
           items.push({ month: month_name, user: element._id });
@@ -596,22 +590,22 @@ exports.UsersRenterPerYear = async (req, reply) => {
         await renters
           .find()
           .sort({ createAt: 1 })
-          .exec(function(err, result2) {
-            result2.forEach(element2 => {
+          .exec(function (err, result2) {
+            result2.forEach((element2) => {
               var month_number = new Date(element2.createAt).getMonth();
               var month_name = monthNames[month_number];
               items2.push({ month: month_name, user: element2._id });
             });
             var _result = lodash(items)
               .groupBy("month")
-              .map(function(items, _name) {
+              .map(function (items, _name) {
                 return { name: _name, value: items.length };
               })
               .value();
 
             var _result2 = lodash(items2)
               .groupBy("month")
-              .map(function(items, _name) {
+              .map(function (items, _name) {
                 return { name: _name, value: items.length };
               })
               .value();
@@ -621,8 +615,8 @@ exports.UsersRenterPerYear = async (req, reply) => {
             const response = {
               items: [
                 { name: "مستخدم جديد", series: orderedResult },
-                { name: "مستأجر", series: orderedResult2 }
-              ]
+                { name: "مستأجر", series: orderedResult2 },
+              ],
             };
             reply.send(response);
           });
@@ -646,14 +640,14 @@ exports.OrdersPerYear = async (req, reply) => {
       "September",
       "October",
       "November",
-      "December"
+      "December",
     ];
 
     var items = [];
     await Order.find({ $and: [{ orderFrom: "نعناع" }, { StatusId: 3 }] })
       .sort({ createAt: 1 })
-      .exec(function(err, result) {
-        result.forEach(element => {
+      .exec(function (err, result) {
+        result.forEach((element) => {
           var month_number = new Date(element.createAt).getMonth();
           var month_name = monthNames[month_number];
           items.push({ month: month_name, user: element._id });
@@ -661,7 +655,7 @@ exports.OrdersPerYear = async (req, reply) => {
 
         var _result = lodash(items)
           .groupBy("month")
-          .map(function(items, _name) {
+          .map(function (items, _name) {
             return { name: _name, value: items.length };
           })
           .value();
@@ -670,7 +664,7 @@ exports.OrdersPerYear = async (req, reply) => {
 
         const response = {
           name: "طلب من نعناع",
-          series: orderedResult
+          series: orderedResult,
         };
         reply.send(response);
       });
@@ -685,10 +679,10 @@ exports.getMostProductSells = async (req, reply) => {
     await Order.find()
       .populate({ path: "items.product_id", populate: { path: "product_id" } })
       .select("items")
-      .exec(function(err, item) {
-        item.forEach(element => {
+      .exec(function (err, item) {
+        item.forEach((element) => {
           if (element.items.length > 0) {
-            element.items.forEach(elm => {
+            element.items.forEach((elm) => {
               if (elm.product_id) {
                 products.push(elm);
                 console.log(elm);
@@ -702,7 +696,7 @@ exports.getMostProductSells = async (req, reply) => {
 
         var _result = lodash(products)
           .groupBy("product_id.name")
-          .map(function(items, _name) {
+          .map(function (items, _name) {
             if (_name != "undefined") {
               return { name: _name, value: items.length };
             }
@@ -715,8 +709,8 @@ exports.getMostProductSells = async (req, reply) => {
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
-          items: FinalResult
+          message: "تمت العملية بنجاح",
+          items: FinalResult,
         };
         reply.send(response);
       });
@@ -732,10 +726,10 @@ exports.getMostProductSellsRenter = async (req, reply) => {
     await Order.find()
       .populate({ path: "items.product_id", populate: { path: "product_id" } })
       .select("items")
-      .exec(function(err, item) {
-        item.forEach(element => {
+      .exec(function (err, item) {
+        item.forEach((element) => {
           if (element.items.length > 0) {
-            element.items.forEach(elm => {
+            element.items.forEach((elm) => {
               if (elm.by_user_id && elm.by_user_id == user_id) {
                 if (elm.product_id) {
                   products.push(elm);
@@ -750,7 +744,7 @@ exports.getMostProductSellsRenter = async (req, reply) => {
 
         var _result = lodash(products)
           .groupBy("product_id.name")
-          .map(function(items, _name) {
+          .map(function (items, _name) {
             if (_name != "undefined") {
               return { name: _name, value: items.length };
             }
@@ -763,8 +757,8 @@ exports.getMostProductSellsRenter = async (req, reply) => {
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
-          items: FinalResult
+          message: "تمت العملية بنجاح",
+          items: FinalResult,
         };
         reply.send(response);
       });
@@ -779,9 +773,9 @@ exports.getMostProductQty = async (req, reply) => {
     await Product.find()
       .sort({ qty: 1 })
       .limit(10)
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         var _result = lodash(item)
-          .map(function(items, _name) {
+          .map(function (items, _name) {
             return { name: items.name, value: items.qty };
           })
           .value();
@@ -791,8 +785,8 @@ exports.getMostProductQty = async (req, reply) => {
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
-          items: orderedResult
+          message: "تمت العملية بنجاح",
+          items: orderedResult,
         };
         reply.send(response);
       });
@@ -808,9 +802,9 @@ exports.getMostProductQtyRenter = async (req, reply) => {
     await Product.find({ by_user_id: user_id })
       .sort({ qty: 1 })
       .limit(10)
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         var _result = lodash(item)
-          .map(function(items, _name) {
+          .map(function (items, _name) {
             return { name: items.name, value: items.qty };
           })
           .value();
@@ -820,8 +814,8 @@ exports.getMostProductQtyRenter = async (req, reply) => {
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
-          items: orderedResult
+          message: "تمت العملية بنجاح",
+          items: orderedResult,
         };
         reply.send(response);
       });
@@ -835,10 +829,10 @@ exports.getMostRenter = async (req, reply) => {
     await reserve
       .find()
       .populate("renter_id")
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         var _result = lodash(item)
           .groupBy("renter_id.name")
-          .map(function(items, _name) {
+          .map(function (items, _name) {
             if (_name != "undefined") {
               return { name: _name, value: items.length };
             }
@@ -850,8 +844,8 @@ exports.getMostRenter = async (req, reply) => {
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
-          items: orderedResult
+          message: "تمت العملية بنجاح",
+          items: orderedResult,
         };
         reply.send(response);
       });
@@ -874,44 +868,44 @@ exports.revenuPerYear = async (req, reply) => {
       "September",
       "October",
       "November",
-      "December"
+      "December",
     ];
 
     var items = [];
     var items2 = [];
-    await Order.find().exec(async function(err, result) {
-      result.forEach(element => {
+    await Order.find().exec(async function (err, result) {
+      result.forEach((element) => {
         var month_number = new Date(element.createAt).getMonth();
         var month_name = monthNames[month_number];
         items.push({ month: month_name, Total: element.Admin_Total });
       });
 
-      await reserve.find().exec(function(err, result2) {
-        result2.forEach(element2 => {
+      await reserve.find().exec(function (err, result2) {
+        result2.forEach((element2) => {
           var month_number = new Date(element2.end_date).getMonth();
           var month_name = monthNames[month_number];
           items2.push({ month: month_name, amount: element2.amount });
         });
         var _result = lodash(items)
           .groupBy("month")
-          .map(function(items, _name) {
+          .map(function (items, _name) {
             return {
               name: _name,
-              value: lodash.sumBy(items, function(o) {
+              value: lodash.sumBy(items, function (o) {
                 return o.Total;
-              })
+              }),
             };
           })
           .value();
 
         var _result2 = lodash(items2)
           .groupBy("month")
-          .map(function(items, _name) {
+          .map(function (items, _name) {
             return {
               name: _name,
-              value: lodash.sumBy(items, function(o) {
+              value: lodash.sumBy(items, function (o) {
                 return o.amount;
-              })
+              }),
             };
           })
           .value();
@@ -922,8 +916,8 @@ exports.revenuPerYear = async (req, reply) => {
         const response = {
           items: [
             { name: "الرفوف", series: orderedResult2 },
-            { name: "المنتجات", series: orderedResult }
-          ]
+            { name: "المنتجات", series: orderedResult },
+          ],
         };
         reply.send(response);
       });
@@ -948,13 +942,13 @@ exports.revenuPerYearRenter = async (req, reply) => {
       "September",
       "October",
       "November",
-      "December"
+      "December",
     ];
 
     var items = [];
-    await Order.find().exec(async function(err, result) {
-      result.forEach(element => {
-        element.items.forEach(elm => {
+    await Order.find().exec(async function (err, result) {
+      result.forEach((element) => {
+        element.items.forEach((elm) => {
           if (elm.by_user_id == user_id) {
             var month_number = new Date(element.createAt).getMonth();
             var month_name = monthNames[month_number];
@@ -965,12 +959,12 @@ exports.revenuPerYearRenter = async (req, reply) => {
 
       var _result2 = lodash(items)
         .groupBy("month")
-        .map(function(items, _name) {
+        .map(function (items, _name) {
           return {
             name: _name,
-            value: lodash.sumBy(items, function(o) {
+            value: lodash.sumBy(items, function (o) {
               return o.Total;
-            })
+            }),
           };
         })
         .value();
@@ -978,7 +972,7 @@ exports.revenuPerYearRenter = async (req, reply) => {
       var orderedResult2 = lodash.orderBy(_result2, ["value"], ["desc"]);
 
       const response = {
-        items: [{ name: "المنتجات", series: orderedResult2 }]
+        items: [{ name: "المنتجات", series: orderedResult2 }],
       };
       reply.send(response);
     });
@@ -997,36 +991,36 @@ exports.SupplierPerYear = async (req, reply) => {
     var sup = await Supplier.find().count();
     await Drivers.find()
       .populate("supplier_id")
-      .exec(async function(err, result) {
-        result.forEach(async function(element) {
+      .exec(async function (err, result) {
+        result.forEach(async function (element) {
           var cancelOrder = await Order.find({
             $and: [
               { driver_id: element._id },
-              { $or: [{ StatusId: 5 }, { StatusId: 6 }] }
-            ]
+              { $or: [{ StatusId: 5 }, { StatusId: 6 }] },
+            ],
           }).count();
           var DoneOrder = await Order.find({
-            $and: [{ StatusId: 4 }, { driver_id: element._id }]
+            $and: [{ StatusId: 4 }, { driver_id: element._id }],
           }).count();
           var allOrders = await Order.find({ driver_id: element._id }).count();
           // supplier_arr.push(element.name)
           orderedResult.push(
             {
               name: "الطلبات الملغية",
-              value: cancelOrder
+              value: cancelOrder,
             },
             {
               name: "الطلبات المنجزة",
-              value: DoneOrder
+              value: DoneOrder,
             },
             {
               name: "الطلبات الكلية",
-              value: allOrders
+              value: allOrders,
             }
           );
           supplier_arr.push({
             name: element.supplier_id.name,
-            series: orderedResult
+            series: orderedResult,
           });
           orderedResult = [];
           count++;

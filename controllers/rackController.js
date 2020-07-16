@@ -58,19 +58,19 @@ exports.getrack = async (req, reply) => {
       .sort({ _id: -1 })
       .skip(page * limit)
       .limit(limit)
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         console.log(item);
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
+          message: "تمت العملية بنجاح",
           items: item,
           pagenation: {
             size: item.length,
             totalElements: total,
             totalPages: Math.floor(total / limit),
-            pageNumber: page
-          }
+            pageNumber: page,
+          },
         };
         reply.send(response);
       });
@@ -88,7 +88,7 @@ exports.getSinglerack = async (req, reply) => {
       status_code: 200,
       status: true,
       message: "تمت العملية بنجاح",
-      items: _rack
+      items: _rack,
     };
     return response;
   } catch (err) {
@@ -109,7 +109,7 @@ exports.addrack = async (req, reply) => {
       inventory_id: req.body.inventory_id,
       lengthUnit: req.body.lengthUnit,
       widthUnit: req.body.widthUnit,
-      heightUnit: req.body.heightUnit
+      heightUnit: req.body.heightUnit,
     });
 
     let rs = await _rack.save();
@@ -117,7 +117,7 @@ exports.addrack = async (req, reply) => {
       status_code: 200,
       status: true,
       message: "تمت العملية بنجاح",
-      items: rs
+      items: rs,
     };
     return response;
   } catch (err) {
@@ -132,7 +132,7 @@ exports.deleterack = async (req, reply) => {
     status_code: 200,
     status: true,
     message: "تمت العملية بنجاح",
-    items: []
+    items: [],
   };
   return response;
 };
@@ -151,7 +151,7 @@ exports.updaterack = async (req, reply) => {
         height: req.body.height,
         lengthUnit: req.body.lengthUnit,
         widthUnit: req.body.widthUnit,
-        heightUnit: req.body.heightUnit
+        heightUnit: req.body.heightUnit,
       },
       { new: true }
     );
@@ -159,8 +159,8 @@ exports.updaterack = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: _rack
+      message: "تمت العملية بنجاح",
+      items: _rack,
     };
     return response;
   } catch (err) {
@@ -174,18 +174,18 @@ exports.getReserveRack = async (req, reply) => {
     await reserve
       .find({ renter_id: req.params.id })
       .populate({
-        path: "rack_id"
+        path: "rack_id",
       })
       .populate("renter_id")
       .populate("contract_id")
       .sort({ _id: -1 })
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         console.log(item);
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
-          items: item
+          message: "تمت العملية بنجاح",
+          items: item,
         };
         reply.send(response);
       });
@@ -199,13 +199,13 @@ exports.getReserveRackById = async (req, reply) => {
     await reserve
       .findById(req.params.id)
       .sort({ _id: -1 })
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         console.log(item);
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
-          items: item
+          message: "تمت العملية بنجاح",
+          items: item,
         };
         reply.send(response);
       });
@@ -228,7 +228,7 @@ exports.addReserveRack = async (req, reply) => {
       amount: req.body.amount,
       contract_id: req.body.contract_id,
       contract_no: contract_no,
-      isApprove: req.body.isApprove
+      isApprove: req.body.isApprove,
     });
 
     async.eachSeries(
@@ -250,7 +250,7 @@ exports.addReserveRack = async (req, reply) => {
       status_code: 200,
       status: true,
       message: "تمت العملية بنجاح",
-      items: null
+      items: null,
     };
     return response;
   } catch (err) {
@@ -269,7 +269,7 @@ exports.updateReserveRack = async (req, reply) => {
         start_date: req.body.start_date,
         end_date: req.body.end_date,
         amount: req.body.amount,
-        contract_id: req.body.contract_id
+        contract_id: req.body.contract_id,
       },
       { new: true }
     );
@@ -277,8 +277,8 @@ exports.updateReserveRack = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: _reserve
+      message: "تمت العملية بنجاح",
+      items: _reserve,
     };
     return response;
   } catch (err) {
@@ -298,7 +298,7 @@ exports.deleteReserveRack = async (req, reply) => {
     status_code: 200,
     status: true,
     message: "تمت العملية بنجاح",
-    items: []
+    items: [],
   };
   return response;
 };
@@ -308,12 +308,12 @@ exports.rackList = async (req, reply) => {
     await rack
       .find()
       .sort({ _id: -1 })
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
-          items: item
+          message: "تمت العملية بنجاح",
+          items: item,
         };
         reply.send(response);
       });
@@ -327,12 +327,41 @@ exports.rackListNotReserved = async (req, reply) => {
     await rack
       .find({ isReserved: false })
       .sort({ _id: -1 })
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
-          items: item
+          message: "تمت العملية بنجاح",
+          items: item,
+        };
+        reply.send(response);
+      });
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.getRackListNotReservedAndMyRacks = async (req, reply) => {
+  try {
+    var _reserve = await reserve.findById(req.params.id).populate("rack_id");
+
+    await rack
+      .find({ isReserved: false })
+      .sort({ _id: -1 })
+      .exec(function (err, item) {
+        var arr = [];
+        item.forEach((element) => {
+          arr.push(element);
+        });
+        _reserve.rack_id.forEach((element) => {
+          arr.push(element);
+        });
+
+        const response = {
+          status_code: 200,
+          status: true,
+          message: "تمت العملية بنجاح",
+          items: arr,
         };
         reply.send(response);
       });
@@ -351,22 +380,35 @@ exports.getRackReserveSeacrh = async (req, reply) => {
     var start_date = req.body.start_date;
     var end_date = req.body.end_date;
     var query = {};
-    if (end_date != "" && end_date != undefined) {
-      end_date = new Date(end_date);
-      end_date = end_date.setHours(23, 59, 59, 999);
-      end_date = new Date(end_date);
-    }
-    if (start_date != "" && start_date != undefined) {
-      start_date = new Date(start_date);
-      start_date = start_date.setHours(0, 0, 0, 0);
-      start_date = new Date(start_date);
-    }
+    // if (end_date != "" && end_date != undefined) {
+    //   end_date = new Date(end_date);
+    //   end_date = end_date.setHours(23, 59, 59, 999);
+    //   end_date = new Date(end_date);
+    // }
+    // if (start_date != "" && start_date != undefined) {
+    //   start_date = new Date(start_date);
+    //   start_date = start_date.setHours(0, 0, 0, 0);
+    //   start_date = new Date(start_date);
+    // }
     if (start_date != "" && end_date != "") {
       query = {
+        // createAt: {
+        //   $gte: new Date(new Date(start_date).setHours(00, 00, 00)),
+        //   $lt: new Date(new Date(end_date).setHours(23, 59, 59)),
+        // },
+
         $and: [
-          { end_date: { $lt: end_date } },
-          { start_date: { $gte: start_date } }
-        ]
+          {
+            end_date: {
+              $lt: new Date(new Date(end_date).setHours(23, 59, 59)),
+            },
+          },
+          {
+            start_date: {
+              $gte: new Date(new Date(start_date).setHours(00, 00, 00)),
+            },
+          },
+        ],
       };
     }
 
@@ -376,14 +418,14 @@ exports.getRackReserveSeacrh = async (req, reply) => {
       .sort({ _id: -1 })
       .populate("renter_id")
       .populate({
-        path: "rack_id"
+        path: "rack_id",
       })
       .populate("contract_id")
       // .skip((page - 1) * limit)
       // .limit(limit)
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         console.log(item);
-        var result = _.filter(item, function(itm) {
+        var result = _.filter(item, function (itm) {
           // return (
           //   itm.renter_id.name.indexOf(req.body.name) >= 0 ||
           //   itm.renter_id.phone_number.indexOf(req.body.phone_number) >= 0
@@ -401,8 +443,8 @@ exports.getRackReserveSeacrh = async (req, reply) => {
             size: result1.length,
             totalElements: result.length,
             totalPages: Math.floor(result.length / limit),
-            pageNumber: page
-          }
+            pageNumber: page,
+          },
         };
         reply.send(response);
       });

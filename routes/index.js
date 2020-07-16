@@ -16,7 +16,7 @@ const favoriteController = require("../controllers/favoriteController");
 const rackController = require("../controllers/rackController");
 
 const fastify = require("fastify")({
-  logger: true
+  logger: true,
 });
 
 // Import Swagger documentation
@@ -25,110 +25,125 @@ const fastify = require("fastify")({
 const routes = [
   {
     method: "GET",
+    url: "/api/getPaymnetLog",
+    handler: orderController.getPaymnetLog,
+  },
+  {
+    method: "POST",
+    url: "/api/updatePayment/:id",
+    handler: orderController.updatePayment,
+  },
+  {
+    method: "GET",
     url: "/api/rackList",
-    handler: rackController.rackList
+    handler: rackController.rackList,
   },
   {
     method: "GET",
     url: "/api/rackListNotReserved",
-    handler: rackController.rackListNotReserved
+    handler: rackController.rackListNotReserved,
+  },
+  {
+    method: "GET",
+    url: "/api/getRackListNotReservedAndMyRacks/:id",
+    handler: rackController.getRackListNotReservedAndMyRacks,
   },
   {
     method: "GET",
     url: "/api/reserve/:id",
-    handler: rackController.getReserveRack
+    handler: rackController.getReserveRack,
   },
   {
     method: "GET",
     url: "/api/getReserveRackById/:id",
-    handler: rackController.getReserveRackById
+    handler: rackController.getReserveRackById,
   },
   {
     method: "POST",
     url: "/api/reserve",
-    handler: rackController.addReserveRack
+    handler: rackController.addReserveRack,
   },
   {
     method: "POST",
     url: "/api/reserve/:id",
-    handler: rackController.updateReserveRack
+    handler: rackController.updateReserveRack,
   },
   {
     method: "POST",
     url: "/api/deletereserve/:id",
-    handler: rackController.deleteReserveRack
+    handler: rackController.deleteReserveRack,
   },
   {
     method: "GET",
     url: "/api/rack",
-    handler: rackController.getrack
+    handler: rackController.getrack,
   },
   {
     method: "GET",
     url: "/api/rack/:id",
-    handler: rackController.getSinglerack
+    handler: rackController.getSinglerack,
   },
   {
     method: "POST",
     url: "/api/rack",
-    handler: rackController.addrack
+    handler: rackController.addrack,
   },
   {
     method: "POST",
     url: "/api/rack/:id",
-    handler: rackController.updaterack
+    handler: rackController.updaterack,
   },
   {
     method: "POST",
     url: "/api/deleterack/:id",
-    handler: rackController.deleterack
+    handler: rackController.deleterack,
   },
   {
     method: "GET",
     url: "/api/Favorite/:id",
-    handler: favoriteController.getFav
+    handler: favoriteController.getFav,
   },
   {
     method: "POST",
     url: "/api/deleteFav/:id",
-    handler: favoriteController.deleteFav
+    handler: favoriteController.deleteFav,
   },
   {
     method: "POST",
     url: "/api/addFav",
-    handler: favoriteController.addFav
+    handler: favoriteController.addFav,
   },
   //#region Coupon
   {
     method: "GET",
     url: "/api/coupon",
-    handler: couponController.getcoupon
+    handler: couponController.getcoupon,
   },
   {
     method: "GET",
     url: "/api/getcoupon/:id",
-    handler: couponController.getSinglecoupon
+    handler: couponController.getSinglecoupon,
   },
   {
     method: "POST",
     url: "/api/addcoupon",
-    handler: couponController.addcoupon
+    handler: couponController.addcoupon,
   },
   {
     method: "POST",
     url: "/api/checkCoupon",
     beforeHandler: [auth.getToken],
-    handler: couponController.checkCoupon
+    handler: couponController.checkCoupon,
   },
   {
     method: "POST",
     url: "/api/updatecoupon/:id",
-    handler: couponController.updatecoupon
+    handler: couponController.updatecoupon,
   },
   {
     method: "POST",
     url: "/api/deletecoupon/:id",
-    handler: couponController.deletecoupon
+    handler: couponController.deletecoupon,
   },
   //#endregion
 
@@ -136,1002 +151,1013 @@ const routes = [
   {
     method: "GET",
     url: "/api/getAdvs",
-    handler: advController.getAdv
+    handler: advController.getAdv,
   },
   {
     method: "GET",
     url: "/api/getadv/:id",
-    handler: advController.getSingleAdv
+    handler: advController.getSingleAdv,
   },
   {
     method: "POST",
     url: "/api/addadv",
-    handler: advController.addAdv
+    handler: advController.addAdv,
   },
   {
     method: "POST",
     url: "/api/updateadv/:id",
-    handler: advController.updateAdv
+    handler: advController.updateAdv,
   },
   {
     method: "POST",
     url: "/api/deleteadv/:id",
-    handler: advController.deleteAdv
+    handler: advController.deleteAdv,
   },
   //#endregion
   {
     method: "GET",
     url: "/DailyOrders",
-    handler: orderController.DailyOrders
+    handler: orderController.DailyOrders,
   },
 
   {
     method: "POST",
     url: "/api/addproduct",
-    handler: productController.addProduct
+    handler: productController.addProduct,
   },
   {
     method: "POST",
     url: "/api/upload_file",
-    handler: productController.uploadPhoto
+    handler: productController.uploadPhoto,
   },
   {
     method: "GET",
     url: "/api/admin",
-    handler: adminController.getAdmins
+    handler: adminController.getAdmins,
   },
   {
     method: "GET",
     url: "/api/admin/:id",
-    handler: adminController.getSingleAdmin
+    handler: adminController.getSingleAdmin,
   },
   {
     method: "POST",
     url: "/api/admin",
-    handler: adminController.addAdmin
+    handler: adminController.addAdmin,
   },
   {
     method: "POST",
     url: "/api/admin/:id",
-    handler: adminController.updateAdmin
+    handler: adminController.updateAdmin,
   },
   {
     method: "POST",
     url: "/api/deleteadmin/:id",
-    handler: adminController.deleteAdmin
+    handler: adminController.deleteAdmin,
   },
   {
     method: "POST",
     url: "/api/loginAdmin",
-    handler: adminController.login
+    handler: adminController.login,
   },
   {
     method: "POST",
     url: "/api/refreshtokenAdmin",
-    handler: adminController.refreshToken
+    handler: adminController.refreshToken,
   },
   {
     method: "GET",
     url: "/api/supplier",
-    handler: productController.getSupplier
+    handler: productController.getSupplier,
   },
   {
     method: "GET",
     url: "/api/getsupplier/:id",
-    handler: productController.getSingleSupplier
+    handler: productController.getSingleSupplier,
   },
   {
     method: "POST",
     url: "/api/addsupplier",
-    handler: productController.addSupplier
+    handler: productController.addSupplier,
   },
   {
     method: "POST",
     url: "/api/updatesupplier/:id",
-    handler: productController.updateSupplier
+    handler: productController.updateSupplier,
   },
   {
     method: "POST",
     url: "/api/deletesupplier/:id",
-    handler: productController.deleteSupplier
+    handler: productController.deleteSupplier,
   },
 
   {
     method: "GET",
     url: "/api/getcategory/:id",
-    handler: productController.getSingleCategory
+    handler: productController.getSingleCategory,
   },
   {
     method: "POST",
     url: "/api/addcategory",
-    handler: productController.addCategory
+    handler: productController.addCategory,
   },
   {
     method: "POST",
     url: "/api/updatecategory/:id",
-    handler: productController.updateCategory
+    handler: productController.updateCategory,
   },
   {
     method: "POST",
     url: "/api/deletecategory/:id",
-    handler: productController.deleteCategory
+    handler: productController.deleteCategory,
   },
   {
     method: "GET",
     url: "/api/getUpdates",
-    handler: constantController.getUpdates
+    handler: constantController.getUpdates,
   },
   {
     method: "POST",
     url: "/api/settings",
-    handler: constantController.addSetting
+    handler: constantController.addSetting,
   },
   {
     method: "POST",
     url: "/api/settings/:id",
-    handler: constantController.updateSetting
+    handler: constantController.updateSetting,
   },
   {
     method: "POST",
     url: "/api/adddelivery_time",
-    handler: constantController.adddelivery_time
+    handler: constantController.adddelivery_time,
   },
   {
     method: "POST",
     url: "/api/deletedelivery_time/:id",
-    handler: constantController.deletedelivery_time
+    handler: constantController.deletedelivery_time,
   },
   {
     method: "POST",
     url: "/api/addDeliveryOption",
-    handler: constantController.addCity
+    handler: constantController.addCity,
   },
   {
     method: "POST",
     url: "/api/addcontract",
-    handler: constantController.addContract
+    handler: constantController.addContract,
   },
   {
     method: "POST",
     url: "/api/addInventory",
-    handler: constantController.addInventory
+    handler: constantController.addInventory,
   },
   {
     method: "POST",
     url: "/api/addTransport",
-    handler: constantController.addTransport
+    handler: constantController.addTransport,
   },
   {
     method: "POST",
     url: "/api/updateDeliveryOption/:id",
-    handler: constantController.updateCity
+    handler: constantController.updateCity,
   },
   {
     method: "POST",
     url: "/api/updatecontract/:id",
-    handler: constantController.updateContract
+    handler: constantController.updateContract,
   },
   {
     method: "POST",
     url: "/api/updateInventory/:id",
-    handler: constantController.updateInventory
+    handler: constantController.updateInventory,
   },
   {
     method: "POST",
     url: "/api/updateTransport/:id",
-    handler: constantController.updateTransport
+    handler: constantController.updateTransport,
   },
   {
     method: "POST",
     url: "/api/deleteDeliveryOption/:id",
-    handler: constantController.deleteCity
+    handler: constantController.deleteCity,
   },
   {
     method: "POST",
     url: "/api/deleteContract/:id",
-    handler: constantController.deleteContract
+    handler: constantController.deleteContract,
   },
   {
     method: "POST",
     url: "/api/deleteinventory/:id",
-    handler: constantController.deleteInventory
+    handler: constantController.deleteInventory,
   },
   {
     method: "POST",
     url: "/api/deleteTransport/:id",
-    handler: constantController.deleteTransport
+    handler: constantController.deleteTransport,
   },
   {
     method: "GET",
     url: "/api/getSocialOption/:id",
-    handler: constantController.getSocialOption
+    handler: constantController.getSocialOption,
   },
   {
     method: "POST",
     url: "/api/addSocialOption",
-    handler: constantController.addSocial
+    handler: constantController.addSocial,
   },
   {
     method: "POST",
     url: "/api/updateSocialOption/:id",
-    handler: constantController.updateSocial
+    handler: constantController.updateSocial,
   },
   {
     method: "POST",
     url: "/api/deleteSocialOption/:id",
-    handler: constantController.deleteSocial
+    handler: constantController.deleteSocial,
   },
   {
     method: "GET",
     url: "/api/getContactOption/:id",
-    handler: constantController.getSingleContact
+    handler: constantController.getSingleContact,
   },
   {
     method: "POST",
     url: "/api/ContactOption",
-    handler: constantController.addContact
+    handler: constantController.addContact,
   },
   {
     method: "POST",
     url: "/api/updateContactOption/:id",
-    handler: constantController.updateContact
+    handler: constantController.updateContact,
   },
   {
     method: "POST",
     url: "/api/deleteContactOption/:id",
-    handler: constantController.deleteContact
+    handler: constantController.deleteContact,
   },
   {
     method: "GET",
     url: "/api/getstaticpage/:id",
-    handler: constantController.getSingleStatic
+    handler: constantController.getSingleStatic,
   },
   {
     method: "POST",
     url: "/api/staticpage",
-    handler: constantController.addStatic
+    handler: constantController.addStatic,
   },
   {
     method: "POST",
     url: "/api/updatestaticpage/:id",
-    handler: constantController.updateStatic
+    handler: constantController.updateStatic,
   },
   {
     method: "POST",
     url: "/api/addstaticpage/:id",
-    handler: constantController.deleteStatic
+    handler: constantController.deleteStatic,
   },
   {
     method: "GET",
     url: "/api/getCategoriesAdmin",
-    handler: productController.getCategoriesAdmin
+    handler: productController.getCategoriesAdmin,
   },
   {
     method: "GET",
     url: "/api/category",
-    handler: productController.getCategories
+    handler: productController.getCategories,
   },
   {
     method: "GET",
     url: "/api/getSingleProduct/:id",
-    handler: productController.getSingleProductClient
+    handler: productController.getSingleProductClient,
   },
   {
     method: "POST",
     url: "/api/getProducts",
-    handler: productController.getProducts
+    handler: productController.getProducts,
   },
   {
     method: "GET",
     url: "/api/getRandomProducts",
-    handler: productController.getRandomProducts
+    handler: productController.getRandomProducts,
   },
   {
     method: "GET",
     url: "/api/getAllProducts",
-    handler: productController.getAllProducts
+    handler: productController.getAllProducts,
   },
   {
     method: "POST",
     url: "/api/getProductsRenters",
-    handler: productController.getProductsRenters
+    handler: productController.getProductsRenters,
   },
   {
     method: "POST",
     url: "/api/getProductsForRenter",
-    handler: productController.getProductsForRenter
+    handler: productController.getProductsForRenter,
   },
   {
     method: "POST",
     url: "/api/getProductsForRenterById",
-    handler: productController.getProductsForRenterById
+    handler: productController.getProductsForRenterById,
   },
   {
     method: "GET",
     url: "/api/settings/:id",
-    handler: constantController.getSingleSettings
+    handler: constantController.getSingleSettings,
   },
   {
     method: "GET",
     url: "/api/city",
-    handler: constantController.getCity
+    handler: constantController.getCity,
   },
   {
     method: "GET",
     url: "/api/contract",
-    handler: constantController.getContract
+    handler: constantController.getContract,
   },
   {
     method: "GET",
     url: "/api/inventory",
-    handler: constantController.getInventory
+    handler: constantController.getInventory,
   },
   {
     method: "GET",
     url: "/api/getTransport",
-    handler: constantController.getTransport
+    handler: constantController.getTransport,
   },
   {
     method: "GET",
     url: "/api/getSingleCity/:id",
-    handler: constantController.getSingleCity
+    handler: constantController.getSingleCity,
   },
   {
     method: "GET",
     url: "/api/getContractDetails/:id",
-    handler: constantController.getContractDetails
+    handler: constantController.getContractDetails,
   },
   {
     method: "GET",
     url: "/api/getSingleInventory/:id",
-    handler: constantController.getSingleInventory
+    handler: constantController.getSingleInventory,
   },
   {
     method: "GET",
     url: "/api/getSingleTransport/:id",
-    handler: constantController.getSingleTransport
+    handler: constantController.getSingleTransport,
   },
   {
     method: "GET",
     url: "/api/social",
-    handler: constantController.getSocialOption
+    handler: constantController.getSocialOption,
   },
   {
     method: "GET",
     url: "/api/buyunits",
-    handler: constantController.getBuyUnits
+    handler: constantController.getBuyUnits,
   },
   {
     method: "GET",
     url: "/api/Contact",
-    handler: constantController.getContactOption
+    handler: constantController.getContactOption,
   },
   {
     method: "GET",
     url: "/api/getStaticPage",
-    handler: constantController.getStaticPage
+    handler: constantController.getStaticPage,
   },
   {
     method: "POST",
     url: "/api/getUsers",
-    handler: userController.getUsers
+    handler: userController.getUsers,
   },
   {
     method: "GET",
     url: "/api/getUserByCity/:id",
-    handler: userController.getUserByCity
+    handler: userController.getUserByCity,
   },
   {
     method: "POST",
     url: "/api/uploadUserPhoto",
-    handler: userController.uploadUserPhoto
+    handler: userController.uploadUserPhoto,
   },
   {
     method: "GET",
     url: "/api/getAllUsers",
-    handler: userController.getAllUsers
+    handler: userController.getAllUsers,
   },
 
   {
     method: "GET",
     url: "/api/showprofile",
     beforeHandler: [auth.getToken],
-    handler: userController.getSingleUsers
+    handler: userController.getSingleUsers,
   },
   {
     method: "POST",
     url: "/api/users",
-    handler: userController.addUsers
+    handler: userController.addUsers,
   },
   {
     method: "POST",
     url: "/api/userrefreshToken",
     beforeHandler: [auth.getToken],
-    handler: userController.refreshToken
+    handler: userController.refreshToken,
   },
   {
     method: "POST",
     url: "/api/login",
-    handler: userController.login
+    handler: userController.login,
   },
   {
     method: "POST",
     url: "/api/forgetPassword",
-    handler: userController.forgetPassword
+    handler: userController.forgetPassword,
   },
   {
     method: "POST",
     url: "/api/changePassword",
-    handler: userController.changePassword
+    handler: userController.changePassword,
   },
   {
     method: "POST",
     url: "/api/changeRenterPassword",
-    handler: driverController.changePassword
+    handler: driverController.changePassword,
   },
   {
     method: "POST",
     url: "/api/changeAdminPassword",
-    handler: adminController.changePassword
+    handler: adminController.changePassword,
   },
   {
     method: "POST",
     url: "/api/logout",
     beforeHandler: [auth.getToken],
-    handler: userController.logout
+    handler: userController.logout,
   },
 
   {
     method: "POST",
     url: "/api/updateprofile/:id",
-    handler: userController.updateprofileFromAdmin
+    handler: userController.updateprofileFromAdmin,
   },
   {
     method: "POST",
     url: "/api/updateUserAndroid",
     beforeHandler: [auth.getToken],
-    handler: userController.updateUserAndroid
+    handler: userController.updateUserAndroid,
   },
   {
     method: "POST",
     url: "/api/verfiy",
-    handler: userController.verfiy
+    handler: userController.verfiy,
   },
   {
     method: "GET",
     url: "/api/notifications",
     beforeHandler: [auth.getToken],
-    handler: notificationController.getNotfications
+    handler: notificationController.getNotfications,
   },
   {
     method: "GET",
     url: "/api/updateNotifications/:id",
-    handler: notificationController.updateNotifications
+    handler: notificationController.updateNotifications,
   },
   {
     method: "POST",
     url: "/api/notifications/:id",
     // beforeHandler: [auth.getToken],
-    handler: notificationController.readNotifications
+    handler: notificationController.readNotifications,
   },
   {
     method: "POST",
     url: "/api/userSearch",
-    handler: userController.userSearch
+    handler: userController.userSearch,
   },
   {
     method: "GET",
     url: "/api/userslist",
-    handler: userController.userslist
+    handler: userController.userslist,
   },
   {
     method: "GET",
     url: "/api/userlistInfo",
-    handler: userController.userlistInfo
+    handler: userController.userlistInfo,
   },
   {
     method: "POST",
     url: "/api/block/:id",
-    handler: userController.block
+    handler: userController.block,
   },
   {
     method: "GET",
     url: "/api/userprofile/:id",
-    handler: userController.userprofile
+    handler: userController.userprofile,
   },
   {
     method: "POST",
     url: "/api/addOrderDriver/:id",
-    handler: orderController.addOrderDriver
+    handler: orderController.addOrderDriver,
   },
   {
     method: "POST",
     url: "/api/deleteOrder/:id",
-    handler: orderController.deleteOrder
+    handler: orderController.deleteOrder,
   },
   {
     method: "POST",
     url: "/api/addOrder",
-    handler: orderController.addOrder
+    handler: orderController.addOrder,
+  },
+  {
+    method: "GET",
+    url: "/api/getPaymentLogDetailsByRenterId/:id",
+    handler: orderController.getPaymentLogDetailsByRenterId,
   },
   {
     method: "POST",
     url: "/api/updateOrderByAdmin/:id",
-    handler: orderController.updateOrderByAdmin
+    handler: orderController.updateOrderByAdmin,
   },
   {
     method: "POST",
     url: "/api/order",
     beforeHandler: [auth.getToken],
-    handler: orderController.addOrder
+    handler: orderController.addOrder,
   },
   {
     method: "POST",
     url: "/api/updateOrderByDriver",
     beforeHandler: [auth.getToken],
-    handler: orderController.updateOrderByDriver
+    handler: orderController.updateOrderByDriver,
   },
   {
     method: "POST",
     url: "/api/updateOrderByUser",
     beforeHandler: [auth.getToken],
-    handler: orderController.updateOrderByUser
+    handler: orderController.updateOrderByUser,
   },
   {
     method: "POST",
     url: "/api/addRate",
-    handler: orderController.addRate
+    handler: orderController.addRate,
   },
   {
     method: "POST",
     url: "/api/addProcutComment",
-    handler: orderController.addProcutComment
+    handler: orderController.addProcutComment,
   },
   {
     method: "POST",
     url: "/api/approveRate/:id",
-    handler: orderController.approveRate
+    handler: orderController.approveRate,
   },
   {
     method: "POST",
     url: "/api/approveComment/:id",
-    handler: orderController.approveComment
+    handler: orderController.approveComment,
   },
   {
     method: "GET",
     url: "/api/getUserOrder",
-    handler: orderController.getUserOrder
+    handler: orderController.getUserOrder,
   },
   {
     method: "GET",
     url: "/api/getDriverOrder",
-    handler: orderController.getDriverOrder
+    handler: orderController.getDriverOrder,
   },
   {
     method: "GET",
     url: "/api/getOrderDetails/:id",
-    handler: orderController.getOrderDetails
+    handler: orderController.getOrderDetails,
   },
   {
     method: "POST",
     url: "/api/checkAvailableDrivers",
-    handler: orderController.checkAvailableDrivers
+    handler: orderController.checkAvailableDrivers,
   },
   {
     method: "POST",
     url: "/api/checkAvailableSupplier",
-    handler: orderController.checkAvailableSupplier
+    handler: orderController.checkAvailableSupplier,
   },
   {
     method: "GET",
     url: "/api/getOrders/:id",
-    handler: orderController.getOrders
+    handler: orderController.getOrders,
   },
   {
     method: "GET",
     url: "/api/getOrdersByUserId/:id",
-    handler: orderController.getOrdersByUserId
+    handler: orderController.getOrdersByUserId,
   },
 
   {
     method: "GET",
     url: "/api/getTunckOrders",
-    handler: orderController.getTunckOrders
+    handler: orderController.getTunckOrders,
   },
   {
     method: "POST",
     url: "/api/getOrdersSeacrh",
-    handler: orderController.getOrdersSeacrh
+    handler: orderController.getOrdersSeacrh,
   },
   {
     method: "POST",
     url: "/api/getRackReserveSeacrh",
-    handler: rackController.getRackReserveSeacrh
+    handler: rackController.getRackReserveSeacrh,
   },
   {
     method: "GET",
     url: "/api/getRatedOrders",
-    handler: orderController.getRatedOrders
+    handler: orderController.getRatedOrders,
   },
   {
     method: "GET",
     url: "/api/getApprovedRatedOrders",
-    handler: orderController.getApproveRatedOrders
+    handler: orderController.getApproveRatedOrders,
   },
   {
     method: "GET",
     url: "/api/getRatedProducts",
-    handler: orderController.getRatedProducts
+    handler: orderController.getRatedProducts,
   },
   {
     method: "GET",
     url: "/api/getRatedProductsById/:id",
-    handler: orderController.getRatedProductsById
+    handler: orderController.getRatedProductsById,
   },
   {
     method: "GET",
     url: "/api/getRenters",
-    handler: driverController.getRenters
+    handler: driverController.getRenters,
   },
   {
     method: "GET",
     url: "/api/getNewOrder/:id",
-    handler: orderController.getNewOrder
+    handler: orderController.getNewOrder,
   },
   {
     method: "GET",
     url: "/api/getNewRatedOrder/:id",
-    handler: orderController.getNewRatedOrder
+    handler: orderController.getNewRatedOrder,
   },
   {
     method: "POST",
     url: "/api/updateRate/:id",
-    handler: orderController.updateRate
+    handler: orderController.updateRate,
   },
   {
     method: "POST",
     url: "/api/addRenter",
-    handler: driverController.addrenters
+    handler: driverController.addrenters,
   },
   {
     method: "POST",
     url: "/api/updateStatus",
     beforeHandler: [auth.getToken],
-    handler: driverController.updateStatus
+    handler: driverController.updateStatus,
   },
   {
     method: "POST",
     url: "/api/getrenters",
-    handler: driverController.getrenters
+    handler: driverController.getrenters,
   },
   {
     method: "GET",
     url: "/api/getRenterDetails/:id",
-    handler: driverController.getSinglerenters
+    handler: driverController.getSinglerenters,
   },
   {
     method: "POST",
     url: "/api/blockRender",
-    handler: driverController.block
+    handler: driverController.block,
   },
   {
     method: "GET",
     url: "/api/DriverList/:id",
-    handler: driverController.Driverlist
+    handler: driverController.Driverlist,
   },
   {
     method: "POST",
     url: "/api/loginRenter",
-    handler: driverController.login
+    handler: driverController.login,
   },
   {
     method: "POST",
     url: "/api/logoutDriver",
     beforeHandler: [auth.getToken],
-    handler: driverController.logout
+    handler: driverController.logout,
   },
   {
     method: "POST",
     url: "/api/refreshtokenDriver",
     beforeHandler: [auth.getToken],
-    handler: driverController.refreshTokenDriver
+    handler: driverController.refreshTokenDriver,
   },
   {
     method: "GET",
     url: "/api/DriverProfile/:id",
-    handler: driverController.userprofile
+    handler: driverController.userprofile,
   },
   {
     method: "POST",
     url: "/api/updateprofileFromAdmin/:id",
-    handler: driverController.updateprofileFromAdmin
+    handler: driverController.updateprofileFromAdmin,
   },
   {
     method: "POST",
     url: "/api/uploadDriverPhoto",
-    handler: driverController.uploadRenterPhoto
+    handler: driverController.uploadRenterPhoto,
   },
   {
     method: "POST",
     url: "/api/addPoint",
-    handler: pointController.addPoint
+    handler: pointController.addPoint,
   },
   {
     method: "POST",
     url: "/api/updatePoint/:id",
-    handler: pointController.updatePoint
+    handler: pointController.updatePoint,
   },
   {
     method: "POST",
     url: "/api/deletePoint/:id",
-    handler: pointController.deletePoint
+    handler: pointController.deletePoint,
   },
   {
     method: "GET",
     url: "/api/getSupplierPoint/:id",
-    handler: pointController.getSupplierPoint
+    handler: pointController.getSupplierPoint,
   },
   {
     method: "GET",
     url: "/api/getSinglePoint/:id",
-    handler: pointController.getSinglePoint
+    handler: pointController.getSinglePoint,
   },
   {
     method: "GET",
     url: "/api/UserPointById/:id",
-    handler: pointController.UserPointById
+    handler: pointController.UserPointById,
   },
   {
     method: "GET",
     url: "/api/updateUserPoint/:id",
     beforeHandler: [auth.getToken],
-    handler: pointController.updateUserPoint
+    handler: pointController.updateUserPoint,
   },
   {
     method: "GET",
     url: "/api/getDailyRevenu/:id",
-    handler: reportController.getDailyRevenu
+    handler: reportController.getDailyRevenu,
   },
   {
     method: "GET",
     url: "/api/getProductsCount/:id",
-    handler: reportController.getProductsCount
+    handler: reportController.getProductsCount,
   },
   {
     method: "GET",
     url: "/api/getMostProductQty",
-    handler: reportController.getMostProductQty
+    handler: reportController.getMostProductQty,
   },
   {
     method: "GET",
     url: "/api/getMostProductQtyRenter/:id",
-    handler: reportController.getMostProductQtyRenter
+    handler: reportController.getMostProductQtyRenter,
   },
   {
     method: "GET",
     url: "/api/getMostRenter",
-    handler: reportController.getMostRenter
+    handler: reportController.getMostRenter,
   },
   {
     method: "GET",
     url: "/api/getTop10Cities",
-    handler: reportController.getTop10Cities
+    handler: reportController.getTop10Cities,
   },
   {
     method: "GET",
     url: "/api/importantCounters",
-    handler: reportController.importantCounters
+    handler: reportController.importantCounters,
   },
   {
     method: "GET",
     url: "/api/importantCountersForRenter/:id",
-    handler: reportController.importantCountersForRenter
+    handler: reportController.importantCountersForRenter,
   },
   {
     method: "GET",
     url: "/api/top15NewUsers",
-    handler: reportController.top15NewUsers
+    handler: reportController.top15NewUsers,
   },
   {
     method: "GET",
     url: "/api/OrdersPerYear",
-    handler: reportController.OrdersPerYear
+    handler: reportController.OrdersPerYear,
   },
   {
     method: "GET",
     url: "/api/UsersRenterPerYear",
-    handler: reportController.UsersRenterPerYear
+    handler: reportController.UsersRenterPerYear,
   },
   {
     method: "GET",
     url: "/api/getMostProductSells",
-    handler: reportController.getMostProductSells
+    handler: reportController.getMostProductSells,
   },
   {
     method: "GET",
     url: "/api/getMostProductSellsRenter/:id",
-    handler: reportController.getMostProductSellsRenter
+    handler: reportController.getMostProductSellsRenter,
   },
   {
     method: "GET",
     url: "/api/getProductsByCategory/:id",
-    handler: productController.getProductsByCategory
+    handler: productController.getProductsByCategory,
   },
   {
     method: "POST",
     url: "/api/searchWeb",
-    handler: productController.searchWeb
+    handler: productController.searchWeb,
   },
   {
     method: "GET",
     url: "/api/getTop4RatedProducts",
-    handler: productController.getTop4RatedProducts
+    handler: productController.getTop4RatedProducts,
   },
   {
     method: "GET",
     url: "/api/revenuPerYear",
-    handler: reportController.revenuPerYear
+    handler: reportController.revenuPerYear,
   },
   {
     method: "GET",
     url: "/api/revenuPerYearRenter/:id",
-    handler: reportController.revenuPerYearRenter
+    handler: reportController.revenuPerYearRenter,
   },
 
   {
     method: "GET",
     url: "/api/SupplierPerYear/:id",
-    handler: reportController.SupplierPerYear
+    handler: reportController.SupplierPerYear,
   },
 
   {
     method: "POST",
     url: "/api/addCompanyCommission",
-    handler: reportController.addCompanyCommission
+    handler: reportController.addCompanyCommission,
   },
   {
     method: "GET",
     url: "/api/rpt_getCompanyCommission",
-    handler: reportController.rpt_getCompanyCommission
+    handler: reportController.rpt_getCompanyCommission,
   },
   {
     method: "POST",
     url: "/api/rpt_getOrderswithstatus",
-    handler: reportController.rpt_getOrderswithstatus
+    handler: reportController.rpt_getOrderswithstatus,
   },
   {
     method: "POST",
     url: "/api/rpt_getRevenu",
-    handler: reportController.rpt_getRevenu
+    handler: reportController.rpt_getRevenu,
   },
   {
     method: "POST",
     url: "/api/rpt_getOrderMaps",
-    handler: reportController.rpt_getOrderMaps
+    handler: reportController.rpt_getOrderMaps,
   },
 
   {
     method: "GET",
     url: "/api/getAllSettings",
-    handler: constantController.getSettings
+    handler: constantController.getSettings,
   },
   {
     method: "GET",
     url: "/api/getdelivery_time/:id",
-    handler: constantController.getdelivery_time
+    handler: constantController.getdelivery_time,
   },
 
   {
     method: "GET",
     url: "/api/company/DriverProfile/:id",
-    handler: driverController.userprofile
+    handler: driverController.userprofile,
   },
   {
     method: "POST",
     url: "/api/company/upload_file",
-    handler: productController.uploadPhoto
+    handler: productController.uploadPhoto,
   },
   {
     method: "POST",
     url: "/api/company/addPoint",
-    handler: pointController.addPoint
+    handler: pointController.addPoint,
   },
   {
     method: "GET",
     url: "/api/company/getOrderDetails",
-    handler: orderController.getOrderDetails
+    handler: orderController.getOrderDetails,
   },
   {
     method: "POST",
     url: "/api/addSettings",
-    handler: constantController.addSetting
+    handler: constantController.addSetting,
   },
   {
     method: "POST",
     url: "/api/deleteSetting/:id",
-    handler: constantController.deleteSetting
+    handler: constantController.deleteSetting,
   },
 
   {
     method: "POST",
     url: "/api/updateSetting/:id",
-    handler: constantController.updateSetting
+    handler: constantController.updateSetting,
   },
   {
     method: "POST",
     url: "/api/updatedelivery_time/:id",
-    handler: constantController.updatedelivery_time
+    handler: constantController.updatedelivery_time,
   },
   {
     method: "GET",
     url: "/api/company/getCategoriesAdmin",
-    handler: productController.getCategoriesAdmin
+    handler: productController.getCategoriesAdmin,
   },
   {
     method: "GET",
     url: "/api/getproduct/:id",
-    handler: productController.getSingleProduct
+    handler: productController.getSingleProduct,
   },
   {
     method: "POST",
     url: "/api/deleteproduct/:id",
-    handler: productController.deleteProduct
+    handler: productController.deleteProduct,
   },
   {
     method: "POST",
     url: "/api/updatePriceQty/:id",
-    handler: productController.updatePriceQty
+    handler: productController.updatePriceQty,
   },
   {
     method: "POST",
+    url: "/api/approveAllProducts/:id",
+    handler: productController.approveAllProducts,
+  },
+
+  {
+    method: "POST",
     url: "/api/deleteProductImage/:id",
-    handler: productController.deleteProductImage
+    handler: productController.deleteProductImage,
   },
   {
     method: "POST",
     url: "/api/updateproduct/:id",
-    handler: productController.updateProduct
+    handler: productController.updateProduct,
   },
   {
     method: "POST",
     url: "/api/updateProductStatus/:id",
-    handler: productController.updateProductStatus
+    handler: productController.updateProductStatus,
   },
   {
     method: "POST",
     url: "/api/getProductDetailsByBarCode",
-    handler: productController.getProductDetailsByBarCode
+    handler: productController.getProductDetailsByBarCode,
   },
   {
     method: "POST",
     url: "/api/makeCoverImage/:id",
-    handler: productController.makeCoverImage
+    handler: productController.makeCoverImage,
   },
   {
     method: "GET",
     url: "/api/getProductsByRackId/:id",
-    handler: productController.getProductsByRackId
+    handler: productController.getProductsByRackId,
   },
   {
     method: "GET",
     url: "/api/company/getDailyRevenu/:id",
-    handler: companyController.getDailyRevenu
+    handler: companyController.getDailyRevenu,
   },
   {
     method: "GET",
     url: "/api/company/importantCounters/:id",
-    handler: reportController.importantCounters
+    handler: reportController.importantCounters,
   },
   {
     method: "POST",
     url: "/api/company/updateOrderByAdmin/:id",
-    handler: orderController.updateOrderByAdmin
+    handler: orderController.updateOrderByAdmin,
   },
   {
     method: "POST",
     url: "/api/company/addOrderDriver/:id",
-    handler: orderController.addOrderDriver
-  }
+    handler: orderController.addOrderDriver,
+  },
 ];
 
 module.exports = routes;

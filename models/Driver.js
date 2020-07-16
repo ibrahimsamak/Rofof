@@ -6,48 +6,51 @@ const renterschema = mongoose.Schema(
   {
     name: {
       type: String,
-      required: true
+      required: true,
     },
     phone_number: {
       type: String,
-      required: true
+      required: true,
     },
     image: {
       type: String,
-      required: false
+      required: false,
     },
     email: {
       type: String,
-      required: true
+      required: true,
     },
     password: {
       type: String,
-      required: true
+      required: true,
     },
     address: {
       type: String,
-      required: false
+      required: false,
     },
+    isOnlineSupport: { type: Boolean },
+    IBAN: { type: String },
+    BankName: { type: String },
     isBlock: {
       type: Boolean,
-      required: false
+      required: false,
     },
     createAt: {
       type: Date,
-      default: getCurrentDateTime()
+      default: getCurrentDateTime(),
     },
     fcmToken: {
       type: String,
-      required: false
+      required: false,
     },
     token: {
       type: String,
-      required: false
+      required: false,
     },
     car_name: {
       type: String,
-      required: false
-    }
+      required: false,
+    },
   },
   { versionKey: false }
 );

@@ -13,7 +13,7 @@ const {
   delivery_time,
   inventory,
   contract,
-  transport
+  transport,
 } = require("../models/Constant");
 const { client } = require("../models/cache");
 
@@ -23,8 +23,8 @@ exports.getUpdates = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: updates
+      message: "تمت العملية بنجاح",
+      items: updates,
     };
     return response;
   } catch (err) {
@@ -41,7 +41,7 @@ exports.getBuyUnits = async (req, reply) => {
     //     const response = {
     //         status_code: 200,
     //         status: true,
-    //         message: 'return succssfully',
+    //         message: 'تمت العملية بنجاح',
     //         items: JSON.parse(cachedObj)
     //     }
     //     return response
@@ -52,8 +52,8 @@ exports.getBuyUnits = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: buyunits
+      message: "تمت العملية بنجاح",
+      items: buyunits,
     };
     return response;
   } catch (err) {
@@ -67,8 +67,8 @@ exports.getContactOption = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: ContactOptions
+      message: "تمت العملية بنجاح",
+      items: ContactOptions,
     };
     return response;
   } catch (err) {
@@ -82,8 +82,8 @@ exports.getSocialOption = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: SocialOptions
+      message: "تمت العملية بنجاح",
+      items: SocialOptions,
     };
     return response;
   } catch (err) {
@@ -97,8 +97,8 @@ exports.getStaticPage = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: staticpages
+      message: "تمت العملية بنجاح",
+      items: staticpages,
     };
     return response;
   } catch (err) {
@@ -112,8 +112,8 @@ exports.getCity = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: cities
+      message: "تمت العملية بنجاح",
+      items: cities,
     };
     return response;
   } catch (err) {
@@ -127,8 +127,8 @@ exports.getSingleCity = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: cities
+      message: "تمت العملية بنجاح",
+      items: cities,
     };
     return response;
   } catch (err) {
@@ -142,8 +142,8 @@ exports.getContract = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: cities
+      message: "تمت العملية بنجاح",
+      items: cities,
     };
     return response;
   } catch (err) {
@@ -159,8 +159,8 @@ exports.getContractDetails = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: cities
+      message: "تمت العملية بنجاح",
+      items: cities,
     };
     return response;
   } catch (err) {
@@ -170,15 +170,12 @@ exports.getContractDetails = async (req, reply) => {
 
 exports.getTransport = async (req, reply) => {
   try {
-    const cities = await transport
-      .find()
-      .populate("city_id")
-      .sort({ _id: -1 });
+    const cities = await transport.find().populate("city_id").sort({ _id: -1 });
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: cities
+      message: "تمت العملية بنجاح",
+      items: cities,
     };
     return response;
   } catch (err) {
@@ -188,15 +185,12 @@ exports.getTransport = async (req, reply) => {
 
 exports.getInventory = async (req, reply) => {
   try {
-    const cities = await inventory
-      .find()
-      .populate("city_id")
-      .sort({ _id: -1 });
+    const cities = await inventory.find().populate("city_id").sort({ _id: -1 });
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: cities
+      message: "تمت العملية بنجاح",
+      items: cities,
     };
     return response;
   } catch (err) {
@@ -210,8 +204,8 @@ exports.getSingleTransport = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: cities
+      message: "تمت العملية بنجاح",
+      items: cities,
     };
     return response;
   } catch (err) {
@@ -225,8 +219,8 @@ exports.getSingleInventory = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: cities
+      message: "تمت العملية بنجاح",
+      items: cities,
     };
     return response;
   } catch (err) {
@@ -240,8 +234,8 @@ exports.getSettings = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: settings
+      message: "تمت العملية بنجاح",
+      items: settings,
     };
     return response;
   } catch (err) {
@@ -255,8 +249,8 @@ exports.getSingleSettings = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: settings
+      message: "تمت العملية بنجاح",
+      items: settings,
     };
     return response;
   } catch (err) {
@@ -270,8 +264,8 @@ exports.getdelivery_time = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: settings
+      message: "تمت العملية بنجاح",
+      items: settings,
     };
     return response;
   } catch (err) {
@@ -284,15 +278,15 @@ exports.adddelivery_time = async (req, reply) => {
   try {
     let _setting = new delivery_time({
       name: req.body.name,
-      supplier_id: req.body.supplier_id
+      supplier_id: req.body.supplier_id,
     });
 
     let rs = await _setting.save();
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: rs
+      message: "تمت العملية بنجاح",
+      items: rs,
     };
     return response;
   } catch (err) {
@@ -306,7 +300,7 @@ exports.updatedelivery_time = async (req, reply) => {
       req.params.id,
       {
         name: req.body.name,
-        supplier_id: req.body.supplier_id
+        supplier_id: req.body.supplier_id,
       },
       { new: true }
     );
@@ -314,8 +308,8 @@ exports.updatedelivery_time = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: _city
+      message: "تمت العملية بنجاح",
+      items: _city,
     };
     return response;
   } catch (err) {
@@ -330,8 +324,8 @@ exports.deletedelivery_time = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: []
+      message: "تمت العملية بنجاح",
+      items: [],
     };
     return response;
   } catch (err) {
@@ -346,15 +340,15 @@ exports.addSetting = async (req, reply) => {
       value: req.body.value,
       max: req.body.max,
       min: req.body.min,
-      supplier_id: req.body.supplier_id
+      supplier_id: req.body.supplier_id,
     });
 
     let rs = await _setting.save();
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: rs
+      message: "تمت العملية بنجاح",
+      items: rs,
     };
     return response;
   } catch (err) {
@@ -371,7 +365,7 @@ exports.updateSetting = async (req, reply) => {
         value: req.body.value,
         max: req.body.max,
         min: req.body.min,
-        supplier_id: req.body.supplier_id
+        supplier_id: req.body.supplier_id,
       },
       { new: true }
     );
@@ -379,8 +373,8 @@ exports.updateSetting = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: _setting
+      message: "تمت العملية بنجاح",
+      items: _setting,
     };
     return response;
   } catch (err) {
@@ -395,8 +389,8 @@ exports.deleteSetting = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: []
+      message: "تمت العملية بنجاح",
+      items: [],
     };
     return response;
   } catch (err) {
@@ -407,15 +401,15 @@ exports.deleteSetting = async (req, reply) => {
 exports.addCity = async (req, reply) => {
   try {
     let _city = new city({
-      name: req.body.name
+      name: req.body.name,
     });
 
     let rs = await _city.save();
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: rs
+      message: "تمت العملية بنجاح",
+      items: rs,
     };
     return response;
   } catch (err) {
@@ -428,7 +422,7 @@ exports.updateCity = async (req, reply) => {
     const _city = await city.findByIdAndUpdate(
       req.params.id,
       {
-        name: req.body.name
+        name: req.body.name,
       },
       { new: true }
     );
@@ -436,8 +430,8 @@ exports.updateCity = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: _city
+      message: "تمت العملية بنجاح",
+      items: _city,
     };
     return response;
   } catch (err) {
@@ -452,8 +446,8 @@ exports.deleteCity = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: []
+      message: "تمت العملية بنجاح",
+      items: [],
     };
     return response;
   } catch (err) {
@@ -466,15 +460,15 @@ exports.addContract = async (req, reply) => {
     let _city = new contract({
       name: req.body.name,
       numberOfMonths: req.body.numberOfMonths,
-      amount: req.body.amount
+      amount: req.body.amount,
     });
 
     let rs = await _city.save();
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: rs
+      message: "تمت العملية بنجاح",
+      items: rs,
     };
     return response;
   } catch (err) {
@@ -489,7 +483,7 @@ exports.updateContract = async (req, reply) => {
       {
         name: req.body.name,
         numberOfMonths: req.body.numberOfMonths,
-        amount: req.body.amount
+        amount: req.body.amount,
       },
       { new: true }
     );
@@ -497,8 +491,8 @@ exports.updateContract = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: _city
+      message: "تمت العملية بنجاح",
+      items: _city,
     };
     return response;
   } catch (err) {
@@ -513,8 +507,8 @@ exports.deleteContract = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: []
+      message: "تمت العملية بنجاح",
+      items: [],
     };
     return response;
   } catch (err) {
@@ -526,15 +520,15 @@ exports.addInventory = async (req, reply) => {
   try {
     let _city = new inventory({
       name: req.body.name,
-      city_id: req.body.city_id
+      city_id: req.body.city_id,
     });
 
     let rs = await _city.save();
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: rs
+      message: "تمت العملية بنجاح",
+      items: rs,
     };
     return response;
   } catch (err) {
@@ -546,15 +540,15 @@ exports.addTransport = async (req, reply) => {
   try {
     let _city = new transport({
       name: req.body.name,
-      value: req.body.value
+      value: req.body.value,
     });
 
     let rs = await _city.save();
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: rs
+      message: "تمت العملية بنجاح",
+      items: rs,
     };
     return response;
   } catch (err) {
@@ -568,7 +562,7 @@ exports.updateInventory = async (req, reply) => {
       req.params.id,
       {
         name: req.body.name,
-        city_id: req.body.city_id
+        city_id: req.body.city_id,
       },
       { new: true }
     );
@@ -576,8 +570,8 @@ exports.updateInventory = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: _city
+      message: "تمت العملية بنجاح",
+      items: _city,
     };
     return response;
   } catch (err) {
@@ -591,7 +585,7 @@ exports.updateTransport = async (req, reply) => {
       req.params.id,
       {
         name: req.body.name,
-        value: req.body.value
+        value: req.body.value,
       },
       { new: true }
     );
@@ -599,8 +593,8 @@ exports.updateTransport = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: _city
+      message: "تمت العملية بنجاح",
+      items: _city,
     };
     return response;
   } catch (err) {
@@ -615,8 +609,8 @@ exports.deleteInventory = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: []
+      message: "تمت العملية بنجاح",
+      items: [],
     };
     return response;
   } catch (err) {
@@ -631,8 +625,8 @@ exports.deleteTransport = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: []
+      message: "تمت العملية بنجاح",
+      items: [],
     };
     return response;
   } catch (err) {
@@ -644,15 +638,15 @@ exports.addSocial = async (req, reply) => {
   try {
     let SocialOptions = new SocialOption({
       name: req.body.name,
-      data: req.body.data
+      data: req.body.data,
     });
 
     let rs = await SocialOptions.save();
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: rs
+      message: "تمت العملية بنجاح",
+      items: rs,
     };
     return response;
   } catch (err) {
@@ -666,7 +660,7 @@ exports.updateSocial = async (req, reply) => {
       req.params.id,
       {
         name: req.body.name,
-        data: req.body.data
+        data: req.body.data,
       },
       { new: true }
     );
@@ -674,8 +668,8 @@ exports.updateSocial = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: SocialOptions
+      message: "تمت العملية بنجاح",
+      items: SocialOptions,
     };
     return response;
   } catch (err) {
@@ -690,8 +684,8 @@ exports.deleteSocial = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: []
+      message: "تمت العملية بنجاح",
+      items: [],
     };
     return response;
   } catch (err) {
@@ -705,8 +699,8 @@ exports.getSingleStatic = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: StaticPages
+      message: "تمت العملية بنجاح",
+      items: StaticPages,
     };
     return response;
   } catch (err) {
@@ -718,15 +712,15 @@ exports.addStatic = async (req, reply) => {
   try {
     let staticpages = new StaticPage({
       title: req.body.title,
-      content: req.body.content
+      content: req.body.content,
     });
 
     let rs = await staticpages.save();
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: rs
+      message: "تمت العملية بنجاح",
+      items: rs,
     };
     return response;
   } catch (err) {
@@ -740,15 +734,15 @@ exports.updateStatic = async (req, reply) => {
       req.params.id,
       {
         title: req.body.title,
-        content: req.body.content
+        content: req.body.content,
       },
       { new: true }
     );
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: staticpages
+      message: "تمت العملية بنجاح",
+      items: staticpages,
     };
     return response;
   } catch (err) {
@@ -763,8 +757,8 @@ exports.deleteStatic = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: []
+      message: "تمت العملية بنجاح",
+      items: [],
     };
     return response;
   } catch (err) {
@@ -778,8 +772,8 @@ exports.getSingleContract = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: ContactOptions
+      message: "تمت العملية بنجاح",
+      items: ContactOptions,
     };
     return response;
   } catch (err) {
@@ -790,13 +784,13 @@ exports.getSingleContract = async (req, reply) => {
 exports.getSingleContact = async (req, reply) => {
   try {
     const ContactOptions = await ContactOption.findById(req.params.id).sort({
-      _id: -1
+      _id: -1,
     });
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: ContactOptions
+      message: "تمت العملية بنجاح",
+      items: ContactOptions,
     };
     return response;
   } catch (err) {
@@ -808,15 +802,15 @@ exports.addContact = async (req, reply) => {
   try {
     let ContactOptions = new ContactOption({
       name: req.body.name,
-      data: req.body.data
+      data: req.body.data,
     });
 
     let rs = await ContactOptions.save();
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: rs
+      message: "تمت العملية بنجاح",
+      items: rs,
     };
     return response;
   } catch (err) {
@@ -830,15 +824,15 @@ exports.updateContact = async (req, reply) => {
       req.params.id,
       {
         // name: req.body.name,
-        data: req.body.data
+        data: req.body.data,
       },
       { new: true }
     );
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: ContactOptions
+      message: "تمت العملية بنجاح",
+      items: ContactOptions,
     };
     return response;
   } catch (err) {
@@ -852,8 +846,8 @@ exports.deleteContact = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: []
+      message: "تمت العملية بنجاح",
+      items: [],
     };
     return response;
   } catch (err) {

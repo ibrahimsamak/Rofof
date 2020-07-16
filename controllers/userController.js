@@ -15,7 +15,7 @@ const { Notifications } = require("../models/Notifications");
 cloudinary.config({
   cloud_name: "diszvlmqq",
   api_key: "626239833572272",
-  api_secret: "1ZkJK1IN2eUhF2qVEc-M2QOAI0I"
+  api_secret: "1ZkJK1IN2eUhF2qVEc-M2QOAI0I",
 });
 
 var transporter = nodemailer.createTransport({
@@ -24,8 +24,8 @@ var transporter = nodemailer.createTransport({
   secure: true,
   auth: {
     user: "no-reply@souqgaz.com",
-    pass: "no-reply@souqgaz.com"
-  }
+    pass: "no-reply@souqgaz.com",
+  },
 });
 
 const options = {
@@ -34,7 +34,7 @@ const options = {
   // Optional depending on the providers
   httpAdapter: "https", // Default
   apiKey: "AIzaSyDP-XwnS5Daa_uSFZJvY6H0hsKaOxe2ar0", // for Mapquest, OpenCage, Google Premier
-  formatter: null // 'gpx', 'string', ...
+  formatter: null, // 'gpx', 'string', ...
 };
 
 const geocoder = NodeGeocoder(options);
@@ -46,10 +46,10 @@ const { encryptPassword } = require("../utils/utils");
 
 async function getAddress(lat, lng) {
   var current_city = "";
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     geocoder
       .reverse({ lat: lat, lon: lng })
-      .then(async function(res) {
+      .then(async function (res) {
         if (res) {
           console.log(res[0]);
           console.log(
@@ -63,7 +63,7 @@ async function getAddress(lat, lng) {
           resolve(current_city);
         }
       })
-      .catch(function(err) {
+      .catch(function (err) {
         console.log(err);
         reject(err);
         current_city = "";
@@ -72,8 +72,8 @@ async function getAddress(lat, lng) {
 }
 
 async function uploadImages(img) {
-  return new Promise(function(resolve, reject) {
-    cloudinary.v2.uploader.upload("./uploads/" + img, function(error, result) {
+  return new Promise(function (resolve, reject) {
+    cloudinary.v2.uploader.upload("./uploads/" + img, function (error, result) {
       if (error) {
         reject(error);
       } else {
@@ -112,19 +112,19 @@ exports.getUsers = async (req, reply) => {
     await Users.find(query1)
       .skip(page * limit)
       .limit(limit)
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         console.log(item);
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
+          message: "تمت العملية بنجاح",
           items: item,
           pagenation: {
             size: item.length,
             totalElements: total,
             totalPages: Math.floor(total / limit),
-            pageNumber: page
-          }
+            pageNumber: page,
+          },
         };
         reply.send(response);
       });
@@ -142,7 +142,7 @@ exports.getSingleUsers = async (req, reply) => {
       status_code: 200,
       status: true,
       message: "تمت العملية بنجاح",
-      items: _Users
+      items: _Users,
     };
     return response;
   } catch (err) {
@@ -155,7 +155,7 @@ exports.addUsers = async (req, reply) => {
   try {
     var current_city = "";
     const _user = await Users.findOne({
-      $or: [{ phone_number: req.body.phone_number }, { email: req.body.email }]
+      $or: [{ phone_number: req.body.phone_number }, { email: req.body.email }],
     });
     if (_user) {
       if (_user.isBlock == true) {
@@ -163,7 +163,7 @@ exports.addUsers = async (req, reply) => {
           status_code: 400,
           status: false,
           message: "تم حظر المستخدم من قبل الادارة",
-          items: []
+          items: [],
         };
         return response;
       } else {
@@ -171,7 +171,7 @@ exports.addUsers = async (req, reply) => {
           status_code: 400,
           status: false,
           message: "البريد الالكتروني او رقم الجوال موجود لدينا مسبقا",
-          items: []
+          items: [],
         };
         return response;
       }
@@ -193,7 +193,7 @@ exports.addUsers = async (req, reply) => {
         wallet: 0,
         gender: req.body.gender,
         currentCity: req.body.currentCity,
-        RegisterType: req.body.RegisterType
+        RegisterType: req.body.RegisterType,
       });
       let rs = await user.save();
 
@@ -201,7 +201,7 @@ exports.addUsers = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "أهلا وسهلا بكم .. تسجيل حسابكم بنجاح",
-        items: rs
+        items: rs,
       };
       return response;
     }
@@ -215,7 +215,7 @@ exports.login = async (req, reply) => {
   try {
     let pass = encryptPassword(req.body.password);
     const _Users = await Users.findOne({
-      $and: [{ email: req.body.email, password: pass }]
+      $and: [{ email: req.body.email, password: pass }],
     });
     if (_Users) {
       const user = await Users.findByIdAndUpdate(
@@ -223,8 +223,8 @@ exports.login = async (req, reply) => {
         {
           fcmToken: req.body.fcmToken,
           token: jwt.sign({ _id: _Users._id }, config.get("jwtPrivateKey"), {
-            expiresIn: "365d"
-          })
+            expiresIn: "365d",
+          }),
         },
         { new: true }
       );
@@ -233,7 +233,7 @@ exports.login = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "تم التحقق بنجاح",
-        items: user
+        items: user,
       };
       return response;
     } else {
@@ -241,7 +241,7 @@ exports.login = async (req, reply) => {
         status_code: 404,
         status: false,
         message: "خطأ في الايميل او كلمة المرور",
-        items: _Users
+        items: _Users,
       };
       return response;
     }
@@ -262,8 +262,8 @@ exports.verfiy = async (req, reply) => {
         isVerify: true,
         fcmToken: req.body.fcmToken,
         token: jwt.sign({ _id: req.body.id }, config.get("jwtPrivateKey"), {
-          expiresIn: "365d"
-        })
+          expiresIn: "365d",
+        }),
       },
       { new: true }
     );
@@ -273,7 +273,7 @@ exports.verfiy = async (req, reply) => {
         status_code: 404,
         status: false,
         message: "حدث خطأ الرجاء المحاولة مرة اخرى",
-        items: []
+        items: [],
       };
       return response;
     } else {
@@ -281,7 +281,7 @@ exports.verfiy = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "",
-        items: user
+        items: user,
       };
       return response;
     }
@@ -290,7 +290,7 @@ exports.verfiy = async (req, reply) => {
       status_code: 404,
       status: false,
       message: "خطأ!! في رقم التفعيل",
-      items: []
+      items: [],
     };
     return response;
   }
@@ -448,14 +448,14 @@ exports.forgetPassword = async (req, reply) => {
         from: '"Souqgaz" <no-reply@souqgaz.com>',
         to: req.body.email,
         subject: "Forget Password",
-        html: msg
+        html: msg,
       };
       transporter.sendMail(mailOptions);
       const response = {
         status_code: 200,
         status: true,
         message: "تم ارسال كلمة المرور الى البريد الالكتروني بنجاح",
-        items: update
+        items: update,
       };
       return response;
     } else {
@@ -463,7 +463,7 @@ exports.forgetPassword = async (req, reply) => {
         status_code: 404,
         status: false,
         message: "البريد الالكتروني غير مسجل لدينا",
-        items: []
+        items: [],
       };
       return response;
     }
@@ -482,11 +482,11 @@ exports.updateprofileFromAdmin = async (req, reply) => {
       for (let key in files) {
         fileArr.push({
           name: files[key].name,
-          mimetype: files[key].mimetype
+          mimetype: files[key].mimetype,
         });
       }
       var data = new Buffer(files.image.data);
-      fs.writeFile("./uploads/" + files.image.name, data, "binary", function(
+      fs.writeFile("./uploads/" + files.image.name, data, "binary", function (
         err
       ) {
         if (err) {
@@ -497,7 +497,7 @@ exports.updateprofileFromAdmin = async (req, reply) => {
       });
 
       let img = "";
-      await uploadImages(files.image.name).then(x => {
+      await uploadImages(files.image.name).then((x) => {
         img = x;
       });
       const categories = await Users.findByIdAndUpdate(
@@ -507,15 +507,15 @@ exports.updateprofileFromAdmin = async (req, reply) => {
           image: img,
           address: req.raw.body.address,
           phone_number: req.raw.body.phone_number,
-          email: req.raw.body.email
+          email: req.raw.body.email,
         },
         { new: true }
       );
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
-        items: categories
+        message: "تمت العملية بنجاح",
+        items: categories,
       };
       return response;
     } else {
@@ -533,7 +533,7 @@ exports.updateprofileFromAdmin = async (req, reply) => {
           email: req.raw.body.email,
           phone_number: req.raw.body.phone_number,
           address: req.raw.body.address,
-          password: pass
+          password: pass,
         },
         { new: true }
       );
@@ -541,7 +541,7 @@ exports.updateprofileFromAdmin = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "تم تعديل الاعدادات بنجاح",
-        items: categories
+        items: categories,
       };
       return response;
     }
@@ -566,7 +566,7 @@ exports.changePassword = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "تم تعديل كلمة المرور بنجاح بنجاح",
-        items: update
+        items: update,
       };
       return response;
     } else {
@@ -574,7 +574,7 @@ exports.changePassword = async (req, reply) => {
         status_code: 404,
         status: false,
         message: "المستخدم غير موجود",
-        items: []
+        items: [],
       };
       return response;
     }
@@ -591,7 +591,7 @@ exports.logout = async (req, reply) => {
       User_id,
       {
         fcmToken: "",
-        token: ""
+        token: "",
       },
       { new: true }
     );
@@ -600,7 +600,7 @@ exports.logout = async (req, reply) => {
         status_code: 404,
         status: false,
         message: "حدث خطأ الرجاء المحاولة مرة اخرى",
-        items: []
+        items: [],
       };
       return response;
     } else {
@@ -608,7 +608,7 @@ exports.logout = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "تم تسجيل الخروج بنجاح",
-        items: user
+        items: user,
       };
       return response;
     }
@@ -624,7 +624,7 @@ exports.refreshToken = async (req, reply) => {
     const user = await Users.findByIdAndUpdate(
       User_id,
       {
-        fcmToken: req.body.fcmToken
+        fcmToken: req.body.fcmToken,
       },
       { new: true }
     );
@@ -634,7 +634,7 @@ exports.refreshToken = async (req, reply) => {
         status_code: 404,
         status: false,
         message: "حدث خطأ الرجاء المحاولة مرة اخرى",
-        items: []
+        items: [],
       };
       return response;
     } else {
@@ -642,7 +642,7 @@ exports.refreshToken = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "",
-        items: user
+        items: user,
       };
       return response;
     }
@@ -659,11 +659,11 @@ exports.uploadUserPhoto = async (req, reply) => {
     for (let key in files) {
       fileArr.push({
         name: files[key].name,
-        mimetype: files[key].mimetype
+        mimetype: files[key].mimetype,
       });
     }
     var data = new Buffer(files.image.data);
-    fs.writeFile("./uploads/" + files.image.name, data, "binary", function(
+    fs.writeFile("./uploads/" + files.image.name, data, "binary", function (
       err
     ) {
       if (err) {
@@ -673,7 +673,7 @@ exports.uploadUserPhoto = async (req, reply) => {
       }
     });
 
-    cloudinary.v2.uploader.upload("./uploads/" + files.image.name, function(
+    cloudinary.v2.uploader.upload("./uploads/" + files.image.name, function (
       error,
       result
     ) {
@@ -695,7 +695,7 @@ exports.updateUserAndroid = async (req, reply) => {
           full_name: req.body.full_name,
           gender: req.body.gender,
           currentCity: req.body.currentCity,
-          phone_number: req.body.phone_number
+          phone_number: req.body.phone_number,
         },
         { new: true }
       );
@@ -704,7 +704,7 @@ exports.updateUserAndroid = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "",
-        items: user
+        items: user,
       };
       reply.send(response);
     } else {
@@ -715,7 +715,7 @@ exports.updateUserAndroid = async (req, reply) => {
           full_name: req.body.full_name,
           gender: req.body.gender,
           currentCity: req.body.currentCity,
-          phone_number: req.body.phone_number
+          phone_number: req.body.phone_number,
         },
         { new: true }
       );
@@ -724,7 +724,7 @@ exports.updateUserAndroid = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "",
-        items: user
+        items: user,
       };
       reply.send(response);
     }
@@ -740,14 +740,14 @@ exports.userSearch = async (req, reply) => {
     await Users.find({
       $or: [
         { full_name: { $regex: ".*" + req.body.full_name + ".*" } },
-        { phone_number: { $regex: ".*" + req.body.phone_number + ".*" } }
-      ]
-    }).exec(function(err, xx) {
+        { phone_number: { $regex: ".*" + req.body.phone_number + ".*" } },
+      ],
+    }).exec(function (err, xx) {
       result = xx;
       const response = {
         items: result,
         status_code: 200,
-        message: "returned successfully"
+        message: "returned successfully",
       };
       reply.send(response);
     });
@@ -767,7 +767,7 @@ exports.userslist = async (req, reply) => {
       .sort({ createAt: -1 })
       .skip(page * limit)
       .limit(limit)
-      .exec(function(err, xx) {
+      .exec(function (err, xx) {
         result = xx;
         const response = {
           items: result,
@@ -777,8 +777,8 @@ exports.userslist = async (req, reply) => {
             size: result.length,
             totalElements: total,
             totalPages: Math.floor(total / limit),
-            pageNumber: page
-          }
+            pageNumber: page,
+          },
         };
         reply.send(response);
       });
@@ -793,7 +793,7 @@ exports.userlistInfo = async (req, reply) => {
     const response = {
       items: Advs,
       status_code: 200,
-      message: "returned successfully"
+      message: "returned successfully",
     };
     return response;
   } catch (err) {
@@ -806,7 +806,7 @@ exports.block = async (req, reply) => {
     const user = await Users.findByIdAndUpdate(
       req.body._id,
       {
-        isBlock: req.body.isBlock
+        isBlock: req.body.isBlock,
       },
       { new: true }
     );
@@ -815,7 +815,7 @@ exports.block = async (req, reply) => {
       status_code: 200,
       status: true,
       message: "تمت العملية بنجاح",
-      items: user
+      items: user,
     };
     return response;
   } catch (err) {
@@ -827,13 +827,13 @@ exports.userprofile = async (req, reply) => {
   try {
     const user = await Users.findById(req.params.id).select([
       "-token",
-      "-password"
+      "-password",
     ]);
     const response = {
       status_code: 200,
       status: true,
       message: "",
-      items: user
+      items: user,
     };
     return response;
   } catch (err) {
@@ -844,12 +844,12 @@ exports.userprofile = async (req, reply) => {
 exports.getUserByCity = async (req, reply) => {
   try {
     var result = [];
-    await Users.find({ currentCity: req.params.id }).exec(function(err, xx) {
+    await Users.find({ currentCity: req.params.id }).exec(function (err, xx) {
       result = xx;
       const response = {
         items: result,
         status_code: 200,
-        message: "returned successfully"
+        message: "returned successfully",
       };
       reply.send(response);
     });
@@ -861,12 +861,12 @@ exports.getUserByCity = async (req, reply) => {
 exports.getAllUsers = async (req, reply) => {
   try {
     var result = [];
-    await Users.find().exec(function(err, xx) {
+    await Users.find().exec(function (err, xx) {
       result = xx;
       const response = {
         items: result,
         status_code: 200,
-        message: "returned successfully"
+        message: "returned successfully",
       };
       reply.send(response);
     });

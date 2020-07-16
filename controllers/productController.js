@@ -13,7 +13,7 @@ const async = require("async");
 cloudinary.config({
   cloud_name: "diszvlmqq",
   api_key: "626239833572272",
-  api_secret: "1ZkJK1IN2eUhF2qVEc-M2QOAI0I"
+  api_secret: "1ZkJK1IN2eUhF2qVEc-M2QOAI0I",
 });
 
 // Get Data Models
@@ -24,8 +24,8 @@ const { setting } = require("../models/Constant");
 const { rack, reserve } = require("../models/Rack");
 
 async function uploadImages(img) {
-  return new Promise(function(resolve, reject) {
-    cloudinary.v2.uploader.upload("./uploads/" + img, function(error, result) {
+  return new Promise(function (resolve, reject) {
+    cloudinary.v2.uploader.upload("./uploads/" + img, function (error, result) {
       if (error) {
         reject(error);
       } else {
@@ -44,8 +44,8 @@ exports.getCategories = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: Categories
+      message: "تمت العملية بنجاح",
+      items: Categories,
     };
     return response;
   } catch (err) {
@@ -72,18 +72,18 @@ exports.getProducts = async (req, reply) => {
       .sort({ [sort_field]: sort_value })
       .skip(page * limit)
       .limit(limit)
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
+          message: "تمت العملية بنجاح",
           items: item,
           pagenation: {
             size: item.length,
             totalElements: total,
             totalPages: Math.floor(total / limit),
-            pageNumber: page
-          }
+            pageNumber: page,
+          },
         };
         reply.send(response);
       });
@@ -95,18 +95,18 @@ exports.getProducts = async (req, reply) => {
 exports.getProductsByRackId = async (req, reply) => {
   try {
     const renter = await reserve.findOne({
-      rack_id: { $in: [req.params.id] }
+      $and: [{ rack_id: { $in: [req.params.id] } }, { status: true }],
     });
     if (renter) {
-      await Product.find({ by_user_id: renter.renter_id }).exec(function(
+      await Product.find({ by_user_id: renter.renter_id }).exec(function (
         err,
         item
       ) {
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
-          items: item
+          message: "تمت العملية بنجاح",
+          items: item,
         };
         reply.send(response);
       });
@@ -114,8 +114,8 @@ exports.getProductsByRackId = async (req, reply) => {
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
-        items: []
+        message: "تمت العملية بنجاح",
+        items: [],
       };
       reply.send(response);
     }
@@ -134,18 +134,18 @@ exports.getProductsByCategory = async (req, reply) => {
       .sort({ _id: 1 })
       .skip(page * limit)
       .limit(limit)
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
+          message: "تمت العملية بنجاح",
           items: item,
           pagenation: {
             size: item.length,
             totalElements: total,
             totalPages: Math.floor(total / limit),
-            pageNumber: page
-          }
+            pageNumber: page,
+          },
         };
         reply.send(response);
       });
@@ -156,12 +156,12 @@ exports.getProductsByCategory = async (req, reply) => {
 
 exports.getAllProducts = async (req, reply) => {
   try {
-    await Product.find().exec(function(err, item) {
+    await Product.find().exec(function (err, item) {
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
-        items: item
+        message: "تمت العملية بنجاح",
+        items: item,
       };
       reply.send(response);
     });
@@ -178,12 +178,12 @@ exports.getRandomProducts = async (req, reply) => {
       .sort({ createat: -1 })
       .limit(20)
       // .skip(random)
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
-          items: item
+          message: "تمت العملية بنجاح",
+          items: item,
         };
         reply.send(response);
       });
@@ -197,12 +197,12 @@ exports.getTop4RatedProducts = async (req, reply) => {
   try {
     await Product.find({ rate: 5 })
       .limit(4)
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
-          items: item
+          message: "تمت العملية بنجاح",
+          items: item,
         };
         reply.send(response);
       });
@@ -230,18 +230,18 @@ exports.getProductsRenters = async (req, reply) => {
       .sort({ [sort_field]: sort_value })
       .skip(page * limit)
       .limit(limit)
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
+          message: "تمت العملية بنجاح",
           items: item,
           pagenation: {
             size: item.length,
             totalElements: total,
             totalPages: Math.floor(total / limit),
-            pageNumber: page
-          }
+            pageNumber: page,
+          },
         };
         reply.send(response);
       });
@@ -269,18 +269,18 @@ exports.getProductsForRenter = async (req, reply) => {
       .sort({ [sort_field]: sort_value })
       .skip(page * limit)
       .limit(limit)
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
+          message: "تمت العملية بنجاح",
           items: item,
           pagenation: {
             size: item.length,
             totalElements: total,
             totalPages: Math.floor(total / limit),
-            pageNumber: page
-          }
+            pageNumber: page,
+          },
         };
         reply.send(response);
       });
@@ -293,12 +293,12 @@ exports.getProductsForRenterById = async (req, reply) => {
   try {
     await Product.find({ by_user_id: req.body.by_user_id })
       .populate("by_user_id")
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
-          items: item
+          message: "تمت العملية بنجاح",
+          items: item,
         };
         reply.send(response);
       });
@@ -315,8 +315,8 @@ exports.getSingleProductClient = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: _Product
+      message: "تمت العملية بنجاح",
+      items: _Product,
     };
     return response;
   } catch (err) {
@@ -331,8 +331,8 @@ exports.getCategoriesAdmin = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: Categories
+      message: "تمت العملية بنجاح",
+      items: Categories,
     };
     return response;
   } catch (err) {
@@ -341,7 +341,7 @@ exports.getCategoriesAdmin = async (req, reply) => {
 };
 
 exports.uploadPhoto = async (req, reply) => {
-  cloudinary.v2.uploader.upload("./public/" + req.files[0].filename, function(
+  cloudinary.v2.uploader.upload("./public/" + req.files[0].filename, function (
     error,
     result
   ) {
@@ -356,8 +356,8 @@ exports.getSingleCategory = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: categories
+      message: "تمت العملية بنجاح",
+      items: categories,
     };
     return response;
   } catch (err) {
@@ -373,11 +373,11 @@ exports.addCategory = async (req, reply) => {
       for (let key in files) {
         fileArr.push({
           name: files[key].name,
-          mimetype: files[key].mimetype
+          mimetype: files[key].mimetype,
         });
       }
       var data = new Buffer(files.image.data);
-      fs.writeFile("./uploads/" + files.image.name, data, "binary", function(
+      fs.writeFile("./uploads/" + files.image.name, data, "binary", function (
         err
       ) {
         if (err) {
@@ -388,22 +388,22 @@ exports.addCategory = async (req, reply) => {
       });
 
       let img = "";
-      await uploadImages(files.image.name).then(x => {
+      await uploadImages(files.image.name).then((x) => {
         img = x;
       });
       console.log(img);
 
       let category = new Category({
         name: req.raw.body.name,
-        image: img
+        image: img,
       });
 
       let rs = await category.save();
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
-        items: rs
+        message: "تمت العملية بنجاح",
+        items: rs,
       };
       return response;
     }
@@ -420,11 +420,11 @@ exports.updateCategory = async (req, reply) => {
       for (let key in files) {
         fileArr.push({
           name: files[key].name,
-          mimetype: files[key].mimetype
+          mimetype: files[key].mimetype,
         });
       }
       var data = new Buffer(files.image.data);
-      fs.writeFile("./uploads/" + files.image.name, data, "binary", function(
+      fs.writeFile("./uploads/" + files.image.name, data, "binary", function (
         err
       ) {
         if (err) {
@@ -435,37 +435,37 @@ exports.updateCategory = async (req, reply) => {
       });
 
       let img = "";
-      await uploadImages(files.image.name).then(x => {
+      await uploadImages(files.image.name).then((x) => {
         img = x;
       });
       const categories = await Category.findByIdAndUpdate(
         req.params.id,
         {
           name: req.raw.body.name,
-          image: img
+          image: img,
         },
         { new: true }
       );
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
-        items: categories
+        message: "تمت العملية بنجاح",
+        items: categories,
       };
       return response;
     } else {
       const categories = await Category.findByIdAndUpdate(
         req.params.id,
         {
-          name: req.raw.body.name
+          name: req.raw.body.name,
         },
         { new: true }
       );
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
-        items: categories
+        message: "تمت العملية بنجاح",
+        items: categories,
       };
       return response;
     }
@@ -481,8 +481,8 @@ exports.deleteCategory = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: []
+      message: "تمت العملية بنجاح",
+      items: [],
     };
     return response;
   } catch (err) {
@@ -496,8 +496,8 @@ exports.getSupplier = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: Categories
+      message: "تمت العملية بنجاح",
+      items: Categories,
     };
     return response;
   } catch (err) {
@@ -511,8 +511,8 @@ exports.getSingleSupplier = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: categories
+      message: "تمت العملية بنجاح",
+      items: categories,
     };
     return response;
   } catch (err) {
@@ -528,11 +528,11 @@ exports.addSupplier = async (req, reply) => {
       for (let key in files) {
         fileArr.push({
           name: files[key].name,
-          mimetype: files[key].mimetype
+          mimetype: files[key].mimetype,
         });
       }
       var data = new Buffer(files.image.data);
-      fs.writeFile("./uploads/" + files.image.name, data, "binary", function(
+      fs.writeFile("./uploads/" + files.image.name, data, "binary", function (
         err
       ) {
         if (err) {
@@ -543,7 +543,7 @@ exports.addSupplier = async (req, reply) => {
       });
 
       let img = "";
-      await uploadImages(files.image.name).then(x => {
+      await uploadImages(files.image.name).then((x) => {
         img = x;
       });
       console.log(img);
@@ -553,18 +553,18 @@ exports.addSupplier = async (req, reply) => {
         details: req.raw.body.details,
         password: req.raw.body.password,
         email: req.raw.body.email,
-        image: img
+        image: img,
       });
 
       let rs = await category.save();
       let settings = await setting.find({
-        supplier_id: "5c67f4ba0fb3d50d6e9f03f3"
+        supplier_id: "5c67f4ba0fb3d50d6e9f03f3",
       });
-      async.each(settings, async function(data, callback) {
+      async.each(settings, async function (data, callback) {
         let _Notification = new setting({
           name: data.name,
           value: 0,
-          supplier_id: rs._id
+          supplier_id: rs._id,
         });
 
         await _Notification.save();
@@ -574,8 +574,8 @@ exports.addSupplier = async (req, reply) => {
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
-        items: rs
+        message: "تمت العملية بنجاح",
+        items: rs,
       };
       return response;
     }
@@ -592,11 +592,11 @@ exports.updateSupplier = async (req, reply) => {
       for (let key in files) {
         fileArr.push({
           name: files[key].name,
-          mimetype: files[key].mimetype
+          mimetype: files[key].mimetype,
         });
       }
       var data = new Buffer(files.image.data);
-      fs.writeFile("./uploads/" + files.image.name, data, "binary", function(
+      fs.writeFile("./uploads/" + files.image.name, data, "binary", function (
         err
       ) {
         if (err) {
@@ -607,7 +607,7 @@ exports.updateSupplier = async (req, reply) => {
       });
 
       let img = "";
-      await uploadImages(files.image.name).then(x => {
+      await uploadImages(files.image.name).then((x) => {
         img = x;
       });
       const categories = await Supplier.findByIdAndUpdate(
@@ -617,15 +617,15 @@ exports.updateSupplier = async (req, reply) => {
           image: img,
           details: req.raw.body.details,
           password: req.raw.body.password,
-          email: req.raw.body.email
+          email: req.raw.body.email,
         },
         { new: true }
       );
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
-        items: categories
+        message: "تمت العملية بنجاح",
+        items: categories,
       };
       return response;
     } else {
@@ -635,15 +635,15 @@ exports.updateSupplier = async (req, reply) => {
           name: req.raw.body.name,
           details: req.raw.body.details,
           password: req.raw.body.password,
-          email: req.raw.body.email
+          email: req.raw.body.email,
         },
         { new: true }
       );
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
-        items: categories
+        message: "تمت العملية بنجاح",
+        items: categories,
       };
       return response;
     }
@@ -659,8 +659,8 @@ exports.deleteSupplier = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: []
+      message: "تمت العملية بنجاح",
+      items: [],
     };
     return response;
   } catch (err) {
@@ -679,7 +679,7 @@ exports.addProduct = async (req, reply) => {
         async function updateObject(data, done) {
           console.log(data);
           var _data = new Buffer(data.data);
-          fs.writeFile("./uploads/" + data.name, _data, "binary", function(
+          fs.writeFile("./uploads/" + data.name, _data, "binary", function (
             err
           ) {
             if (err) {
@@ -688,7 +688,7 @@ exports.addProduct = async (req, reply) => {
               console.log("The sheel file was written");
             }
           });
-          await uploadImages(data.name).then(x => {
+          await uploadImages(data.name).then((x) => {
             img.push(x);
           });
           // await uploadImages(data.name).then(x => {
@@ -712,7 +712,7 @@ exports.addProduct = async (req, reply) => {
             discountPrice: req.raw.body.discountPrice,
             createat: getCurrentDateTime(),
             status: false,
-            rate: 0
+            rate: 0,
           });
           await products.save();
         }
@@ -720,8 +720,8 @@ exports.addProduct = async (req, reply) => {
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
-        items: ""
+        message: "تمت العملية بنجاح",
+        items: "",
       };
       return response;
     }
@@ -739,7 +739,7 @@ exports.updateProduct = async (req, reply) => {
         async function updateObject(data, done) {
           console.log(data.data);
           var _data = new Buffer(data.data);
-          fs.writeFile("./uploads/" + data.name, _data, "binary", function(
+          fs.writeFile("./uploads/" + data.name, _data, "binary", function (
             err
           ) {
             if (err) {
@@ -748,7 +748,7 @@ exports.updateProduct = async (req, reply) => {
               console.log("The sheel file was written");
             }
           });
-          await uploadImages(data.name).then(x => {
+          await uploadImages(data.name).then((x) => {
             img.push(x);
           });
         },
@@ -768,10 +768,10 @@ exports.updateProduct = async (req, reply) => {
               // by_admin_id: req.raw.body.by_admin_id,
               barcode: req.raw.body.barcode,
               category_id: req.raw.body.category_id,
-              discountPrice: req.raw.body.discountPrice
+              discountPrice: req.raw.body.discountPrice,
             },
             { upsert: true },
-            function(err) {
+            function (err) {
               if (err) {
                 console.log(err);
               } else {
@@ -799,8 +799,8 @@ exports.updateProduct = async (req, reply) => {
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
-        items: null
+        message: "تمت العملية بنجاح",
+        items: null,
       };
       return response;
     } else {
@@ -815,15 +815,15 @@ exports.updateProduct = async (req, reply) => {
           by_admin_id: req.raw.body.by_admin_id,
           barcode: req.raw.body.barcode,
           category_id: req.raw.body.category_id,
-          discountPrice: req.raw.body.discountPrice
+          discountPrice: req.raw.body.discountPrice,
         },
         { new: true }
       );
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
-        items: products
+        message: "تمت العملية بنجاح",
+        items: products,
       };
       return response;
     }
@@ -838,17 +838,47 @@ exports.updatePriceQty = async (req, reply) => {
       req.params.id,
       {
         qty: req.body.qty,
-        price: req.body.price
+        price: req.body.price,
       },
       { new: true }
     );
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: products
+      message: "تمت العملية بنجاح",
+      items: products,
     };
     return response;
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.approveAllProducts = async (req, reply) => {
+  try {
+    Product.updateMany(
+      { by_user_id: req.params.id },
+      { status: true },
+      function (err, res) {
+        if (err) {
+          const response = {
+            status_code: 400,
+            status: false,
+            message: "حدث خطأ الرجاء المحاولة مرة اخرى",
+            items: [],
+          };
+          reply.send(response);
+        } else {
+          const response = {
+            status_code: 200,
+            status: true,
+            message: "تمت الموافقة على المنتجات بنجاح",
+            items: [],
+          };
+          reply.send(response);
+        }
+      }
+    );
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -870,21 +900,21 @@ exports.deleteProductImage = async (req, reply) => {
       req.params.id,
       { $pull: { images: req.body.image } },
       { safe: true, upsert: true },
-      function(err, node) {
+      function (err, node) {
         if (err) {
           const response = {
             status_code: 400,
             status: false,
-            message: "return succssfully",
-            items: null
+            message: "تمت العملية بنجاح",
+            items: null,
           };
           reply.send(response);
         }
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
-          items: null
+          message: "تمت العملية بنجاح",
+          items: null,
         };
         reply.send(response);
       }
@@ -906,15 +936,18 @@ exports.getSingleProduct = async (req, reply) => {
 exports.getProductDetailsByBarCode = async (req, reply) => {
   try {
     const products = await Product.findOne({
-      $or: [{ barcode: req.body.barcode }, { name: req.body.name }]
+      $and: [
+        { status: true },
+        { $or: [{ barcode: req.body.barcode }, { name: req.body.name }] },
+      ],
     });
     console.log(products);
     if (products) {
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
-        items: products
+        message: "تمت العملية بنجاح",
+        items: products,
       };
       return response;
     } else {
@@ -922,7 +955,7 @@ exports.getProductDetailsByBarCode = async (req, reply) => {
         status_code: 400,
         status: false,
         message: "لم يتم العثور على منتج",
-        items: null
+        items: null,
       };
       return response;
     }
@@ -936,15 +969,15 @@ exports.updateProductStatus = async (req, reply) => {
     const products = await Product.findByIdAndUpdate(
       req.params.id,
       {
-        status: req.body.status
+        status: req.body.status,
       },
       { new: true }
     );
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: products
+      message: "تمت العملية بنجاح",
+      items: products,
     };
     return response;
   } catch (err) {
@@ -966,8 +999,8 @@ exports.makeCoverImage = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: _products
+      message: "تمت العملية بنجاح",
+      items: _products,
     };
     return response;
   } catch (err) {
@@ -981,19 +1014,19 @@ exports.searchWeb = async (req, reply) => {
     var limit = parseFloat(req.query.limit, 10);
     const total = await Product.find({
       category_id: req.body.category_id,
-      name: { $regex: ".*" + req.body.name + ".*" }
+      name: { $regex: ".*" + req.body.name + ".*" },
     }).count();
 
     await Product.find({
       category_id: req.body.category_id,
-      name: { $regex: ".*" + req.body.name + ".*" }
+      name: { $regex: ".*" + req.body.name + ".*" },
     })
       .populate("category_id")
       .populate("product_id")
       .sort({ id: -1 })
       .skip(page * limit)
       .limit(limit)
-      .exec(function(err, xx) {
+      .exec(function (err, xx) {
         const response = {
           items: xx,
           status_code: 200,
@@ -1002,8 +1035,8 @@ exports.searchWeb = async (req, reply) => {
             size: xx.length,
             totalElements: total,
             totalPages: Math.floor(total / limit),
-            pageNumber: page
-          }
+            pageNumber: page,
+          },
         };
         reply.send(response);
       });

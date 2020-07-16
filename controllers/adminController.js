@@ -20,19 +20,19 @@ exports.getAdmins = async (req, reply) => {
       .sort({ _id: -1 })
       .skip(page * limit)
       .limit(limit)
-      .exec(function(err, item) {
+      .exec(function (err, item) {
         console.log(item);
         const response = {
           status_code: 200,
           status: true,
-          message: "return succssfully",
+          message: "تمت العملية بنجاح",
           items: item,
           pagenation: {
             size: item.length,
             totalElements: total,
             totalPages: Math.floor(total / limit),
-            pageNumber: page
-          }
+            pageNumber: page,
+          },
         };
         reply.send(response);
       });
@@ -50,7 +50,7 @@ exports.getSingleAdmin = async (req, reply) => {
       status_code: 200,
       status: true,
       message: "تمت العملية بنجاح",
-      items: Admins
+      items: Admins,
     };
     return response;
   } catch (err) {
@@ -68,8 +68,8 @@ exports.addAdmin = async (req, reply) => {
       phone_number: req.body.phone_number,
       roles: req.body.roles,
       token: jwt.sign({ _id: req.body.id }, config.get("jwtPrivateKey"), {
-        expiresIn: "365d"
-      })
+        expiresIn: "365d",
+      }),
     });
 
     let rs = await Admins.save();
@@ -77,7 +77,7 @@ exports.addAdmin = async (req, reply) => {
       status_code: 200,
       status: true,
       message: "تمت العملية بنجاح",
-      items: rs
+      items: rs,
     };
     return response;
   } catch (err) {
@@ -90,23 +90,23 @@ exports.login = async (req, reply) => {
   try {
     const pass = encryptPassword(req.body.password);
     const Admins = await Admin.findOne({
-      $and: [{ email: req.body.email }, { password: pass }]
+      $and: [{ email: req.body.email }, { password: pass }],
     });
 
     if (Admins) {
       const response = {
         status_code: 200,
         status: true,
-        message: "return succssfully",
-        items: Admins
+        message: "تمت العملية بنجاح",
+        items: Admins,
       };
       return response;
     } else {
       const response = {
         status_code: 404,
         status: false,
-        message: "return succssfully",
-        items: null
+        message: "تمت العملية بنجاح",
+        items: null,
       };
       return response;
     }
@@ -121,7 +121,7 @@ exports.refreshToken = async (req, reply) => {
     const user = await Admin.findByIdAndUpdate(
       req.body._id,
       {
-        fcmToken: req.body.fcmToken
+        fcmToken: req.body.fcmToken,
       },
       { new: true }
     );
@@ -131,7 +131,7 @@ exports.refreshToken = async (req, reply) => {
         status_code: 404,
         status: false,
         message: "حدث خطأ الرجاء المحاولة مرة اخرى",
-        items: []
+        items: [],
       };
       return response;
     } else {
@@ -139,7 +139,7 @@ exports.refreshToken = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "",
-        items: user
+        items: user,
       };
       return response;
     }
@@ -155,7 +155,7 @@ exports.deleteAdmin = async (req, reply) => {
     status_code: 200,
     status: true,
     message: "تمت العملية بنجاح",
-    items: []
+    items: [],
   };
   return response;
 };
@@ -170,7 +170,7 @@ exports.updateAdmin = async (req, reply) => {
         email: req.body.email,
         password: encryptPassword(req.body.password),
         phone_number: req.body.phone_number,
-        roles: req.body.roles
+        roles: req.body.roles,
       },
       { new: true }
     );
@@ -178,8 +178,8 @@ exports.updateAdmin = async (req, reply) => {
     const response = {
       status_code: 200,
       status: true,
-      message: "return succssfully",
-      items: Admins
+      message: "تمت العملية بنجاح",
+      items: Admins,
     };
     return response;
   } catch (err) {
@@ -195,7 +195,7 @@ exports.logout = async (req, reply) => {
       User_id,
       {
         fcmToken: "",
-        token: ""
+        token: "",
       },
       { new: true }
     );
@@ -205,7 +205,7 @@ exports.logout = async (req, reply) => {
         status_code: 404,
         status: false,
         message: "حدث خطأ الرجاء المحاولة مرة اخرى",
-        items: []
+        items: [],
       };
       return response;
     } else {
@@ -213,7 +213,7 @@ exports.logout = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "تم تسجيل الخروج بنجاح",
-        items: user
+        items: user,
       };
       return response;
     }
@@ -239,7 +239,7 @@ exports.changePassword = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "تم تعديل كلمة المرور بنجاح بنجاح",
-        items: update
+        items: update,
       };
       return response;
     } else {
@@ -247,7 +247,7 @@ exports.changePassword = async (req, reply) => {
         status_code: 404,
         status: false,
         message: "المستخدم غير موجود",
-        items: []
+        items: [],
       };
       return response;
     }
