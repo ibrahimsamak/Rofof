@@ -5,38 +5,38 @@ const RackSchema = mongoose.Schema(
   {
     rack_no: {
       type: String,
-      required: true
+      required: true,
     },
     description: {
       type: String,
-      required: true
+      required: true,
     },
     isReserved: {
       type: Boolean,
-      required: true
+      required: true,
     },
     length: {
-      type: Number
+      type: Number,
     },
     width: {
-      type: Number
+      type: Number,
     },
     height: {
-      type: Number
+      type: Number,
     },
     inventory_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "inventory"
+      ref: "inventory",
     },
     lengthUnit: {
-      type: String
+      type: String,
     },
     widthUnit: {
-      type: String
+      type: String,
     },
     heightUnit: {
-      type: String
-    }
+      type: String,
+    },
   },
   { versionKey: false }
 );
@@ -47,36 +47,39 @@ const RackReservationSchema = mongoose.Schema(
       type: [
         {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "racks"
-        }
-      ]
+          ref: "racks",
+        },
+      ],
     },
     contract_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "contract"
+      ref: "contract",
     },
     renter_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "renters"
+      ref: "renters",
     },
     renter_type: {
-      type: String
+      type: String,
     },
     start_date: {
-      type: Date
+      type: Date,
     },
     end_date: {
-      type: Date
+      type: Date,
     },
     amount: {
-      type: Number
+      type: Number,
     },
     contract_no: {
-      type: String
+      type: String,
     },
     isApprove: {
-      type: Boolean
-    }
+      type: Boolean,
+    },
+    isFinish: {
+      type: Boolean,
+    },
   },
   { versionKey: false }
 );

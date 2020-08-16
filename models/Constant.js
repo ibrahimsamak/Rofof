@@ -5,8 +5,8 @@ const schema = mongoose.Schema(
   {
     name: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
   { versionKey: false }
 );
@@ -14,11 +14,11 @@ const schema = mongoose.Schema(
 const tokenschema = mongoose.Schema(
   {
     supplier_id: {
-      type: String
+      type: String,
     },
     token_id: {
-      type: String
-    }
+      type: String,
+    },
   },
   { versionKey: false }
 );
@@ -27,11 +27,11 @@ const Socialschema = mongoose.Schema(
   {
     name: {
       type: String,
-      required: true
+      required: true,
     },
     data: {
-      type: String
-    }
+      type: String,
+    },
   },
   { versionKey: false }
 );
@@ -40,20 +40,20 @@ const settings = mongoose.Schema(
   {
     name: {
       type: String,
-      required: true
+      required: true,
     },
     max: {
       type: String,
-      required: true
+      required: true,
     },
     min: {
       type: String,
-      required: true
+      required: true,
     },
     value: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
   { versionKey: false }
 );
@@ -62,17 +62,17 @@ const delivery_timeSchema = mongoose.Schema(
   {
     name: {
       type: String,
-      required: true
+      required: true,
     },
     isSort: {
       type: Number,
-      required: false
+      required: false,
     },
     supplier_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Supplier",
-      required: true
-    }
+      required: true,
+    },
   },
   { versionKey: false }
 );
@@ -80,14 +80,14 @@ const delivery_timeSchema = mongoose.Schema(
 const update = mongoose.Schema(
   {
     isAndroid: {
-      type: String
+      type: String,
     },
     isIOS: {
-      type: String
+      type: String,
     },
     isDriver: {
-      type: String
-    }
+      type: String,
+    },
   },
   { versionKey: false }
 );
@@ -96,11 +96,11 @@ const StaticPageSchema = mongoose.Schema(
   {
     title: {
       type: String,
-      required: true
+      required: true,
     },
     content: {
-      type: String
-    }
+      type: String,
+    },
   },
   { versionKey: false }
 );
@@ -109,9 +109,9 @@ const inventorySchema = mongoose.Schema(
   {
     name: {
       type: String,
-      required: true
+      required: true,
     },
-    city_id: { type: mongoose.Schema.Types.ObjectId, ref: "city" }
+    city_id: { type: mongoose.Schema.Types.ObjectId, ref: "city" },
   },
   { versionKey: false }
 );
@@ -120,28 +120,34 @@ const contractSchema = mongoose.Schema(
   {
     name: {
       type: String,
-      required: true
+      required: true,
     },
     numberOfMonths: {
-      type: Number
+      type: Number,
     },
     amount: {
-      type: Number
-    }
+      type: Number,
+    },
+    value: {
+      type: String,
+      required: true,
+    },
   },
   { versionKey: false }
 );
+
 const transportSchema = mongoose.Schema(
   {
     name: {
-      type: String
+      type: String,
     },
     value: {
-      type: Number
-    }
+      type: Number,
+    },
   },
   { versionKey: false }
 );
+
 const updates = mongoose.model("updates", update);
 const setting = mongoose.model("options", settings);
 const BuyUnits = mongoose.model("Buyunits", schema);
@@ -154,9 +160,10 @@ const tokens = mongoose.model("tokens", tokenschema);
 const StaticPage = mongoose.model("StaticPage", StaticPageSchema);
 const inventory = mongoose.model("inventory", inventorySchema);
 const transport = mongoose.model("transport", transportSchema);
+
 function validateCustomer(customer) {
   const schema = {
-    name: Joi.required()
+    name: Joi.required(),
   };
 
   return Joi.validate(customer, schema);

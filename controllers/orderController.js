@@ -42,6 +42,7 @@ const {
   StaticPage,
   city,
   setting,
+  contract,
 } = require("../models/Constant");
 const { Product, Category, Supplier } = require("../models/Product");
 const { userRate, prodcutComment } = require("../models/userRate");
@@ -50,6 +51,7 @@ const { coupon } = require("../models/couponmodel");
 const { tokens } = require("../models/Constant");
 const { companyCommision } = require("../models/companyCommision");
 const { PaymnetLog, TempPayment } = require("../models/Payment");
+const { reserve } = require("../models/Rack");
 
 const options = {
   provider: "google",
@@ -434,6 +436,7 @@ exports.testNana = async (req, reply) => {
 
 exports.addOrder = async (req, reply) => {
   try {
+    var percentage = 0.0;
     var arr = [];
     arr = req.body.items;
     var user_id = "5dd946601c9d4400001fdfd8";
@@ -441,10 +444,22 @@ exports.addOrder = async (req, reply) => {
       user_id = req.body.user_id;
     }
 
-    let percentage = await setting.findOne({
-      min: { $lte: req.body.Total },
-      max: { $gte: req.body.Total },
-    });
+    for await (const data of req.body.items) {
+      var prod = await Product.findOne({ _id: data.product_id });
+      var reserve_id = await reserve.findOne({ _id: prod.reserve_id });
+      var contract_id = await contract.findOne({ _id: reserve_id.contract_id });
+
+      percentage = Number(contract_id.value);
+    }
+
+    console.log("percentage:" + percentage);
+    // let percentage = await contract.findOne({
+    //   min: { $lte: req.body.Total },
+    //   max: { $gte: req.body.Total },
+    // });
+
+    // let _reserve = await reserve.findOne({ renter_id: req.body.provider_id });
+    // let percentage = await contract.findOne({ _reserve.contract_id });
 
     var shipment = 0;
     if (req.body.Shipment && req.body.Shipment != "0") {
@@ -459,12 +474,9 @@ exports.addOrder = async (req, reply) => {
       provider_id: req.body.provider_id,
       Order_no: req.body.Order_no,
       Total: newTotal,
-      Admin_Total: (parseFloat(percentage.value).toFixed(2) * newTotal).toFixed(
-        2
-      ),
+      Admin_Total: (parseFloat(percentage).toFixed(2) * newTotal).toFixed(2),
       Renter_Total:
-        newTotal -
-        (parseFloat(percentage.value).toFixed(2) * newTotal).toFixed(2),
+        newTotal - (parseFloat(percentage).toFixed(2) * newTotal).toFixed(2),
       StatusId: 1,
       user_id: user_id,
       items: req.body.items,
@@ -499,11 +511,11 @@ exports.addOrder = async (req, reply) => {
           $inc: {
             Total: Number(newTotal),
             Admin_Total: Number(
-              (parseFloat(percentage.value).toFixed(2) * newTotal).toFixed(2)
+              (parseFloat(percentage).toFixed(2) * newTotal).toFixed(2)
             ),
             provider_Total: Number(
               newTotal -
-                (parseFloat(percentage.value).toFixed(2) * newTotal).toFixed(2)
+                (parseFloat(percentage).toFixed(2) * newTotal).toFixed(2)
             ),
           },
         },
@@ -516,11 +528,10 @@ exports.addOrder = async (req, reply) => {
         by_user_id: req.body.provider_id,
         Total: Number(newTotal),
         Admin_Total: Number(
-          (parseFloat(percentage.value).toFixed(2) * newTotal).toFixed(2)
+          (parseFloat(percentage).toFixed(2) * newTotal).toFixed(2)
         ),
         provider_Total: Number(
-          newTotal -
-            (parseFloat(percentage.value).toFixed(2) * newTotal).toFixed(2)
+          newTotal - (parseFloat(percentage).toFixed(2) * newTotal).toFixed(2)
         ),
         TotalPaied: 0,
         TotalRemain: 0,
@@ -2256,6 +2267,8 @@ exports.updateeee = async (req, reply) => {
 
 exports.deleteOrder = async (req, reply) => {
   try {
+    var percentage = 0.0;
+
     const _order = await Order.findById(req.params.id)
       .sort({ _id: -1 })
       .populate("user_id")
@@ -2264,18 +2277,22 @@ exports.deleteOrder = async (req, reply) => {
         populate: { path: "product_id" },
       });
 
-    let percentage = await setting.findOne({
-      min: { $lte: _order.Total },
-      max: { $gte: _order.Total },
-    });
+    // let percentage = await setting.findOne({
+    //   min: { $lte: _order.Total },
+    //   max: { $gte: _order.Total },
+    // });
 
-    async.each(_order.items, async function (data, callback) {
-      await Product.findOneAndUpdate(
+    for await (const data of _order.items) {
+      var prod = await Product.findOneAndUpdate(
         { _id: data.product_id._id },
         { $inc: { qty: +parseInt(data.qty) } },
         { new: true }
       );
-    });
+      var reserve_id = await reserve.findOne({ _id: prod.reserve_id });
+      var contract_id = await contract.findOne({ _id: reserve_id.contract_id });
+
+      percentage = Number(contract_id.value);
+    }
 
     var prevOrder = await Order.findById(req.params.id);
     await Order.findByIdAndRemove(req.params.id);
@@ -2301,15 +2318,11 @@ exports.deleteOrder = async (req, reply) => {
           $inc: {
             Total: -Number(_order.Total),
             Admin_Total: -Number(
-              (parseFloat(percentage.value).toFixed(2) * _order.Total).toFixed(
-                2
-              )
+              (parseFloat(percentage).toFixed(2) * _order.Total).toFixed(2)
             ),
             provider_Total: -Number(
               _order.Total -
-                (
-                  parseFloat(percentage.value).toFixed(2) * _order.Total
-                ).toFixed(2)
+                (parseFloat(percentage).toFixed(2) * _order.Total).toFixed(2)
             ),
           },
         },

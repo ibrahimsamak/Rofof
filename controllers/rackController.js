@@ -7,9 +7,11 @@ const cron = require("node-cron");
 const _ = require("underscore");
 const lodash = require("lodash");
 const async = require("async");
+const moment = require("moment");
 
 // Get Data Models
 const { rack, reserve } = require("../models/Rack");
+const { Product } = require("../models/Product");
 
 function makeid() {
   var text = "";
@@ -23,25 +25,58 @@ function makeid() {
 
 // cron job for renting racks
 exports.FinishingRentRacks = async function FinishingRentRacks() {
-  cron.schedule(`0 0 0 * * *`, async () => {
+  //0 */45 * * * *
+  // 0 0 * * *
+  cron.schedule(`0 0 * * *`, async () => {
     let today = new Date();
-    console.log(today);
-    const reserves = await reserve.find({ end_date: { $lte: today } });
+    //, { isFinish: false }
+    const reserves = await reserve
+      .find({
+        $and: [
+          {
+            end_date: {
+              $lte: today,
+            },
+          },
+          {
+            isFinish: false,
+          },
+        ],
+      })
+      .populate("rack_id");
 
-    async.eachSeries(
-      reserves,
-      async function updateObject(element, done) {
-        console.log(element._id);
+    for await (const item of reserves) {
+      await reserve.findByIdAndUpdate(
+        item._id,
+        {
+          isFinish: true,
+        },
+        {
+          new: true,
+        }
+      );
+
+      for await (const reserve_rack of item.rack_id) {
         await rack.findByIdAndUpdate(
-          element.rack_id,
-          { isReserved: false },
-          { new: true }
+          reserve_rack._id,
+          {
+            isReserved: false,
+          },
+          {
+            new: true,
+          }
         );
-      },
-      async function allDone(err) {
-        console.log("running a task every minute");
+        Product.updateMany(
+          {
+            $and: [{ reserve_id: item._id }, { rack_id: reserve_rack._id }],
+          },
+          {
+            status: false,
+          },
+          function (err, res) {}
+        );
       }
-    );
+    }
   });
 };
 
@@ -172,7 +207,7 @@ exports.updaterack = async (req, reply) => {
 exports.getReserveRack = async (req, reply) => {
   try {
     await reserve
-      .find({ renter_id: req.params.id })
+      .find({ $and: [{ renter_id: req.params.id }] })
       .populate({
         path: "rack_id",
       })
@@ -228,7 +263,8 @@ exports.addReserveRack = async (req, reply) => {
       amount: req.body.amount,
       contract_id: req.body.contract_id,
       contract_no: contract_no,
-      isApprove: req.body.isApprove,
+      isApprove: true,
+      isFinish: false,
     });
 
     async.eachSeries(
@@ -244,6 +280,67 @@ exports.addReserveRack = async (req, reply) => {
       async function allDone(err) {
         console.log("all done");
       }
+    );
+
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: null,
+    };
+    return response;
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.renewReservRack = async (req, reply) => {
+  try {
+    var first_rack = [];
+    let current_year = new Date().getFullYear();
+    let contract_no = String(current_year) + makeid();
+    var previous_reserve_id = req.body.previous_reserve_id;
+    let _reserve = new reserve({
+      rack_id: req.body.rack_id,
+      renter_id: req.body.renter_id,
+      renter_type: req.body.renter_type,
+      start_date: req.body.start_date,
+      end_date: req.body.end_date,
+      amount: req.body.amount,
+      contract_id: req.body.contract_id,
+      contract_no: contract_no,
+      isApprove: true,
+      isFinish: false,
+    });
+
+    for await (const element of req.body.rack_id) {
+      await rack.findByIdAndUpdate(
+        element,
+        { isReserved: true },
+        { new: true }
+      );
+    }
+
+    var rs = await _reserve.save();
+    //delete previous reserve
+    //console.log("prev_id: " + previous_reserve_id);
+    //await reserve.findByIdAndRemove(previous_reserve_id);
+
+    first_rack = rs.rack_id;
+
+    Product.updateMany(
+      {
+        $and: [
+          { by_user_id: req.body.renter_id },
+          { reserve_id: previous_reserve_id },
+        ],
+      },
+      {
+        status: true,
+        reserve_id: rs._id,
+        rack_id: first_rack[0],
+      },
+      function (err, res) {}
     );
 
     const response = {
@@ -412,7 +509,6 @@ exports.getRackReserveSeacrh = async (req, reply) => {
       };
     }
 
-    console.log(query);
     await reserve
       .find(query)
       .sort({ _id: -1 })
@@ -443,6 +539,60 @@ exports.getRackReserveSeacrh = async (req, reply) => {
             size: result1.length,
             totalElements: result.length,
             totalPages: Math.floor(result.length / limit),
+            pageNumber: page,
+          },
+        };
+        reply.send(response);
+      });
+  } catch {
+    throw boom.boomify();
+  }
+};
+
+// new
+exports.getRackReserveAboutToFinish = async (req, reply) => {
+  try {
+    // const admin_id = req.params.id;
+
+    var page = parseFloat(req.query.page, 10);
+    var limit = parseFloat(req.query.limit, 10);
+    // const total = await Order.find().count();
+    var current_date_more_than_10_days = moment().add(10, "days");
+    var current_date = moment();
+    var total = await reserve
+      .find({
+        end_date: {
+          $gt: current_date,
+          $lte: current_date_more_than_10_days,
+        },
+      })
+      .count();
+
+    await reserve
+      .find({
+        end_date: {
+          $gt: current_date,
+          $lte: current_date_more_than_10_days,
+        },
+      })
+      .sort({ _id: -1 })
+      .populate("renter_id")
+      .populate({
+        path: "rack_id",
+      })
+      .populate("contract_id")
+      .skip(page * limit)
+      .limit(limit)
+      .exec(function (err, item) {
+        console.log(item);
+        const response = {
+          items: item,
+          status_code: 200,
+          message: "returned successfully",
+          pagenation: {
+            size: item.length,
+            totalElements: total,
+            totalPages: Math.floor(total / limit),
             pageNumber: page,
           },
         };

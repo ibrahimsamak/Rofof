@@ -5,54 +5,62 @@ const Productschema = mongoose.Schema(
   {
     name: {
       type: String,
-      required: false
+      required: false,
     },
     description: {
       type: String,
-      required: false
+      required: false,
     },
     barcode: {
-      type: String
+      type: String,
     },
     rate: {
-      type: Number
+      type: Number,
     },
     qty: {
       type: Number,
-      required: false
+      required: false,
     },
     price: {
       type: Number,
-      required: false
+      required: false,
     },
     image: {
       type: String,
-      required: false
+      required: false,
     },
     status: {
-      type: Boolean
+      type: Boolean,
     },
     images: {
-      type: [String]
+      type: [String],
     },
     createat: {
-      type: Date
+      type: Date,
     },
     by_user_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "renters"
+      ref: "renters",
     },
     by_admin_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "admins"
+      ref: "admins",
     },
     category_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Category"
+      ref: "Category",
     },
     discountPrice: {
-      type: Number
-    }
+      type: Number,
+    },
+    rack_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "racks",
+    },
+    reserve_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "reserve",
+    },
   },
   { versionKey: false }
 );
@@ -60,32 +68,32 @@ const Productschema = mongoose.Schema(
 const schema = mongoose.Schema({
   name: {
     type: String,
-    required: true
+    required: true,
   },
   image: {
     type: String,
-    required: true
-  }
+    required: true,
+  },
 });
 
 const Supplierschema = mongoose.Schema({
   name: {
     type: String,
-    required: true
+    required: true,
   },
   image: {
     type: String,
-    required: true
+    required: true,
   },
   details: {
-    type: String
+    type: String,
   },
   email: {
-    type: String
+    type: String,
   },
   password: {
-    type: String
-  }
+    type: String,
+  },
 });
 
 Productschema.index({ category_id: 1 });

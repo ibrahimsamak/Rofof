@@ -833,7 +833,7 @@ exports.getMostRenter = async (req, reply) => {
         var _result = lodash(item)
           .groupBy("renter_id.name")
           .map(function (items, _name) {
-            if (_name != "undefined") {
+            if (_name && _name != "undefined" && _name != "") {
               return { name: _name, value: items.length };
             }
           })
@@ -841,11 +841,18 @@ exports.getMostRenter = async (req, reply) => {
 
         var orderedResult = lodash.orderBy(_result, ["value"], ["desc"]);
 
+        var arr = [];
+        orderedResult.forEach((element) => {
+          if (element && element != null) {
+            arr.push(element);
+          }
+        });
+
         const response = {
           status_code: 200,
           status: true,
           message: "تمت العملية بنجاح",
-          items: orderedResult,
+          items: arr,
         };
         reply.send(response);
       });

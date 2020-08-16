@@ -461,6 +461,7 @@ exports.addContract = async (req, reply) => {
       name: req.body.name,
       numberOfMonths: req.body.numberOfMonths,
       amount: req.body.amount,
+      value: req.body.value,
     });
 
     let rs = await _city.save();
@@ -484,6 +485,7 @@ exports.updateContract = async (req, reply) => {
         name: req.body.name,
         numberOfMonths: req.body.numberOfMonths,
         amount: req.body.amount,
+        value: req.body.value,
       },
       { new: true }
     );

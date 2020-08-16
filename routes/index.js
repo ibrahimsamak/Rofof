@@ -65,6 +65,12 @@ const routes = [
   },
   {
     method: "POST",
+    url: "/api/renew",
+    handler: rackController.renewReservRack,
+  },
+
+  {
+    method: "POST",
     url: "/api/reserve/:id",
     handler: rackController.updateReserveRack,
   },
@@ -98,6 +104,12 @@ const routes = [
     url: "/api/deleterack/:id",
     handler: rackController.deleterack,
   },
+  {
+    method: "GET",
+    url: "/api/getRackReserveAboutToFinish",
+    handler: rackController.getRackReserveAboutToFinish,
+  },
+
   {
     method: "GET",
     url: "/api/Favorite/:id",
@@ -976,6 +988,16 @@ const routes = [
     method: "GET",
     url: "/api/getProductsByCategory/:id",
     handler: productController.getProductsByCategory,
+  },
+  {
+    method: "POST",
+    url: "/api/getActiveProducts",
+    handler: productController.getActiveProducts,
+  },
+  {
+    method: "POST",
+    url: "/api/getActiveProductsExcel",
+    handler: productController.getActiveProductsExcel,
   },
   {
     method: "POST",

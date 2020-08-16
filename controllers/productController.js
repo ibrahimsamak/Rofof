@@ -94,31 +94,30 @@ exports.getProducts = async (req, reply) => {
 
 exports.getProductsByRackId = async (req, reply) => {
   try {
-    const renter = await reserve.findOne({
-      $and: [{ rack_id: { $in: [req.params.id] } }, { status: true }],
-    });
-    if (renter) {
-      await Product.find({ by_user_id: renter.renter_id }).exec(function (
-        err,
-        item
-      ) {
-        const response = {
-          status_code: 200,
-          status: true,
-          message: "تمت العملية بنجاح",
-          items: item,
-        };
-        reply.send(response);
-      });
-    } else {
+    // const renter = await reserve.findOne({
+    //   $and: [{ rack_id: { $in: [req.params.id] } }],
+    // });
+    // if (renter) {
+    await Product.find({
+      $and: [{ status: true }, { rack_id: req.params.id }],
+    }).exec(function (err, item) {
       const response = {
         status_code: 200,
         status: true,
         message: "تمت العملية بنجاح",
-        items: [],
+        items: item,
       };
       reply.send(response);
-    }
+    });
+    // } else {
+    //   const response = {
+    //     status_code: 200,
+    //     status: true,
+    //     message: "تمت العملية بنجاح",
+    //     items: [],
+    //   };
+    //   reply.send(response);
+    // }
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -713,6 +712,8 @@ exports.addProduct = async (req, reply) => {
             createat: getCurrentDateTime(),
             status: false,
             rate: 0,
+            rack_id: req.raw.body.rack_id,
+            reserve_id: req.raw.body.reserve_id,
           });
           await products.save();
         }
@@ -769,6 +770,8 @@ exports.updateProduct = async (req, reply) => {
               barcode: req.raw.body.barcode,
               category_id: req.raw.body.category_id,
               discountPrice: req.raw.body.discountPrice,
+              rack_id: req.raw.body.rack_id,
+              reserve_id: req.raw.body.reserve_id,
             },
             { upsert: true },
             function (err) {
@@ -816,6 +819,8 @@ exports.updateProduct = async (req, reply) => {
           barcode: req.raw.body.barcode,
           category_id: req.raw.body.category_id,
           discountPrice: req.raw.body.discountPrice,
+          rack_id: req.raw.body.rack_id,
+          reserve_id: req.raw.body.reserve_id,
         },
         { new: true }
       );
@@ -1037,6 +1042,84 @@ exports.searchWeb = async (req, reply) => {
             totalPages: Math.floor(total / limit),
             pageNumber: page,
           },
+        };
+        reply.send(response);
+      });
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.getActiveProducts = async (req, reply) => {
+  try {
+    var page = parseFloat(req.query.page, 10);
+    var limit = parseFloat(req.query.limit, 10);
+    let by_user_id = req.body.by_user_id;
+
+    let query1 = {};
+    if (by_user_id && by_user_id != "") {
+      query1["by_user_id"] = by_user_id;
+    }
+    query1["status"] = true;
+    const total = await Product.find(query1).count();
+    await Product.find(query1)
+      .populate("by_user_id")
+      .populate("category_id")
+      .sort({ _id: -1 })
+      .skip(page * limit)
+      .limit(limit)
+      .exec(function (err, item) {
+        const response = {
+          status_code: 200,
+          status: true,
+          message: "تمت العملية بنجاح",
+          items: item,
+          pagenation: {
+            size: item.length,
+            totalElements: total,
+            totalPages: Math.floor(total / limit),
+            pageNumber: page,
+          },
+        };
+        reply.send(response);
+      });
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.getActiveProductsExcel = async (req, reply) => {
+  try {
+    let search_field = req.body.search_field;
+    let search_value = req.body.search_value;
+    let by_user_id = req.body.by_user_id;
+
+    let query1 = {};
+    query1[search_field] = { $regex: new RegExp(search_value, "i") };
+    if (by_user_id && by_user_id != "") {
+      query1["by_user_id"] = by_user_id;
+    }
+    query1["status"] = true;
+
+    // const total = await Product.find(query1).count();
+    await Product.find(query1)
+      .populate("by_user_id")
+      .populate("category_id")
+      .sort({ _id: -1 })
+      // .skip(page * limit)
+      // .limit(limit)
+      .exec(function (err, item) {
+        const response = {
+          status_code: 200,
+          status: true,
+          message: "تمت العملية بنجاح",
+          items: item,
+          // pagenation: {
+          //   size: item.length,
+          //   totalElements: total,
+          //   totalPages: Math.floor(total / limit),
+          //   pageNumber: page,
+          // },
         };
         reply.send(response);
       });
