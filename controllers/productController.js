@@ -943,6 +943,7 @@ exports.getProductDetailsByBarCode = async (req, reply) => {
     const products = await Product.findOne({
       $and: [
         { status: true },
+        { qty: { $gt: 0 } },
         { $or: [{ barcode: req.body.barcode }, { name: req.body.name }] },
       ],
     });
@@ -959,7 +960,8 @@ exports.getProductDetailsByBarCode = async (req, reply) => {
       const response = {
         status_code: 400,
         status: false,
-        message: "لم يتم العثور على منتج",
+        message:
+          "عذرا .. لم يتم العثور على منتج او قد يكون نفذ مخزون هذا المنتج",
         items: null,
       };
       return response;

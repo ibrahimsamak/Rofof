@@ -230,7 +230,7 @@ exports.getRenters = async (req, reply) => {
 exports.addrenters = async (req, reply) => {
   try {
     const _user = await renters.findOne({
-      $or: [{ phone_number: req.body.phone_number }, { email: req.body.email }],
+      phone_number: req.body.phone_number,
     });
     if (_user) {
       if (_user.isBlock == true) {

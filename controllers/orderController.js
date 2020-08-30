@@ -1908,8 +1908,9 @@ exports.getOrdersSeacrh = async (req, reply) => {
       };
     }
     if (req.body.renter_id != "" && req.body.renter_id) {
-      query = { renter_id: req.body.renter_id };
+      query = { provider_id: req.body.renter_id };
     }
+    console.log(query);
     var allOrders = await Order.find(query);
     var Total = lodash.sumBy(allOrders, function (o) {
       return o.Total;
