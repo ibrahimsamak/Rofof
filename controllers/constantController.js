@@ -15,7 +15,6 @@ const {
   contract,
   transport,
 } = require("../models/Constant");
-const { client } = require("../models/cache");
 
 exports.getUpdates = async (req, reply) => {
   try {

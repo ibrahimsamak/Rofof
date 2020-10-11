@@ -41,6 +41,12 @@ const renterschema = mongoose.Schema(
     car_name: {
       type: String,
     },
+    ApproveCode: {
+      type: String,
+    },
+    isApproveCode: {
+      type: Boolean,
+    },
   },
   { versionKey: false }
 );

@@ -25,6 +25,11 @@ const fastify = require("fastify")({
 const routes = [
   {
     method: "GET",
+    url: "/api/testdate",
+    handler: userController.testdate,
+  },
+  {
+    method: "GET",
     url: "/api/getPaymnetLog",
     handler: orderController.getPaymnetLog,
   },
@@ -109,7 +114,11 @@ const routes = [
     url: "/api/getRackReserveAboutToFinish",
     handler: rackController.getRackReserveAboutToFinish,
   },
-
+  {
+    method: "POST",
+    url: "/api/getRackReserveAboutToFinishExcel",
+    handler: rackController.getRackReserveAboutToFinishExcel,
+  },
   {
     method: "GET",
     url: "/api/Favorite/:id",
@@ -777,8 +786,18 @@ const routes = [
   },
   {
     method: "POST",
+    url: "/api/getOrdersSeacrhExcel",
+    handler: orderController.getOrdersSeacrhExcel,
+  },
+  {
+    method: "POST",
     url: "/api/getRackReserveSeacrh",
     handler: rackController.getRackReserveSeacrh,
+  },
+  {
+    method: "POST",
+    url: "/api/getRackReserveSeacrhExcel",
+    handler: rackController.getRackReserveSeacrhExcel,
   },
   {
     method: "GET",
@@ -837,6 +856,11 @@ const routes = [
     handler: driverController.getrenters,
   },
   {
+    method: "POST",
+    url: "/api/getRentersExcel",
+    handler: driverController.getRentersExcel,
+  },
+  {
     method: "GET",
     url: "/api/getRenterDetails/:id",
     handler: driverController.getSinglerenters,
@@ -846,6 +870,27 @@ const routes = [
     url: "/api/blockRender",
     handler: driverController.block,
   },
+  {
+    method: "POST",
+    url: "/api/send_sms",
+    handler: driverController.sendSMSRender,
+  },
+  {
+    method: "POST",
+    url: "/api/send_email",
+    handler: driverController.sendEmailRender,
+  },
+  {
+    method: "POST",
+    url: "/api/ApproveCode",
+    handler: driverController.ApproveCode,
+  },
+  {
+    method: "POST",
+    url: "/api/CheckApproveCode",
+    handler: driverController.CheckApproveCode,
+  },
+
   {
     method: "GET",
     url: "/api/DriverList/:id",

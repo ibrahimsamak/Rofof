@@ -13,9 +13,9 @@ var nodemailer = require("nodemailer");
 const { Notifications } = require("../models/Notifications");
 
 cloudinary.config({
-  cloud_name: "diszvlmqq",
-  api_key: "626239833572272",
-  api_secret: "1ZkJK1IN2eUhF2qVEc-M2QOAI0I",
+  cloud_name: "dclevhb0f",
+  api_key: "199179485788727",
+  api_secret: "rer8MIlm4zbw1ddW33_X02Phtl8",
 });
 
 var transporter = nodemailer.createTransport({
@@ -42,7 +42,7 @@ const geocoder = NodeGeocoder(options);
 // Get Data Models
 const { Users, validateUsers } = require("../models/User");
 const { getCurrentDateTime } = require("../models/Constant");
-const { encryptPassword } = require("../utils/utils");
+const { encryptPassword, sendSMS } = require("../utils/utils");
 
 async function getAddress(lat, lng) {
   var current_city = "";
@@ -875,13 +875,14 @@ exports.getAllUsers = async (req, reply) => {
   }
 };
 
-// exports.testdate = async (req, reply) => {
-//     try {
-//         const { Order } = require('../models/Order')
-
-//        let x =  await Order.remove({StatusId:1})
-//         reply.send(x)
-//     } catch (err) {
-//         throw boom.boomify(err)
-//     }
-// }
+exports.testdate = async (req, reply) => {
+  try {
+    var msg =
+      "أهلا وسهلا بكم في منصة رفوف مقتنياتي كود التفعيل الخاص بكم هو : 1231";
+    var number = "966503015130";
+    sendSMS(number, "", "", msg);
+    reply.send("test");
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};

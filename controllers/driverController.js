@@ -9,11 +9,12 @@ const concat = require("concat-stream");
 const pump = require("pump");
 const cloudinary = require("cloudinary");
 const multer = require("multer");
+const moment = require("moment");
 
 cloudinary.config({
-  cloud_name: "diszvlmqq",
-  api_key: "626239833572272",
-  api_secret: "1ZkJK1IN2eUhF2qVEc-M2QOAI0I",
+  cloud_name: "dclevhb0f",
+  api_key: "199179485788727",
+  api_secret: "rer8MIlm4zbw1ddW33_X02Phtl8",
 });
 
 const options = {
@@ -27,9 +28,13 @@ const geocoder = NodeGeocoder(options);
 
 // Get Data Models
 const { renters } = require("../models/Driver");
-const { client } = require("../models/cache");
 const { getCurrentDateTime } = require("../models/Constant");
-const { encryptPassword } = require("../utils/utils");
+const {
+  encryptPassword,
+  decryptPassword,
+  sendSMS,
+  mail_general,
+} = require("../utils/utils");
 const { reserve } = require("../models/Rack");
 
 async function getAddress(lat, lng) {
@@ -79,6 +84,16 @@ function makeid() {
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
   for (var i = 0; i < 6; i++)
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+  return text;
+}
+
+function makeCode() {
+  var text = "";
+  var possible = "0123456789";
+
+  for (var i = 0; i < 4; i++)
     text += possible.charAt(Math.floor(Math.random() * possible.length));
 
   return text;
@@ -195,6 +210,95 @@ exports.getrenters = async (req, reply) => {
   }
 };
 
+exports.getRentersExcel = async (req, reply) => {
+  try {
+    console.log(req.body);
+    let search_field = req.body.search_field;
+    let search_value = req.body.search_value;
+
+    let query1 = {};
+    var contracts = [];
+    var _renters = [];
+    if (search_field == "no") {
+      contracts = await reserve.find({ contract_no: search_value });
+      contracts.forEach((element) => {
+        _renters.push(element.renter_id);
+      });
+      await renters
+        .find({ _id: { $in: _renters } })
+        .sort({ createAt: -1 })
+        .exec(async function (err, item) {
+          var newArray = [];
+          for await (const newItem of item) {
+            var newObject = newItem.toObject();
+            var _reserve = await reserve
+              .findOne({
+                $and: [{ renter_id: newItem._id }, { isApprove: true }],
+              })
+              .sort({ _id: -1 });
+            if (_reserve) {
+              newObject.contract_no = _reserve.contract_no;
+              newObject.amount = _reserve.amount;
+              newObject.start_date = _reserve.start_date;
+              newObject.end_date = _reserve.end_date;
+            } else {
+              newObject.contract_no = "";
+              newObject.amount = "";
+              newObject.start_date = "";
+              newObject.end_date = "";
+            }
+
+            newArray.push(newObject);
+          }
+          const response = {
+            status_code: 200,
+            status: true,
+            message: "تمت العملية بنجاح",
+            items: newArray,
+          };
+          reply.send(response);
+        });
+    } else {
+      query1[search_field] = { $regex: new RegExp(search_value, "i") };
+      await renters
+        .find(query1)
+        .sort({ createAt: -1 })
+        .exec(async function (err, item) {
+          var newArray = [];
+          for await (const newItem of item) {
+            var newObject = newItem.toObject();
+            var _reserve = await reserve
+              .findOne({
+                $and: [{ renter_id: newItem._id }, { isApprove: true }],
+              })
+              .sort({ _id: -1 });
+            if (_reserve) {
+              newObject.contract_no = _reserve.contract_no;
+              newObject.amount = _reserve.amount;
+              newObject.start_date = _reserve.start_date;
+              newObject.end_date = _reserve.end_date;
+            } else {
+              newObject.contract_no = "";
+              newObject.amount = "";
+              newObject.start_date = "";
+              newObject.end_date = "";
+            }
+            newArray.push(newObject);
+          }
+          const response = {
+            status_code: 200,
+            status: true,
+            message: "تمت العملية بنجاح",
+            items: newArray,
+          };
+          reply.send(response);
+        });
+    }
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
 // Get single renters by ID
 exports.getSinglerenters = async (req, reply) => {
   try {
@@ -283,6 +387,7 @@ exports.addrenters = async (req, reply) => {
 exports.login = async (req, reply) => {
   try {
     let pass = encryptPassword(req.body.password);
+    console.log(pass);
     const user = await renters.findOne({
       email: req.body.email,
       password: pass,
@@ -631,6 +736,109 @@ exports.block = async (req, reply) => {
   }
 };
 
+exports.ApproveCode = async (req, reply) => {
+  try {
+    var code = makeCode();
+    const user = await renters.findByIdAndUpdate(
+      req.body.id,
+      {
+        ApproveCode: code,
+        isApproveCode: false,
+      },
+      { new: true }
+    );
+
+    let _reserve = await reserve
+      .find({ renter_id: req.body.id })
+      .sort({ _id: -1 });
+    let contract_no = "";
+    if (_reserve.length > 0) {
+      contract_no = _reserve[0].contract_no;
+    }
+    var msg = `تم إنشاء/تجديد عقد رقم ${contract_no} نرجو مشاركة رقم الكود ${code} مع موظف المتجر لتأكيد الموافقة على العقد.`;
+
+    sendSMS(user.phone_number, "", "", msg);
+    var data = {
+      full_name: user.name,
+      msg: msg,
+    };
+    mail_general(req, user.email, "ادارة منصة رفوف مقتنياتي", "", data);
+
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: user,
+    };
+    return response;
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.CheckApproveCode = async (req, reply) => {
+  try {
+    const user = await renters.findById(req.body.id);
+    if (user.ApproveCode == req.body.ApproveCode) {
+      const _user = await renters.findByIdAndUpdate(
+        req.body.id,
+        {
+          isApproveCode: true,
+        },
+        { new: true }
+      );
+
+      let url = "https://rofof-client-7f0e7.firebaseapp.com";
+      let username = _user.email;
+      let password = decryptPassword(_user.password);
+      var msg = `تم تفعيل حسابكم بنجاح رابط الدخول هو: ${url} \n اسم المستخدم: ${username} \n كلمة المرور: ${password} \n نتمنى لكم تجارة مربحة معنا`;
+      sendSMS(_user.phone_number, "", "", msg);
+
+      var data = {
+        full_name: _user.name,
+        msg: msg,
+      };
+      mail_general(req, _user.email, "ادارة منصة رفوف مقتنياتي", "", data);
+
+      let _reserve = await reserve
+        .find({ renter_id: req.body.id })
+        .sort({ _id: -1 });
+      let contract_no = "";
+      if (_reserve.length > 0) {
+        contract_no = _reserve[0].contract_no;
+        start_date = moment(_reserve[0].start_date).format("dd/MM/yyyy");
+        end_date = moment(_reserve[0].end_date).format("dd/MM/yyyy");
+      }
+      var msg2 = `تم تفعيل عقد رقم ${contract_no} بنجاح \n بداية العقد: ${start_date} \n نهاية العقد: ${end_date} \n`;
+      sendSMS(_user.phone_number, "", "", msg2);
+
+      var data2 = {
+        full_name: _user.name,
+        msg: msg2,
+      };
+      mail_general(req, _user.email, "ادارة منصة رفوف مقتنياتي", "", data2);
+
+      const response = {
+        status_code: 200,
+        status: true,
+        message: "تمت العملية بنجاح",
+        items: _user,
+      };
+      return response;
+    } else {
+      const response = {
+        status_code: 400,
+        status: false,
+        message: "كود التفعيل خاطئ",
+        items: {},
+      };
+      return response;
+    }
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
 exports.userprofile = async (req, reply) => {
   try {
     const user = await renters
@@ -677,5 +885,43 @@ exports.uploadRenterPhoto = async (req, reply) => {
       console.log(result, error);
       reply.send(result);
     });
+  }
+};
+
+exports.sendSMSRender = async (req, reply) => {
+  try {
+    const user = await renters.findById(req.body.id);
+    var msg = req.body.msg;
+    sendSMS(user.phone_number, "", "", msg);
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: {},
+    };
+    return response;
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.sendEmailRender = async (req, reply) => {
+  try {
+    const user = await renters.findById(req.body.id);
+    var data = {
+      full_name: user.name,
+      msg: req.body.msg,
+    };
+    mail_general(req, user.email, "ادارة منصة رفوف مقتنياتي", "", data);
+
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: {},
+    };
+    return response;
+  } catch (err) {
+    throw boom.boomify(err);
   }
 };

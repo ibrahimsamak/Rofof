@@ -840,9 +840,10 @@ exports.getMostRenter = async (req, reply) => {
           .value();
 
         var orderedResult = lodash.orderBy(_result, ["value"], ["desc"]);
-
+        var FinalResult = lodash.take(orderedResult, 10);
+        console.log(FinalResult.length);
         var arr = [];
-        orderedResult.forEach((element) => {
+        FinalResult.forEach((element) => {
           if (element && element != null) {
             arr.push(element);
           }

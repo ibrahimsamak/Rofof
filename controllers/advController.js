@@ -4,9 +4,9 @@ const fs = require("fs");
 const cloudinary = require("cloudinary");
 
 cloudinary.config({
-  cloud_name: "dkos8ethw",
-  api_key: "375638313668992",
-  api_secret: "fsgng51R49_1TQlUbKbbFa4_FbM"
+  cloud_name: "dclevhb0f",
+  api_key: "199179485788727",
+  api_secret: "rer8MIlm4zbw1ddW33_X02Phtl8",
 });
 
 // Get Data Models
@@ -14,8 +14,8 @@ const { Adv } = require("../models/adv");
 const { getCurrentDateTime } = require("../models/Constant");
 
 async function uploadImages(img) {
-  return new Promise(function(resolve, reject) {
-    cloudinary.v2.uploader.upload("./uploads/" + img, function(error, result) {
+  return new Promise(function (resolve, reject) {
+    cloudinary.v2.uploader.upload("./uploads/" + img, function (error, result) {
       if (error) {
         reject(error);
       } else {
@@ -47,8 +47,8 @@ exports.getAdv = async (req, reply) => {
         size: _Advs.length,
         totalElements: total,
         totalPages: Math.floor(total / limit),
-        pageNumber: page
-      }
+        pageNumber: page,
+      },
     };
     return response;
   } catch (err) {
@@ -64,7 +64,7 @@ exports.getSingleAdv = async (req, reply) => {
       status_code: 200,
       status: true,
       message: "تمت العملية بنجاح",
-      items: Advs
+      items: Advs,
     };
     return response;
   } catch (err) {
@@ -81,11 +81,11 @@ exports.addAdv = async (req, reply) => {
       for (let key in files) {
         fileArr.push({
           name: files[key].name,
-          mimetype: files[key].mimetype
+          mimetype: files[key].mimetype,
         });
       }
       var data = new Buffer(files.image.data);
-      fs.writeFile("./uploads/" + files.image.name, data, "binary", function(
+      fs.writeFile("./uploads/" + files.image.name, data, "binary", function (
         err
       ) {
         if (err) {
@@ -96,7 +96,7 @@ exports.addAdv = async (req, reply) => {
       });
 
       let img = "";
-      await uploadImages(files.image.name).then(x => {
+      await uploadImages(files.image.name).then((x) => {
         img = x;
       });
 
@@ -110,7 +110,7 @@ exports.addAdv = async (req, reply) => {
         is_ads_have_expiry_date: req.raw.body.is_ads_have_expiry_date,
         by: req.raw.body.by,
         createAt: getCurrentDateTime(),
-        name: req.raw.body.name
+        name: req.raw.body.name,
       });
 
       let rs = await Advs.save();
@@ -118,7 +118,7 @@ exports.addAdv = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "تمت العملية بنجاح",
-        items: rs
+        items: rs,
       };
 
       reply.send(response);
@@ -135,7 +135,7 @@ exports.deleteAdv = async (req, reply) => {
     status_code: 200,
     status: true,
     message: "تمت العملية بنجاح",
-    items: []
+    items: [],
   };
   // await updateCacheWithDelete('Advs', req.params.id)
 
@@ -151,11 +151,11 @@ exports.updateAdv = async (req, reply) => {
       for (let key in files) {
         fileArr.push({
           name: files[key].name,
-          mimetype: files[key].mimetype
+          mimetype: files[key].mimetype,
         });
       }
       var data = new Buffer(files.image.data);
-      fs.writeFile("./uploads/" + files.image.name, data, "binary", function(
+      fs.writeFile("./uploads/" + files.image.name, data, "binary", function (
         err
       ) {
         if (err) {
@@ -166,7 +166,7 @@ exports.updateAdv = async (req, reply) => {
       });
 
       let img = "";
-      await uploadImages(files.image.name).then(x => {
+      await uploadImages(files.image.name).then((x) => {
         img = x;
       });
 
@@ -181,7 +181,7 @@ exports.updateAdv = async (req, reply) => {
           product_id: req.raw.body.product_id,
           is_ads_have_expiry_date: req.raw.body.is_ads_have_expiry_date,
           by: req.raw.body.by,
-          name: req.raw.body.name
+          name: req.raw.body.name,
         },
         { new: true }
       );
@@ -191,7 +191,7 @@ exports.updateAdv = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "تمت العملية بنجاح",
-        items: Advs
+        items: Advs,
       };
       return response;
     } else {
@@ -205,7 +205,7 @@ exports.updateAdv = async (req, reply) => {
           product_id: req.raw.body.product_id,
           is_ads_have_expiry_date: req.raw.body.is_ads_have_expiry_date,
           by: req.raw.body.by,
-          name: req.raw.body.name
+          name: req.raw.body.name,
         },
         { new: true }
       );
@@ -215,7 +215,7 @@ exports.updateAdv = async (req, reply) => {
         status_code: 200,
         status: true,
         message: "تمت العملية بنجاح",
-        items: Advs
+        items: Advs,
       };
       return response;
     }

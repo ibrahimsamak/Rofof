@@ -1976,6 +1976,61 @@ exports.getOrdersSeacrh = async (req, reply) => {
   }
 };
 
+exports.getOrdersSeacrhExcel = async (req, reply) => {
+  try {
+    var start_date = req.body.start_date;
+    var end_date = req.body.end_date;
+    var query = {};
+
+    if (start_date != "" && end_date != "") {
+      query = {
+        createAt: {
+          $gte: new Date(new Date(start_date).setHours(00, 00, 00)),
+          $lt: new Date(new Date(end_date).setHours(23, 59, 59)),
+        },
+      };
+    }
+    if (req.body.renter_id != "" && req.body.renter_id) {
+      query = { provider_id: req.body.renter_id };
+    }
+    console.log(query);
+    var allOrders = await Order.find(query);
+    var Total = lodash.sumBy(allOrders, function (o) {
+      return o.Total;
+    });
+    var Total_Discount = lodash.sumBy(allOrders, function (o) {
+      return o.Total_Discount;
+    });
+    var Admin_Total = lodash.sumBy(allOrders, function (o) {
+      return o.Admin_Total;
+    });
+    var Renter_Total = lodash.sumBy(allOrders, function (o) {
+      return o.Renter_Total;
+    });
+    await Order.find(query)
+      .sort({ _id: -1 })
+      .populate("user_id")
+      .populate("city_id")
+      .populate({ path: "items.product_id", populate: { path: "product_id" } })
+      .populate({ path: "items.by_admin_id", populate: { path: "admins" } })
+      .populate({ path: "items.by_user_id", populate: { path: "renters" } })
+      .exec(function (err, item) {
+        const response = {
+          items: item,
+          status_code: 200,
+          message: "returned successfully",
+          Total: Total,
+          Total_Discount: Total_Discount,
+          Admin_Total: Admin_Total,
+          Renter_Total: Renter_Total,
+        };
+        reply.send(response);
+      });
+  } catch {
+    throw boom.boomify();
+  }
+};
+
 exports.getRatedOrders = async (req, reply) => {
   try {
     var page = parseFloat(req.query.page, 10);

@@ -18,9 +18,9 @@ const moment = require("moment");
 const momentTZ = require("moment-timezone");
 
 cloudinary.config({
-  cloud_name: "diszvlmqq",
-  api_key: "626239833572272",
-  api_secret: "1ZkJK1IN2eUhF2qVEc-M2QOAI0I",
+  cloud_name: "dclevhb0f",
+  api_key: "199179485788727",
+  api_secret: "rer8MIlm4zbw1ddW33_X02Phtl8",
 });
 
 //Driver

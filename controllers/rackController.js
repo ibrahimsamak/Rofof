@@ -12,6 +12,8 @@ const moment = require("moment");
 // Get Data Models
 const { rack, reserve } = require("../models/Rack");
 const { Product } = require("../models/Product");
+const { renters } = require("../models/Driver");
+const { sendSMS } = require("../utils/utils");
 
 function makeid() {
   var text = "";
@@ -46,6 +48,13 @@ exports.FinishingRentRacks = async function FinishingRentRacks() {
       .populate("rack_id");
 
     for await (const item of reserves) {
+      var msg =
+        " عميلنا العزيز، نود تذكيركم بأن العقد رقم " +
+        item.contract_no +
+        " قد انتهت مدته و نرجو منكم زيارة المتجر لتجديد العقد أو أخذ مقتنياتكم في أقرب وقت. ";
+      var _user = await renters.findById(item.renter_id);
+      sendSMS(_user.phone_number, "", "", msg);
+
       await reserve.findByIdAndUpdate(
         item._id,
         {
@@ -215,7 +224,6 @@ exports.getReserveRack = async (req, reply) => {
       .populate("contract_id")
       .sort({ _id: -1 })
       .exec(function (err, item) {
-        console.log(item);
         const response = {
           status_code: 200,
           status: true,
@@ -549,6 +557,55 @@ exports.getRackReserveSeacrh = async (req, reply) => {
   }
 };
 
+exports.getRackReserveSeacrhExcel = async (req, reply) => {
+  try {
+    var start_date = req.body.start_date;
+    var end_date = req.body.end_date;
+    var query = {};
+    if (start_date != "" && end_date != "") {
+      query = {
+        $and: [
+          {
+            end_date: {
+              $lt: new Date(new Date(end_date).setHours(23, 59, 59)),
+            },
+          },
+          {
+            start_date: {
+              $gte: new Date(new Date(start_date).setHours(00, 00, 00)),
+            },
+          },
+        ],
+      };
+    }
+
+    await reserve
+      .find(query)
+      .sort({ _id: -1 })
+      .populate("renter_id")
+      .populate({
+        path: "rack_id",
+      })
+      .populate("contract_id")
+      .exec(function (err, item) {
+        console.log(item);
+        var result = _.filter(item, function (itm) {});
+        var result1 = lodash(item)
+          .slice(page * limit)
+          .take(limit)
+          .value();
+        const response = {
+          items: result1,
+          status_code: 200,
+          message: "returned successfully",
+        };
+        reply.send(response);
+      });
+  } catch {
+    throw boom.boomify();
+  }
+};
+
 // new
 exports.getRackReserveAboutToFinish = async (req, reply) => {
   try {
@@ -595,6 +652,59 @@ exports.getRackReserveAboutToFinish = async (req, reply) => {
             totalPages: Math.floor(total / limit),
             pageNumber: page,
           },
+        };
+        reply.send(response);
+      });
+  } catch {
+    throw boom.boomify();
+  }
+};
+
+exports.getRackReserveAboutToFinishExcel = async (req, reply) => {
+  try {
+    // const admin_id = req.params.id;
+
+    // var page = parseFloat(req.query.page, 10);
+    // var limit = parseFloat(req.query.limit, 10);
+    // const total = await Order.find().count();
+    var current_date_more_than_10_days = moment().add(10, "days");
+    var current_date = moment();
+    // var total = await reserve
+    //   .find({
+    //     end_date: {
+    //       $gt: current_date,
+    //       $lte: current_date_more_than_10_days,
+    //     },
+    //   })
+    //   .count();
+
+    await reserve
+      .find({
+        end_date: {
+          $gt: current_date,
+          $lte: current_date_more_than_10_days,
+        },
+      })
+      .sort({ _id: -1 })
+      .populate("renter_id")
+      .populate({
+        path: "rack_id",
+      })
+      .populate("contract_id")
+      // .skip(page * limit)
+      // .limit(limit)
+      .exec(function (err, item) {
+        console.log(item);
+        const response = {
+          items: item,
+          status_code: 200,
+          message: "returned successfully",
+          // pagenation: {
+          //   size: item.length,
+          //   totalElements: total,
+          //   totalPages: Math.floor(total / limit),
+          //   pageNumber: page,
+          // },
         };
         reply.send(response);
       });

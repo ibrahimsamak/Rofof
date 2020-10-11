@@ -11,14 +11,13 @@ const util = require("util");
 const async = require("async");
 
 cloudinary.config({
-  cloud_name: "diszvlmqq",
-  api_key: "626239833572272",
-  api_secret: "1ZkJK1IN2eUhF2qVEc-M2QOAI0I",
+  cloud_name: "dclevhb0f",
+  api_key: "199179485788727",
+  api_secret: "rer8MIlm4zbw1ddW33_X02Phtl8",
 });
 
 // Get Data Models
 const { Product, Category, Supplier } = require("../models/Product");
-const { client } = require("../models/cache");
 const { getCurrentDateTime } = require("../models/Constant");
 const { setting } = require("../models/Constant");
 const { rack, reserve } = require("../models/Rack");
@@ -251,8 +250,8 @@ exports.getProductsRenters = async (req, reply) => {
 
 exports.getProductsForRenter = async (req, reply) => {
   try {
-    var page = parseFloat(req.query.page, 10);
-    var limit = parseFloat(req.query.limit, 10);
+    // var page = parseFloat(req.query.page, 10);
+    // var limit = parseFloat(req.query.limit, 10);
     let search_field = req.body.search_field;
     let search_value = req.body.search_value;
     let sort_field = req.body.sort_field;
@@ -266,20 +265,20 @@ exports.getProductsForRenter = async (req, reply) => {
     const total = await Product.find(query1).count();
     await Product.find(query1)
       .sort({ [sort_field]: sort_value })
-      .skip(page * limit)
-      .limit(limit)
+      // .skip(page * limit)
+      // .limit(limit)
       .exec(function (err, item) {
         const response = {
           status_code: 200,
           status: true,
           message: "تمت العملية بنجاح",
           items: item,
-          pagenation: {
-            size: item.length,
-            totalElements: total,
-            totalPages: Math.floor(total / limit),
-            pageNumber: page,
-          },
+          // pagenation: {
+          //   size: item.length,
+          //   totalElements: total,
+          //   totalPages: Math.floor(total / limit),
+          //   pageNumber: page,
+          // },
         };
         reply.send(response);
       });
@@ -292,6 +291,8 @@ exports.getProductsForRenterById = async (req, reply) => {
   try {
     await Product.find({ by_user_id: req.body.by_user_id })
       .populate("by_user_id")
+      .populate("rack_id")
+      .populate("reserve_id")
       .exec(function (err, item) {
         const response = {
           status_code: 200,
@@ -1092,12 +1093,12 @@ exports.getActiveProducts = async (req, reply) => {
 
 exports.getActiveProductsExcel = async (req, reply) => {
   try {
-    let search_field = req.body.search_field;
-    let search_value = req.body.search_value;
+    // let search_field = req.body.search_field;
+    // let search_value = req.body.search_value;
     let by_user_id = req.body.by_user_id;
 
     let query1 = {};
-    query1[search_field] = { $regex: new RegExp(search_value, "i") };
+    // query1[search_field] = { $regex: new RegExp(search_value, "i") };
     if (by_user_id && by_user_id != "") {
       query1["by_user_id"] = by_user_id;
     }

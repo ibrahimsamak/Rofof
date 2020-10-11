@@ -6,7 +6,6 @@ const util = require("util");
 
 // Get Data Models
 const { Admin } = require("../models/Admin");
-const { client } = require("../models/cache");
 const { encryptPassword } = require("../utils/utils");
 
 // Get all Admins
