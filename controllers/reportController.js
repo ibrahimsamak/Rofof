@@ -483,14 +483,14 @@ exports.importantCounters = async (req, reply) => {
   try {
     var _items = [];
 
-    var Userss = await Users.find().count();
-    var _renters = await renters.find().count();
+    var Userss = await Users.find({ isBlock: false }).count();
+    var _renters = await renters.find({ isBlock: false }).count();
     var _inventory = await inventory.find().count();
     var _rack = await rack.find().count();
     var allOrders = await Order.find().count();
-    var _reserve = await reserve.find().count();
+    var _reserve = await reserve.find({ isFinish: false }).count();
     var _city = await city.find().count();
-    var _Product = await Product.find().count();
+    var _Product = await Product.find({status:true}).count();
 
     _items.push({
       total_users: Userss,

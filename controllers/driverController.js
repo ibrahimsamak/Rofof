@@ -389,7 +389,7 @@ exports.login = async (req, reply) => {
     let pass = encryptPassword(req.body.password);
     console.log(pass);
     const user = await renters.findOne({
-      email: req.body.email,
+      phone_number: req.body.phone_number,
       password: pass,
     });
     if (!user) {
@@ -427,18 +427,24 @@ exports.login = async (req, reply) => {
 //forget password
 exports.forgetPassword = async (req, reply) => {
   try {
-    let pass = encryptPassword(makeid());
-    const _renters = await renters.findOne({ email: req.body.email });
+    let newPassword = makeid();
+    let pass = encryptPassword(newPassword);
+    const _renters = await renters.findOne({
+      phone_number: req.body.phone_number,
+    });
     if (_renters) {
       const update = await renters.findByIdAndUpdate(
         _renters._id,
         { password: pass },
         { new: true }
       );
+
+      var msg = "كلمة المرور الجديدة الخاصة بكم هي : " + newPassword;
+      sendSMS(_renters.phone_number, "", "", msg);
       const response = {
         status_code: 200,
         status: true,
-        message: "تم ارسال كلمة المرور الى البريد الالكتروني بنجاح",
+        message: "تم ارسال كلمة المرور الى رقم الجوال بنجاح",
         items: update,
       };
       return response;
@@ -446,7 +452,7 @@ exports.forgetPassword = async (req, reply) => {
       const response = {
         status_code: 404,
         status: false,
-        message: "البريد الالكتروني غير مسجل لدينا",
+        message: "رقم الجوال غير مسجل لدينا",
         items: [],
       };
       return response;
@@ -536,20 +542,32 @@ exports.changePassword = async (req, reply) => {
   try {
     const User_id = req.body._id;
     let pass = encryptPassword(req.body.pass);
+    const old_password = encryptPassword(req.body.old_password);
+
     const _renters = await renters.findById(User_id);
     if (_renters) {
-      const update = await renters.findByIdAndUpdate(
-        User_id,
-        { password: pass },
-        { new: true }
-      );
-      const response = {
-        status_code: 200,
-        status: true,
-        message: "تم تعديل كلمة المرور بنجاح بنجاح",
-        items: update,
-      };
-      return response;
+      if (old_password == _renters.password) {
+        const update = await renters.findByIdAndUpdate(
+          User_id,
+          { password: pass },
+          { new: true }
+        );
+        const response = {
+          status_code: 200,
+          status: true,
+          message: "تم تعديل كلمة المرور بنجاح بنجاح",
+          items: update,
+        };
+        return response;
+      } else {
+        const response = {
+          status_code: 400,
+          status: false,
+          message: "كلمة المرور القديمة غير صحيحة",
+          items: {},
+        };
+        return response;
+      }
     } else {
       const response = {
         status_code: 404,
@@ -806,8 +824,8 @@ exports.CheckApproveCode = async (req, reply) => {
       let contract_no = "";
       if (_reserve.length > 0) {
         contract_no = _reserve[0].contract_no;
-        start_date = moment(_reserve[0].start_date).format("dd/MM/yyyy");
-        end_date = moment(_reserve[0].end_date).format("dd/MM/yyyy");
+        start_date = moment(_reserve[0].start_date).format("DD/MM/YYYY");
+        end_date = moment(_reserve[0].end_date).format("DD/MM/YYYY");
       }
       var msg2 = `تم تفعيل عقد رقم ${contract_no} بنجاح \n بداية العقد: ${start_date} \n نهاية العقد: ${end_date} \n`;
       sendSMS(_user.phone_number, "", "", msg2);

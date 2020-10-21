@@ -607,6 +607,11 @@ const routes = [
   },
   {
     method: "POST",
+    url: "/api/renterforgetPassword",
+    handler: driverController.forgetPassword,
+  },
+  {
+    method: "POST",
     url: "/api/changeAdminPassword",
     handler: adminController.changePassword,
   },

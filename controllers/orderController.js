@@ -34,7 +34,8 @@ const { Admin } = require("../models/Admin");
 const { Point } = require("../models/Point");
 const { UserPoint } = require("../models/userPoint");
 const { Notifications } = require("../models/Notifications");
-const { Drivers } = require("../models/Driver");
+const { Drivers, renters } = require("../models/Driver");
+const { sendSMS } = require("../utils/utils");
 const {
   BuyUnits,
   ContactOption,
@@ -2478,7 +2479,6 @@ exports.getPaymnetLog = async (req, reply) => {
 exports.updatePayment = async (req, reply) => {
   try {
     const preLog = await PaymnetLog.findById(req.params.id);
-    console.log(Number(req.body.TotalPaied));
     if (
       Number(req.body.TotalPaied).toFixed(2) <=
       Number(preLog.provider_Total - preLog.TotalPaied).toFixed(2)
@@ -2502,6 +2502,10 @@ exports.updatePayment = async (req, reply) => {
         },
         { new: true }
       );
+      var msg = `تم تسليم مستحاقتكم بمبلغ ${req.body.TotalPaied} ريال وذلك لشهر ${preLog.PeriodMonth} نتمنى لكم تجارة مربحة معنا`;
+      var user = await renters.findById(preLog.by_user_id);
+
+      sendSMS(user.phone_number, "الادارة", "", msg);
       const response = {
         status_code: 200,
         status: true,

@@ -519,7 +519,7 @@ exports.getRackReserveSeacrh = async (req, reply) => {
 
     await reserve
       .find(query)
-      .sort({ _id: -1 })
+      .sort({ start_date: -1 })
       .populate("renter_id")
       .populate({
         path: "rack_id",
@@ -581,7 +581,7 @@ exports.getRackReserveSeacrhExcel = async (req, reply) => {
 
     await reserve
       .find(query)
-      .sort({ _id: -1 })
+      .sort({ start_date: -1 })
       .populate("renter_id")
       .populate({
         path: "rack_id",

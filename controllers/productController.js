@@ -764,7 +764,7 @@ exports.updateProduct = async (req, reply) => {
               description: req.raw.body.description,
               $addToSet: { images: { $each: img } },
               image: img[0],
-              qty: req.raw.body.qty,
+              // qty: req.raw.body.qty,
               price: req.raw.body.price,
               // by_user_id: req.raw.body.by_user_id,
               // by_admin_id: req.raw.body.by_admin_id,
@@ -1058,16 +1058,22 @@ exports.getActiveProducts = async (req, reply) => {
     var page = parseFloat(req.query.page, 10);
     var limit = parseFloat(req.query.limit, 10);
     let by_user_id = req.body.by_user_id;
+    let contract_no = req.body.contract_no;
 
     let query1 = {};
     if (by_user_id && by_user_id != "") {
       query1["by_user_id"] = by_user_id;
+    }
+    if (contract_no && contract_no != "") {
+      var reserve_id = await reserve.findOne({ contract_no: contract_no });
+      query1["reserve_id"] = reserve_id._id;
     }
     query1["status"] = true;
     const total = await Product.find(query1).count();
     await Product.find(query1)
       .populate("by_user_id")
       .populate("category_id")
+      .populate("reserve_id")
       .sort({ _id: -1 })
       .skip(page * limit)
       .limit(limit)
@@ -1108,6 +1114,7 @@ exports.getActiveProductsExcel = async (req, reply) => {
     await Product.find(query1)
       .populate("by_user_id")
       .populate("category_id")
+      .populate("reserve_id")
       .sort({ _id: -1 })
       // .skip(page * limit)
       // .limit(limit)

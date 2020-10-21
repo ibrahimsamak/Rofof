@@ -6,7 +6,7 @@ const util = require("util");
 
 // Get Data Models
 const { Admin } = require("../models/Admin");
-const { encryptPassword } = require("../utils/utils");
+const { encryptPassword, decryptPassword, sendSMS } = require("../utils/utils");
 
 // Get all Admins
 exports.getAdmins = async (req, reply) => {
@@ -72,6 +72,14 @@ exports.addAdmin = async (req, reply) => {
     });
 
     let rs = await Admins.save();
+
+    let msg =
+      "تم انشاء حساب موظف على منصة رفوف \n البريد الالكتروني: " +
+      rs.email +
+      " كلمة المرور: " +
+      decryptPassword(rs.password);
+
+    sendSMS(rs.phone_number, "", "", msg);
     const response = {
       status_code: 200,
       status: true,
@@ -225,22 +233,33 @@ exports.logout = async (req, reply) => {
 exports.changePassword = async (req, reply) => {
   try {
     const User_id = req.body._id;
+    const old_password = encryptPassword(req.body.old_password);
     const pass = encryptPassword(req.body.pass);
 
     const Users = await Admin.findById(User_id);
     if (Users) {
-      const update = await Admin.findByIdAndUpdate(
-        User_id,
-        { password: pass },
-        { new: true }
-      );
-      const response = {
-        status_code: 200,
-        status: true,
-        message: "تم تعديل كلمة المرور بنجاح بنجاح",
-        items: update,
-      };
-      return response;
+      if (old_password == Users.password) {
+        const update = await Admin.findByIdAndUpdate(
+          User_id,
+          { password: pass },
+          { new: true }
+        );
+        const response = {
+          status_code: 200,
+          status: true,
+          message: "تم تعديل كلمة المرور بنجاح بنجاح",
+          items: update,
+        };
+        return response;
+      } else {
+        const response = {
+          status_code: 400,
+          status: false,
+          message: "كلمة المرور القديمة غير صحيحة",
+          items: {},
+        };
+        return response;
+      }
     } else {
       const response = {
         status_code: 404,
