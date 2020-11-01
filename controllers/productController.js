@@ -217,11 +217,15 @@ exports.getProductsRenters = async (req, reply) => {
     let search_value = req.body.search_value;
     let sort_field = req.body.sort_field;
     let sort_value = req.body.sort_value;
+    let reserve_id = req.body.reserve_id;
 
     console.log(req.body);
     let query1 = {};
     query1[search_field] = { $regex: new RegExp(search_value, "i") };
     query1["by_user_id"] = req.body.by_user_id;
+    if (reserve_id && reserve_id != "") {
+      query1["reserve_id"] = reserve_id;
+    }
     console.log(query1);
     const total = await Product.find(query1).count();
     await Product.find(query1)
@@ -257,10 +261,14 @@ exports.getProductsForRenter = async (req, reply) => {
     let sort_field = req.body.sort_field;
     let sort_value = req.body.sort_value;
     let by_user_id = req.body.by_user_id;
+    let reserve_id = req.body.reserve_id;
 
     let query1 = {};
     query1[search_field] = { $regex: new RegExp(search_value, "i") };
     query1["by_user_id"] = by_user_id;
+    if (reserve_id && reserve_id != "") {
+      query1["reserve_id"] = reserve_id;
+    }
     console.log(query1);
     const total = await Product.find(query1).count();
     await Product.find(query1)
