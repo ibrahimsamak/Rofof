@@ -1,25 +1,29 @@
-const jwt = require('jsonwebtoken');
-const config = require('config');
+const jwt = require("jsonwebtoken");
+const config = require("config");
 
 exports.getToken = (request, reply, done) => {
-  console.log('token'+request.headers['token'])
-  const token = request.headers['token']
+  console.log("token" + request.headers["token"]);
+  const token = request.headers["token"];
   if (!token) {
     const response = {
       status_code: 400,
       status: false,
-      message: 'Access denied. No token provided.'
-    }
-    reply.code(400)
-    done(new Error('Access denied. No token provided.'))
+      message: "Access denied. No token provided.",
+    };
+    reply.code(400);
+    done(response);
   }
   try {
-    const decoded = jwt.verify(token, config.get('jwtPrivateKey'));
+    const decoded = jwt.verify(token, config.get("jwtPrivateKey"));
     request.user = decoded;
     done();
+  } catch (ex) {
+    const response = {
+      status_code: 400,
+      status: false,
+      message: "Access denied. No token provided.",
+    };
+    reply.code(400);
+    done(response);
   }
-  catch (ex) {
-    reply.code(400)
-    done(new Error('Invalid token.'))
-  }
-}
+};

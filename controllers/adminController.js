@@ -44,12 +44,13 @@ exports.getAdmins = async (req, reply) => {
 exports.getSingleAdmin = async (req, reply) => {
   try {
     const Admins = await Admin.findById(req.params.id);
-
+    var adminObjet = Admins.toObject();
+    adminObjet.password = decryptPassword(Admins.password);
     const response = {
       status_code: 200,
       status: true,
       message: "تمت العملية بنجاح",
-      items: Admins,
+      items: adminObjet,
     };
     return response;
   } catch (err) {
@@ -101,11 +102,21 @@ exports.login = async (req, reply) => {
     });
 
     if (Admins) {
+      const _Admins = await Admin.findByIdAndUpdate(
+        Admins._id,
+        {
+          token: jwt.sign({ _id: req.params.id }, config.get("jwtPrivateKey"), {
+            expiresIn: "365d",
+          }),
+        },
+        { new: true }
+      );
+
       const response = {
         status_code: 200,
         status: true,
         message: "تمت العملية بنجاح",
-        items: Admins,
+        items: _Admins,
       };
       return response;
     } else {
@@ -178,6 +189,9 @@ exports.updateAdmin = async (req, reply) => {
         password: encryptPassword(req.body.password),
         phone_number: req.body.phone_number,
         roles: req.body.roles,
+        token: jwt.sign({ _id: req.params.id }, config.get("jwtPrivateKey"), {
+          expiresIn: "365d",
+        }),
       },
       { new: true }
     );

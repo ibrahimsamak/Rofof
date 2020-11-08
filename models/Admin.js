@@ -5,31 +5,31 @@ const Adminschema = mongoose.Schema(
   {
     full_name: {
       type: String,
-      required: true
+      required: true,
     },
     email: {
       type: String,
-      required: true
+      required: true,
     },
     password: {
       type: String,
-      required: true
+      required: true,
     },
     phone_number: {
       type: String,
-      required: false
+      required: false,
     },
     token: {
       type: String,
-      required: false
+      required: false,
     },
     fcmToken: {
       type: String,
-      required: false
+      required: false,
     },
     roles: {
-      type: [{ name: { type: String } }]
-    }
+      type: [{ name: { type: String }, sort: { type: Number } }],
+    },
   },
   { versionKey: false }
 );
