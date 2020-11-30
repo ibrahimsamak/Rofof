@@ -96,11 +96,12 @@ exports.addAdmin = async (req, reply) => {
 //login
 exports.login = async (req, reply) => {
   try {
+    console.log(encryptPassword(req.body.password));
     const pass = encryptPassword(req.body.password);
     const Admins = await Admin.findOne({
       $and: [{ email: req.body.email }, { password: pass }],
     });
-
+    console.log(Admins);
     if (Admins) {
       const _Admins = await Admin.findByIdAndUpdate(
         Admins._id,

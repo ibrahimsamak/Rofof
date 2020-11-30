@@ -13,9 +13,9 @@ var nodemailer = require("nodemailer");
 const { Notifications } = require("../models/Notifications");
 
 cloudinary.config({
-  cloud_name: "dclevhb0f",
-  api_key: "199179485788727",
-  api_secret: "rer8MIlm4zbw1ddW33_X02Phtl8",
+  cloud_name: "dsz57mpwt",
+  api_key: "798849627961531",
+  api_secret: "mluiA31CtWFTj5E5EMPRS5tvQXw",
 });
 
 var transporter = nodemailer.createTransport({
@@ -486,15 +486,18 @@ exports.updateprofileFromAdmin = async (req, reply) => {
         });
       }
       var data = new Buffer(files.image.data);
-      fs.writeFile("./uploads/" + files.image.name, data, "binary", function (
-        err
-      ) {
-        if (err) {
-          console.log("There was an error writing the image");
-        } else {
-          console.log("The sheel file was written");
+      fs.writeFile(
+        "./uploads/" + files.image.name,
+        data,
+        "binary",
+        function (err) {
+          if (err) {
+            console.log("There was an error writing the image");
+          } else {
+            console.log("The sheel file was written");
+          }
         }
-      });
+      );
 
       let img = "";
       await uploadImages(files.image.name).then((x) => {
@@ -663,23 +666,26 @@ exports.uploadUserPhoto = async (req, reply) => {
       });
     }
     var data = new Buffer(files.image.data);
-    fs.writeFile("./uploads/" + files.image.name, data, "binary", function (
-      err
-    ) {
-      if (err) {
-        console.log("There was an error writing the image");
-      } else {
-        console.log("The sheel file was written");
+    fs.writeFile(
+      "./uploads/" + files.image.name,
+      data,
+      "binary",
+      function (err) {
+        if (err) {
+          console.log("There was an error writing the image");
+        } else {
+          console.log("The sheel file was written");
+        }
       }
-    });
+    );
 
-    cloudinary.v2.uploader.upload("./uploads/" + files.image.name, function (
-      error,
-      result
-    ) {
-      console.log(result, error);
-      reply.send(result);
-    });
+    cloudinary.v2.uploader.upload(
+      "./uploads/" + files.image.name,
+      function (error, result) {
+        console.log(result, error);
+        reply.send(result);
+      }
+    );
   }
 };
 

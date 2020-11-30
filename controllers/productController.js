@@ -11,9 +11,9 @@ const util = require("util");
 const async = require("async");
 
 cloudinary.config({
-  cloud_name: "dclevhb0f",
-  api_key: "199179485788727",
-  api_secret: "rer8MIlm4zbw1ddW33_X02Phtl8",
+  cloud_name: "dsz57mpwt",
+  api_key: "798849627961531",
+  api_secret: "mluiA31CtWFTj5E5EMPRS5tvQXw",
 });
 
 // Get Data Models
@@ -349,13 +349,13 @@ exports.getCategoriesAdmin = async (req, reply) => {
 };
 
 exports.uploadPhoto = async (req, reply) => {
-  cloudinary.v2.uploader.upload("./public/" + req.files[0].filename, function (
-    error,
-    result
-  ) {
-    console.log(result, error);
-    reply.send(result);
-  });
+  cloudinary.v2.uploader.upload(
+    "./public/" + req.files[0].filename,
+    function (error, result) {
+      console.log(result, error);
+      reply.send(result);
+    }
+  );
 };
 
 exports.getSingleCategory = async (req, reply) => {
@@ -385,15 +385,18 @@ exports.addCategory = async (req, reply) => {
         });
       }
       var data = new Buffer(files.image.data);
-      fs.writeFile("./uploads/" + files.image.name, data, "binary", function (
-        err
-      ) {
-        if (err) {
-          console.log("There was an error writing the image");
-        } else {
-          console.log("The sheel file was written");
+      fs.writeFile(
+        "./uploads/" + files.image.name,
+        data,
+        "binary",
+        function (err) {
+          if (err) {
+            console.log("There was an error writing the image");
+          } else {
+            console.log("The sheel file was written");
+          }
         }
-      });
+      );
 
       let img = "";
       await uploadImages(files.image.name).then((x) => {
@@ -432,15 +435,18 @@ exports.updateCategory = async (req, reply) => {
         });
       }
       var data = new Buffer(files.image.data);
-      fs.writeFile("./uploads/" + files.image.name, data, "binary", function (
-        err
-      ) {
-        if (err) {
-          console.log("There was an error writing the image");
-        } else {
-          console.log("The sheel file was written");
+      fs.writeFile(
+        "./uploads/" + files.image.name,
+        data,
+        "binary",
+        function (err) {
+          if (err) {
+            console.log("There was an error writing the image");
+          } else {
+            console.log("The sheel file was written");
+          }
         }
-      });
+      );
 
       let img = "";
       await uploadImages(files.image.name).then((x) => {
@@ -540,15 +546,18 @@ exports.addSupplier = async (req, reply) => {
         });
       }
       var data = new Buffer(files.image.data);
-      fs.writeFile("./uploads/" + files.image.name, data, "binary", function (
-        err
-      ) {
-        if (err) {
-          console.log("There was an error writing the image");
-        } else {
-          console.log("The sheel file was written");
+      fs.writeFile(
+        "./uploads/" + files.image.name,
+        data,
+        "binary",
+        function (err) {
+          if (err) {
+            console.log("There was an error writing the image");
+          } else {
+            console.log("The sheel file was written");
+          }
         }
-      });
+      );
 
       let img = "";
       await uploadImages(files.image.name).then((x) => {
@@ -604,15 +613,18 @@ exports.updateSupplier = async (req, reply) => {
         });
       }
       var data = new Buffer(files.image.data);
-      fs.writeFile("./uploads/" + files.image.name, data, "binary", function (
-        err
-      ) {
-        if (err) {
-          console.log("There was an error writing the image");
-        } else {
-          console.log("The sheel file was written");
+      fs.writeFile(
+        "./uploads/" + files.image.name,
+        data,
+        "binary",
+        function (err) {
+          if (err) {
+            console.log("There was an error writing the image");
+          } else {
+            console.log("The sheel file was written");
+          }
         }
-      });
+      );
 
       let img = "";
       await uploadImages(files.image.name).then((x) => {
@@ -687,15 +699,18 @@ exports.addProduct = async (req, reply) => {
         async function updateObject(data, done) {
           console.log(data);
           var _data = new Buffer(data.data);
-          fs.writeFile("./uploads/" + data.name, _data, "binary", function (
-            err
-          ) {
-            if (err) {
-              console.log("There was an error writing the image");
-            } else {
-              console.log("The sheel file was written");
+          fs.writeFile(
+            "./uploads/" + data.name,
+            _data,
+            "binary",
+            function (err) {
+              if (err) {
+                console.log("There was an error writing the image");
+              } else {
+                console.log("The sheel file was written");
+              }
             }
-          });
+          );
           await uploadImages(data.name).then((x) => {
             img.push(x);
           });
@@ -749,15 +764,18 @@ exports.updateProduct = async (req, reply) => {
         async function updateObject(data, done) {
           console.log(data.data);
           var _data = new Buffer(data.data);
-          fs.writeFile("./uploads/" + data.name, _data, "binary", function (
-            err
-          ) {
-            if (err) {
-              console.log("There was an error writing the image");
-            } else {
-              console.log("The sheel file was written");
+          fs.writeFile(
+            "./uploads/" + data.name,
+            _data,
+            "binary",
+            function (err) {
+              if (err) {
+                console.log("There was an error writing the image");
+              } else {
+                console.log("The sheel file was written");
+              }
             }
-          });
+          );
           await uploadImages(data.name).then((x) => {
             img.push(x);
           });

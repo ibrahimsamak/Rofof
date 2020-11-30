@@ -12,7 +12,7 @@ const moment = require("moment");
 // Get Data Models
 const { rack, reserve } = require("../models/Rack");
 const { Product } = require("../models/Product");
-const { renters } = require("../models/Driver");
+const { renters } = require("../models/Renter");
 const { sendSMS } = require("../utils/utils");
 
 function makeid() {

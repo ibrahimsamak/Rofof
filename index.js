@@ -6,7 +6,7 @@ const cluster = require("cluster");
 let numCPUs = require("os").cpus().length;
 
 const fastify = require("fastify")({
-  logger: true
+  logger: true,
 });
 
 // Require external modules
@@ -28,8 +28,8 @@ fastify.register(require("fastify-cors"), {});
 
 // Connect to DB
 mongoose
-  .connect("mongodb+srv://dbuser:dbuser123@cluster0-khlix.mongodb.net/rofof", {
-    useNewUrlParser: true
+  .connect("mongodb+srv://dbuser:dbuser123@cluster0.uscuz.mongodb.net/rofof", {
+    useNewUrlParser: true,
   })
   .then(() => "connect to db")
   .catch(() => "err");

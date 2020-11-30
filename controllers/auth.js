@@ -2,15 +2,14 @@ const jwt = require("jsonwebtoken");
 const config = require("config");
 
 exports.getToken = (request, reply, done) => {
-  console.log("token" + request.headers["token"]);
   const token = request.headers["token"];
   if (!token) {
     const response = {
       status_code: 400,
       status: false,
-      message: "Access denied. No token provided.",
+      message:
+        "Access denied. No token provided. Please logout and login again",
     };
-    reply.code(400);
     done(response);
   }
   try {
@@ -21,9 +20,9 @@ exports.getToken = (request, reply, done) => {
     const response = {
       status_code: 400,
       status: false,
-      message: "Access denied. No token provided.",
+      message:
+        "Access denied. No token provided. Please logout and login again",
     };
-    reply.code(400);
     done(response);
   }
 };

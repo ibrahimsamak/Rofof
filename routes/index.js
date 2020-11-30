@@ -6,9 +6,8 @@ const auth = require("../controllers/auth");
 const productController = require("../controllers/productController");
 const orderController = require("../controllers/orderController");
 const reportController = require("../controllers/reportController");
-const companyController = require("../controllers/companyController");
 const adminController = require("../controllers/adminController");
-const driverController = require("../controllers/driverController");
+const renterController = require("../controllers/renterController");
 const pointController = require("../controllers/pointController");
 const advController = require("../controllers/advController");
 const couponController = require("../controllers/couponController");
@@ -667,13 +666,13 @@ const routes = [
     method: "POST",
     url: "/api/changeRenterPassword",
     beforeHandler: [auth.getToken],
-    handler: driverController.changePassword,
+    handler: renterController.changePassword,
   },
   {
     method: "POST",
     url: "/api/renterforgetPassword",
     beforeHandler: [auth.getToken],
-    handler: driverController.forgetPassword,
+    handler: renterController.forgetPassword,
   },
   {
     method: "POST",
@@ -749,12 +748,6 @@ const routes = [
   },
   {
     method: "POST",
-    url: "/api/addOrderDriver/:id",
-    beforeHandler: [auth.getToken],
-    handler: orderController.addOrderDriver,
-  },
-  {
-    method: "POST",
     url: "/api/deleteOrder/:id",
     beforeHandler: [auth.getToken],
     handler: orderController.deleteOrder,
@@ -781,18 +774,6 @@ const routes = [
     url: "/api/order",
     beforeHandler: [auth.getToken],
     handler: orderController.addOrder,
-  },
-  {
-    method: "POST",
-    url: "/api/updateOrderByDriver",
-    beforeHandler: [auth.getToken],
-    handler: orderController.updateOrderByDriver,
-  },
-  {
-    method: "POST",
-    url: "/api/updateOrderByUser",
-    beforeHandler: [auth.getToken],
-    handler: orderController.updateOrderByUser,
   },
   {
     method: "POST",
@@ -825,30 +806,8 @@ const routes = [
   },
   {
     method: "GET",
-    url: "/api/getDriverOrder",
-    handler: orderController.getDriverOrder,
-  },
-  {
-    method: "GET",
     url: "/api/getOrderDetails/:id",
     handler: orderController.getOrderDetails,
-  },
-  {
-    method: "POST",
-    url: "/api/checkAvailableDrivers",
-    beforeHandler: [auth.getToken],
-    handler: orderController.checkAvailableDrivers,
-  },
-  {
-    method: "POST",
-    url: "/api/checkAvailableSupplier",
-    beforeHandler: [auth.getToken],
-    handler: orderController.checkAvailableSupplier,
-  },
-  {
-    method: "GET",
-    url: "/api/getOrders/:id",
-    handler: orderController.getOrders,
   },
   {
     method: "GET",
@@ -856,11 +815,6 @@ const routes = [
     handler: orderController.getOrdersByUserId,
   },
 
-  {
-    method: "GET",
-    url: "/api/getTunckOrders",
-    handler: orderController.getTunckOrders,
-  },
   {
     method: "POST",
     url: "/api/getOrdersSeacrh",
@@ -908,7 +862,7 @@ const routes = [
   {
     method: "GET",
     url: "/api/getRenters",
-    handler: driverController.getRenters,
+    handler: renterController.getRenters,
   },
   {
     method: "GET",
@@ -930,101 +884,73 @@ const routes = [
     method: "POST",
     url: "/api/addRenter",
     beforeHandler: [auth.getToken],
-    handler: driverController.addrenters,
-  },
-  {
-    method: "POST",
-    url: "/api/updateStatus",
-    beforeHandler: [auth.getToken],
-    handler: driverController.updateStatus,
+    handler: renterController.addrenters,
   },
   {
     method: "POST",
     url: "/api/getrenters",
     beforeHandler: [auth.getToken],
-    handler: driverController.getrenters,
+    handler: renterController.getrenters,
   },
   {
     method: "POST",
     url: "/api/getRentersExcel",
     beforeHandler: [auth.getToken],
-    handler: driverController.getRentersExcel,
+    handler: renterController.getRentersExcel,
   },
   {
     method: "GET",
     url: "/api/getRenterDetails/:id",
-    handler: driverController.getSinglerenters,
+    handler: renterController.getSinglerenters,
   },
   {
     method: "POST",
     url: "/api/blockRender",
     beforeHandler: [auth.getToken],
-    handler: driverController.block,
+    handler: renterController.block,
   },
   {
     method: "POST",
     url: "/api/send_sms",
     beforeHandler: [auth.getToken],
-    handler: driverController.sendSMSRender,
+    handler: renterController.sendSMSRender,
   },
   {
     method: "POST",
     url: "/api/send_email",
     beforeHandler: [auth.getToken],
-    handler: driverController.sendEmailRender,
+    handler: renterController.sendEmailRender,
   },
   {
     method: "POST",
     url: "/api/ApproveCode",
     beforeHandler: [auth.getToken],
-    handler: driverController.ApproveCode,
+    handler: renterController.ApproveCode,
   },
   {
     method: "POST",
     url: "/api/CheckApproveCode",
     beforeHandler: [auth.getToken],
-    handler: driverController.CheckApproveCode,
+    handler: renterController.CheckApproveCode,
   },
-
   {
     method: "GET",
-    url: "/api/DriverList/:id",
-    handler: driverController.Driverlist,
+    url: "/api/renterList/:id",
+    handler: renterController.RenterList,
   },
   {
     method: "POST",
     url: "/api/loginRenter",
-    handler: driverController.login,
+    handler: renterController.login,
   },
-  {
-    method: "POST",
-    url: "/api/logoutDriver",
-    beforeHandler: [auth.getToken],
-    handler: driverController.logout,
-  },
-  {
-    method: "POST",
-    url: "/api/refreshtokenDriver",
-    beforeHandler: [auth.getToken],
-    handler: driverController.refreshTokenDriver,
-  },
-  {
-    method: "GET",
-    url: "/api/DriverProfile/:id",
-    handler: driverController.userprofile,
-  },
+
   {
     method: "POST",
     url: "/api/updateprofileFromAdmin/:id",
     beforeHandler: [auth.getToken],
-    handler: driverController.updateprofileFromAdmin,
+    handler: renterController.updateprofileFromAdmin,
   },
-  {
-    method: "POST",
-    url: "/api/uploadDriverPhoto",
-    beforeHandler: [auth.getToken],
-    handler: driverController.uploadRenterPhoto,
-  },
+
   {
     method: "POST",
     url: "/api/addPoint",
@@ -1063,11 +989,6 @@ const routes = [
     url: "/api/updateUserPoint/:id",
     beforeHandler: [auth.getToken],
     handler: pointController.updateUserPoint,
-  },
-  {
-    method: "GET",
-    url: "/api/getDailyRevenu/:id",
-    handler: reportController.getDailyRevenu,
   },
   {
     method: "GET",
@@ -1167,43 +1088,6 @@ const routes = [
     url: "/api/revenuPerYearRenter/:id",
     handler: reportController.revenuPerYearRenter,
   },
-
-  {
-    method: "GET",
-    url: "/api/SupplierPerYear/:id",
-    handler: reportController.SupplierPerYear,
-  },
-
-  {
-    method: "POST",
-    url: "/api/addCompanyCommission",
-    beforeHandler: [auth.getToken],
-    handler: reportController.addCompanyCommission,
-  },
-  {
-    method: "GET",
-    url: "/api/rpt_getCompanyCommission",
-    handler: reportController.rpt_getCompanyCommission,
-  },
-  {
-    method: "POST",
-    url: "/api/rpt_getOrderswithstatus",
-    beforeHandler: [auth.getToken],
-    handler: reportController.rpt_getOrderswithstatus,
-  },
-  {
-    method: "POST",
-    url: "/api/rpt_getRevenu",
-    beforeHandler: [auth.getToken],
-    handler: reportController.rpt_getRevenu,
-  },
-  {
-    method: "POST",
-    url: "/api/rpt_getOrderMaps",
-    beforeHandler: [auth.getToken],
-    handler: reportController.rpt_getOrderMaps,
-  },
-
   {
     method: "GET",
     url: "/api/getAllSettings",
@@ -1215,11 +1099,6 @@ const routes = [
     handler: constantController.getdelivery_time,
   },
 
-  {
-    method: "GET",
-    url: "/api/company/DriverProfile/:id",
-    handler: driverController.userprofile,
-  },
   {
     method: "POST",
     url: "/api/company/upload_file",
@@ -1328,11 +1207,6 @@ const routes = [
   },
   {
     method: "GET",
-    url: "/api/company/getDailyRevenu/:id",
-    handler: companyController.getDailyRevenu,
-  },
-  {
-    method: "GET",
     url: "/api/company/importantCounters/:id",
     handler: reportController.importantCounters,
   },
@@ -1341,12 +1215,6 @@ const routes = [
     url: "/api/company/updateOrderByAdmin/:id",
     beforeHandler: [auth.getToken],
     handler: orderController.updateOrderByAdmin,
-  },
-  {
-    method: "POST",
-    url: "/api/company/addOrderDriver/:id",
-    beforeHandler: [auth.getToken],
-    handler: orderController.addOrderDriver,
   },
 ];
 

@@ -1,6 +1,6 @@
 const Joi = require("joi");
 const mongoose = require("mongoose");
-const { getCurrentDateTime } = require("../models/Constant");
+const { getCurrentDateTime } = require("./Constant");
 
 const renterschema = mongoose.Schema(
   {

@@ -12,9 +12,9 @@ const multer = require("multer");
 const moment = require("moment");
 
 cloudinary.config({
-  cloud_name: "dclevhb0f",
-  api_key: "199179485788727",
-  api_secret: "rer8MIlm4zbw1ddW33_X02Phtl8",
+  cloud_name: "dsz57mpwt",
+  api_key: "798849627961531",
+  api_secret: "mluiA31CtWFTj5E5EMPRS5tvQXw",
 });
 
 const options = {
@@ -27,7 +27,7 @@ const options = {
 const geocoder = NodeGeocoder(options);
 
 // Get Data Models
-const { renters } = require("../models/Driver");
+const { renters } = require("../models/Renter");
 const { getCurrentDateTime } = require("../models/Constant");
 const {
   encryptPassword,
@@ -475,15 +475,18 @@ exports.updateprofileFromAdmin = async (req, reply) => {
         });
       }
       var data = new Buffer(files.image.data);
-      fs.writeFile("./uploads/" + files.image.name, data, "binary", function (
-        err
-      ) {
-        if (err) {
-          console.log("There was an error writing the image");
-        } else {
-          console.log("The sheel file was written");
+      fs.writeFile(
+        "./uploads/" + files.image.name,
+        data,
+        "binary",
+        function (err) {
+          if (err) {
+            console.log("There was an error writing the image");
+          } else {
+            console.log("The sheel file was written");
+          }
         }
-      });
+      );
 
       let img = "";
       await uploadImages(files.image.name).then((x) => {
@@ -582,99 +585,6 @@ exports.changePassword = async (req, reply) => {
   }
 };
 
-exports.updateStatus = async (req, reply) => {
-  try {
-    const Driver_id = req.user._id;
-    const user = await renters.findByIdAndUpdate(
-      Driver_id,
-      {
-        driver_status: req.body.driver_status,
-      },
-      { new: true }
-    );
-    if (user) {
-      const response = {
-        status_code: 200,
-        status: true,
-        message: "تمت العملية بنجاح",
-        items: user,
-      };
-      return response;
-    }
-  } catch (err) {
-    throw boom.boomify(err);
-  }
-};
-
-//logout
-exports.logout = async (req, reply) => {
-  try {
-    const Driver_id = req.user._id;
-    const user = await renters.findByIdAndUpdate(
-      Driver_id,
-      {
-        fcmToken: "",
-        token: "",
-      },
-      { new: true }
-    );
-
-    if (!user) {
-      const response = {
-        status_code: 404,
-        status: false,
-        message: "حدث خطأ الرجاء المحاولة مرة اخرى",
-        items: [],
-      };
-      reply.send(response);
-    } else {
-      const response = {
-        status_code: 200,
-        status: true,
-        message: "تم تسجيل الخروج بنجاح",
-        items: user,
-      };
-      reply.send(response);
-    }
-  } catch (err) {
-    throw boom.boomify(err);
-  }
-};
-
-//refresh token
-exports.refreshTokenDriver = async (req, reply) => {
-  try {
-    const Driver_id = req.user._id;
-    const _user = await renters.findByIdAndUpdate(
-      Driver_id,
-      {
-        fcmToken: req.body.fcmToken,
-      },
-      { new: true }
-    );
-
-    if (!_user) {
-      const response = {
-        status_code: 404,
-        status: false,
-        message: "حدث خطأ الرجاء المحاولة مرة اخرى",
-        items: [],
-      };
-      reply.send(response);
-    } else {
-      const response = {
-        status_code: 200,
-        status: true,
-        message: "",
-        items: _user,
-      };
-      reply.send(response);
-    }
-  } catch (err) {
-    throw boom.boomify(err);
-  }
-};
-
 // cPanel
 exports.rentersearch = async (req, reply) => {
   try {
@@ -700,7 +610,7 @@ exports.rentersearch = async (req, reply) => {
   }
 };
 
-exports.Driverlist = async (req, reply) => {
+exports.RenterList = async (req, reply) => {
   try {
     const _Users = await renters
       .find()
@@ -886,23 +796,26 @@ exports.uploadRenterPhoto = async (req, reply) => {
       });
     }
     var data = new Buffer(files.image.data);
-    fs.writeFile("./uploads/" + files.image.name, data, "binary", function (
-      err
-    ) {
-      if (err) {
-        console.log("There was an error writing the image");
-      } else {
-        console.log("The sheel file was written");
+    fs.writeFile(
+      "./uploads/" + files.image.name,
+      data,
+      "binary",
+      function (err) {
+        if (err) {
+          console.log("There was an error writing the image");
+        } else {
+          console.log("The sheel file was written");
+        }
       }
-    });
+    );
 
-    cloudinary.v2.uploader.upload("./uploads/" + files.image.name, function (
-      error,
-      result
-    ) {
-      console.log(result, error);
-      reply.send(result);
-    });
+    cloudinary.v2.uploader.upload(
+      "./uploads/" + files.image.name,
+      function (error, result) {
+        console.log(result, error);
+        reply.send(result);
+      }
+    );
   }
 };
 
