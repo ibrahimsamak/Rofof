@@ -716,8 +716,8 @@ exports.CheckApproveCode = async (req, reply) => {
         { new: true }
       );
 
-      let url = "https://rofof-client-7f0e7.firebaseapp.com";
-      let username = _user.email;
+      let url = "https://rent.rufuf.sa";
+      let username = _user.phone_number;
       let password = decryptPassword(_user.password);
       var msg = `تم تفعيل حسابكم بنجاح رابط الدخول هو: ${url} \n اسم المستخدم: ${username} \n كلمة المرور: ${password} \n نتمنى لكم تجارة مربحة معنا`;
       sendSMS(_user.phone_number, "", "", msg);

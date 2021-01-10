@@ -749,6 +749,34 @@ exports.addProduct = async (req, reply) => {
         items: "",
       };
       return response;
+    } else {
+      let products = new Product({
+        name: req.raw.body.name,
+        description: req.raw.body.description,
+        images: [],
+        image:
+          "https://res.cloudinary.com/diszvlmqq/image/upload/v1602175350/logo.png",
+        qty: req.raw.body.qty,
+        price: req.raw.body.price,
+        by_user_id: req.raw.body.by_user_id,
+        // by_admin_id: req.raw.body.by_admin_id,
+        barcode: req.raw.body.barcode,
+        category_id: req.raw.body.category_id,
+        discountPrice: req.raw.body.discountPrice,
+        createat: getCurrentDateTime(),
+        status: false,
+        rate: 0,
+        rack_id: req.raw.body.rack_id,
+        reserve_id: req.raw.body.reserve_id,
+      });
+      await products.save();
+      const response = {
+        status_code: 200,
+        status: true,
+        message: "تمت العملية بنجاح",
+        items: "",
+      };
+      return response;
     }
   } catch (err) {
     throw boom.boomify(err);

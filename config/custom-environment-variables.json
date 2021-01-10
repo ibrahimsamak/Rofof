@@ -1,4 +1,3 @@
 {
-  "jwtPrivateKey": "rofof_jwtPrivateKey",
-  "db": "db_liken"
+  "jwtPrivateKey": "rofof_jwtPrivateKey"
 }
