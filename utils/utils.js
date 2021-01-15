@@ -1,3 +1,24 @@
+/**
+ * @module utils/utils
+ * @description
+ * Shared, framework-agnostic helper functions used across the Rufuf API.
+ * These utilities cover password cryptography, outbound messaging (SMS/email),
+ * media uploads, random code generation, Mongoose error normalization and
+ * financial/contract bookkeeping helpers.
+ *
+ * Exposed helpers:
+ * - {@link module:utils/utils.encryptPassword}  Symmetrically encrypt a plaintext password (AES-128-CBC).
+ * - {@link module:utils/utils.decryptPassword}  Reverse {@link encryptPassword} back to plaintext.
+ * - {@link module:utils/utils.sendSMS}          Send a transactional SMS through the Msegat gateway.
+ * - {@link module:utils/utils.mail_general}     Render the general EJS email template and deliver it via SMTP.
+ * - {@link module:utils/utils.uploadImages}     Upload a local image to Cloudinary and resolve its hosted URL.
+ * - {@link module:utils/utils.makeid}           Generate a random 3-digit numeric id.
+ * - {@link module:utils/utils.makeCode}         Generate a random 4-digit verification code.
+ * - {@link module:utils/utils.handleError}      Flatten a Mongoose validation error into a list of messages.
+ * - {@link module:utils/utils.addTransaction}   Persist a payment transaction record for a provider/order.
+ * - {@link module:utils/utils.Padder}           Build the next zero-padded, year-prefixed contract number.
+ */
+
 var crypto = require("crypto");
 var request = require("request");
 var nodemailer = require("nodemailer");
