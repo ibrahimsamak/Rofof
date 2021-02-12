@@ -1,3 +1,16 @@
+/**
+ * @module controllers/auth
+ * @description
+ * Authentication middleware for protected routes. Exposes a Fastify pre-handler
+ * that extracts the bearer token from the `token` request header, verifies it
+ * against `jwtPrivateKey`, and attaches the decoded payload to `request.user`.
+ * On a missing or invalid token it short-circuits the request with a 400
+ * response instructing the client to re-authenticate.
+ *
+ * Exposed handlers:
+ * - {@link module:controllers/auth.getToken}  Verify the request JWT and populate `request.user`.
+ */
+
 const jwt = require("jsonwebtoken");
 const config = require("config");
 require("dotenv").config();
