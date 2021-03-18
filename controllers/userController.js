@@ -1,3 +1,22 @@
+/**
+ * @module controllers/userController
+ * @description
+ * Handles the end-user (customer) account lifecycle for the Rufuf platform:
+ * registration, login and JWT session management, phone/OTP verification,
+ * password reset and change, profile updates, avatar uploads, blocking, and
+ * administrative user listing, search and reporting lookups.
+ *
+ * Exposed handlers:
+ * - getUsers / getSingleUsers / getAllUsers / userslist   List and fetch user records.
+ * - addUsers                                              Register a new customer account.
+ * - login / logout / refreshToken                         Authenticate and manage JWT sessions.
+ * - verfiy                                                Confirm an account via OTP code.
+ * - forgetPassword / changePassword                       Reset or update the account password.
+ * - updateprofileFromAdmin / updateUserAndroid            Update a profile (admin / mobile flows).
+ * - uploadUserPhoto                                       Upload and attach a profile photo.
+ * - userSearch / getUserByCity / userlistInfo / userprofile / block  Search, filter and moderate users.
+ */
+
 // External Dependancies
 const boom = require("boom");
 const jwt = require("jsonwebtoken");
