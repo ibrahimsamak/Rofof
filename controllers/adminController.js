@@ -1,3 +1,18 @@
+/**
+ * @module controllers/adminController
+ * @description
+ * Manages back-office administrator accounts and their authentication. Covers
+ * admin CRUD, credentialed login with JWT issuance, token refresh, logout and
+ * password changes for the Rufuf administration dashboard.
+ *
+ * Exposed handlers:
+ * - getAdmins / getSingleAdmin        List administrators or fetch one by id.
+ * - addAdmin / updateAdmin / deleteAdmin  Create, edit and remove admin accounts.
+ * - login / logout                    Authenticate an admin and end the session.
+ * - refreshToken                      Issue a fresh JWT from a valid session.
+ * - changePassword                    Update the authenticated admin's password.
+ */
+
 // External Dependancies
 const boom = require("boom");
 const jwt = require("jsonwebtoken");
