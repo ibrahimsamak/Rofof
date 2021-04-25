@@ -10,6 +10,7 @@ const pump = require("pump");
 const cloudinary = require("cloudinary");
 const multer = require("multer");
 const moment = require("moment");
+require("dotenv").config();
 
 cloudinary.config({
   cloud_name: "dsz57mpwt",
@@ -107,7 +108,12 @@ exports.getrenters = async (req, reply) => {
     var limit = parseFloat(req.query.limit, 10);
     let search_field = req.body.search_field;
     let search_value = req.body.search_value;
+    let sort_value = req.body.sort_value;
+    let sort_field = req.body.sort_field;
 
+    let sort = {};
+    sort[sort_field] = Number(sort_value);
+    console.log(sort);
     let query1 = {};
     var contracts = [];
     var _renters = [];
@@ -119,7 +125,7 @@ exports.getrenters = async (req, reply) => {
       const total = await renters.find({ _id: { $in: _renters } }).count();
       await renters
         .find({ _id: { $in: _renters } })
-        .sort({ createAt: -1 })
+        .sort({ [sort_field]: sort_value })
         .skip(page * limit)
         .limit(limit)
         .exec(async function (err, item) {
@@ -145,6 +151,15 @@ exports.getrenters = async (req, reply) => {
 
             newArray.push(newObject);
           }
+          if (sort_field == "contract_no") {
+            newArray.sort((a, b) => {
+              var nameA = a.contract_no;
+              var nameB = b.contract_no;
+              if (Number(sort_value) == 1) return nameA > nameB;
+              if (Number(sort_value) == -1) return nameA < nameB;
+            });
+          }
+
           const response = {
             status_code: 200,
             status: true,
@@ -165,7 +180,7 @@ exports.getrenters = async (req, reply) => {
 
       await renters
         .find(query1)
-        .sort({ createAt: -1 })
+        .sort({ [sort_field]: sort_value })
         .skip(page * limit)
         .limit(limit)
         .exec(async function (err, item) {
@@ -190,6 +205,16 @@ exports.getrenters = async (req, reply) => {
             }
             newArray.push(newObject);
           }
+
+          if (sort_field == "contract_no") {
+            newArray.sort((a, b) => {
+              var nameA = a.contract_no;
+              var nameB = b.contract_no;
+              if (Number(sort_value) == 1) return nameA > nameB;
+              if (Number(sort_value) == -1) return nameA < nameB;
+            });
+          }
+
           const response = {
             status_code: 200,
             status: true,
@@ -212,10 +237,13 @@ exports.getrenters = async (req, reply) => {
 
 exports.getRentersExcel = async (req, reply) => {
   try {
-    console.log(req.body);
     let search_field = req.body.search_field;
     let search_value = req.body.search_value;
+    let sort_value = req.body.sort_value;
+    let sort_field = req.body.sort_field;
 
+    let sort = {};
+    sort[sort_field] = Number(sort_value);
     let query1 = {};
     var contracts = [];
     var _renters = [];
@@ -226,7 +254,7 @@ exports.getRentersExcel = async (req, reply) => {
       });
       await renters
         .find({ _id: { $in: _renters } })
-        .sort({ createAt: -1 })
+        .sort({ [sort_field]: sort_value })
         .exec(async function (err, item) {
           var newArray = [];
           for await (const newItem of item) {
@@ -250,6 +278,14 @@ exports.getRentersExcel = async (req, reply) => {
 
             newArray.push(newObject);
           }
+          if (sort_field == "contract_no") {
+            newArray.sort((a, b) => {
+              var nameA = a.contract_no;
+              var nameB = b.contract_no;
+              if (Number(sort_value) == 1) return nameA > nameB;
+              if (Number(sort_value) == -1) return nameA < nameB;
+            });
+          }
           const response = {
             status_code: 200,
             status: true,
@@ -262,7 +298,7 @@ exports.getRentersExcel = async (req, reply) => {
       query1[search_field] = { $regex: new RegExp(search_value, "i") };
       await renters
         .find(query1)
-        .sort({ createAt: -1 })
+        .sort({ [sort_field]: sort_value })
         .exec(async function (err, item) {
           var newArray = [];
           for await (const newItem of item) {
@@ -284,6 +320,14 @@ exports.getRentersExcel = async (req, reply) => {
               newObject.end_date = "";
             }
             newArray.push(newObject);
+          }
+          if (sort_field == "contract_no") {
+            newArray.sort((a, b) => {
+              var nameA = a.contract_no;
+              var nameB = b.contract_no;
+              if (Number(sort_value) == 1) return nameA > nameB;
+              if (Number(sort_value) == -1) return nameA < nameB;
+            });
           }
           const response = {
             status_code: 200,
@@ -349,7 +393,7 @@ exports.addrenters = async (req, reply) => {
         const response = {
           status_code: 400,
           status: false,
-          message: "البريد الالكتروني او رقم الجوال موجود لدينا مسبقا",
+          message: "رقم الجوال موجود لدينا مسبقا",
           items: [],
         };
         return response;
@@ -405,7 +449,7 @@ exports.login = async (req, reply) => {
         user._id,
         {
           fcmToken: req.body.fcmToken,
-          token: jwt.sign({ _id: user.id }, config.get("jwtPrivateKey"), {
+          token: jwt.sign({ _id: user.id }, process.env.jwtPrivateKey, {
             expiresIn: "365d",
           }),
         },
@@ -667,6 +711,7 @@ exports.block = async (req, reply) => {
 exports.ApproveCode = async (req, reply) => {
   try {
     var code = makeCode();
+    var url = "https://rufuf.sa/خدمة-استئجار-الرفوف/page-517561797";
     const user = await renters.findByIdAndUpdate(
       req.body.id,
       {
@@ -683,7 +728,11 @@ exports.ApproveCode = async (req, reply) => {
     if (_reserve.length > 0) {
       contract_no = _reserve[0].contract_no;
     }
-    var msg = `تم إنشاء/تجديد عقد رقم ${contract_no} نرجو مشاركة رقم الكود ${code} مع موظف المتجر لتأكيد الموافقة على العقد.`;
+    // var msg = `تم إنشاء/تجديد عقد رقم ${contract_no} نرجو مشاركة رقم الكود ${code} مع موظف المتجر لتأكيد الموافقة على العقد.`;
+
+    var msg = `تم إنشاء/ تجديد عقدكم رقم ${contract_no} ، نرجو قراءة الشروط و الأحكام، بالضغط على الرابط ${url}
+    ملاحظة: بعد مرور إسبوعين من الإبلاغ عن موعد انتهاء العقد تسقط ملكية العميل لمقتنياته في حال عدم استلامها. 
+    للموافقة نرجو مشاركة رقم الكود ${code}  مع موظف المتجر`;
 
     sendSMS(user.phone_number, "", "", msg);
     var data = {

@@ -95,9 +95,13 @@ exports.getrack = async (req, reply) => {
     var page = parseFloat(req.query.page, 10);
     var limit = parseFloat(req.query.limit, 10);
 
-    const total = await rack.find().count();
+    var query = {};
+    if (req.query.name && req.query.name != "") {
+      query["rack_no"] = { $regex: new RegExp(req.query.name, "i") };
+    }
+    const total = await rack.find(query).count();
     await rack
-      .find()
+      .find(query)
       .populate("inventory_id")
       .sort({ _id: -1 })
       .skip(page * limit)
@@ -143,6 +147,18 @@ exports.getSinglerack = async (req, reply) => {
 // Add a new rack
 exports.addrack = async (req, reply) => {
   try {
+    const prev_rack = await rack.findOne({
+      rack_no: req.body.rack_no,
+    });
+    if (prev_rack) {
+      const response = {
+        status_code: 200,
+        status: false,
+        message: "عذرا الرقم المرجعي موجود مسبقا",
+        items: {},
+      };
+      return response;
+    }
     let _rack = new rack({
       length: req.body.length,
       width: req.body.width,
@@ -184,6 +200,19 @@ exports.deleterack = async (req, reply) => {
 // Update an existing rack
 exports.updaterack = async (req, reply) => {
   try {
+    const prev_rack = await rack.findOne({
+      $and: [{ rack_no: req.body.rack_no }, { _id: { $ne: req.params.id } }],
+    });
+    if (prev_rack) {
+      const response = {
+        status_code: 200,
+        status: false,
+        message: "عذرا الرقم المرجعي موجود مسبقا",
+        items: {},
+      };
+      return response;
+    }
+
     const _rack = await rack.findByIdAndUpdate(
       req.params.id,
       {
@@ -394,10 +423,21 @@ exports.updateReserveRack = async (req, reply) => {
 // delete reserve rack
 exports.deleteReserveRack = async (req, reply) => {
   const _reserve = await reserve.findByIdAndRemove(req.params.id);
-  await rack.findByIdAndUpdate(
-    _reserve.rack_id,
+  rack.updateMany(
+    { _id: { $in: _reserve.rack_id } },
     { isReserved: false },
-    { new: true }
+    function (err, res) {}
+  );
+
+  Product.updateMany(
+    {
+      $and: [
+        { rack_id: { $in: _reserve.rack_id } },
+        { by_user_id: _reserve.renter_id },
+      ],
+    },
+    { status: false },
+    function (err, res) {}
   );
   const response = {
     status_code: 200,
@@ -477,34 +517,23 @@ exports.getRackListNotReservedAndMyRacks = async (req, reply) => {
 
 exports.getRackReserveSeacrh = async (req, reply) => {
   try {
-    // const admin_id = req.params.id;
-
     var page = parseFloat(req.query.page, 10);
     var limit = parseFloat(req.query.limit, 10);
-    // const total = await Order.find().count();
     var start_date = req.body.start_date;
     var end_date = req.body.end_date;
     var query = {};
-    // if (end_date != "" && end_date != undefined) {
-    //   end_date = new Date(end_date);
-    //   end_date = end_date.setHours(23, 59, 59, 999);
-    //   end_date = new Date(end_date);
-    // }
-    // if (start_date != "" && start_date != undefined) {
-    //   start_date = new Date(start_date);
-    //   start_date = start_date.setHours(0, 0, 0, 0);
-    //   start_date = new Date(start_date);
-    // }
+
+    let sort_value = req.body.sort_value;
+    let sort_field = req.body.sort_field;
+
+    let sort = {};
+    sort[sort_field] = Number(sort_value);
+
     if (start_date != "" && end_date != "") {
       query = {
-        // createAt: {
-        //   $gte: new Date(new Date(start_date).setHours(00, 00, 00)),
-        //   $lt: new Date(new Date(end_date).setHours(23, 59, 59)),
-        // },
-
         $and: [
           {
-            end_date: {
+            start_date: {
               $lt: new Date(new Date(end_date).setHours(23, 59, 59)),
             },
           },
@@ -517,36 +546,27 @@ exports.getRackReserveSeacrh = async (req, reply) => {
       };
     }
 
+    var total = await reserve.find(query).count();
     await reserve
       .find(query)
-      .sort({ start_date: -1 })
+      .sort(sort)
       .populate("renter_id")
       .populate({
         path: "rack_id",
       })
       .populate("contract_id")
-      // .skip((page - 1) * limit)
-      // .limit(limit)
+      .skip(page * limit)
+      .limit(limit)
       .exec(function (err, item) {
-        console.log(item);
-        var result = _.filter(item, function (itm) {
-          // return (
-          //   itm.renter_id.name.indexOf(req.body.name) >= 0 ||
-          //   itm.renter_id.phone_number.indexOf(req.body.phone_number) >= 0
-          // );
-        });
-        var result1 = lodash(item)
-          .slice(page * limit)
-          .take(limit)
-          .value();
         const response = {
-          items: result1,
+          items: item,
           status_code: 200,
+          status: true,
           message: "returned successfully",
           pagenation: {
-            size: result1.length,
-            totalElements: result.length,
-            totalPages: Math.floor(result.length / limit),
+            size: item.length,
+            totalElements: total,
+            totalPages: Math.floor(total / limit),
             pageNumber: page,
           },
         };
@@ -559,14 +579,21 @@ exports.getRackReserveSeacrh = async (req, reply) => {
 
 exports.getRackReserveSeacrhExcel = async (req, reply) => {
   try {
+    var query = {};
     var start_date = req.body.start_date;
     var end_date = req.body.end_date;
-    var query = {};
+
+    let sort_value = req.body.sort_value;
+    let sort_field = req.body.sort_field;
+
+    let sort = {};
+    sort[sort_field] = Number(sort_value);
+
     if (start_date != "" && end_date != "") {
       query = {
         $and: [
           {
-            end_date: {
+            start_date: {
               $lt: new Date(new Date(end_date).setHours(23, 59, 59)),
             },
           },
@@ -581,21 +608,16 @@ exports.getRackReserveSeacrhExcel = async (req, reply) => {
 
     await reserve
       .find(query)
-      .sort({ start_date: -1 })
+      .sort(sort)
       .populate("renter_id")
       .populate({
         path: "rack_id",
       })
       .populate("contract_id")
       .exec(function (err, item) {
-        console.log(item);
-        var result = _.filter(item, function (itm) {});
-        var result1 = lodash(item)
-          .slice(page * limit)
-          .take(limit)
-          .value();
         const response = {
-          items: result1,
+          status: true,
+          items: item,
           status_code: 200,
           message: "returned successfully",
         };

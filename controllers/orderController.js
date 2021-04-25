@@ -740,38 +740,21 @@ exports.getOrdersByUserId = async (req, reply) => {
 
 exports.getOrdersSeacrh = async (req, reply) => {
   try {
-    // const admin_id = req.params.id;
-
     var page = parseFloat(req.query.page, 10);
     var limit = parseFloat(req.query.limit, 10);
-    // const total = await Order.find().count();
     var start_date = req.body.start_date;
     var end_date = req.body.end_date;
     var query = {};
-    // if (end_date != "" && end_date != undefined) {
-    //   end_date = new Date(end_date);
-    //   end_date = end_date.setHours(23, 59, 59, 999);
-    //   end_date = new Date(end_date);
-    //   query = { createAt: { $lt: end_date } };
-    // }
-    // if (start_date != "" && start_date != undefined) {
-    //   start_date = new Date(start_date);
-    //   start_date = start_date.setHours(0, 0, 0, 0);
-    //   start_date = new Date(start_date);
-    //   query = {
-    //     createAt: { $gte: start_date },
-    //   };
-    // }
+
     if (start_date != "" && end_date != "") {
       query = {
         createAt: {
           $gte: new Date(new Date(start_date).setHours(00, 00, 00)),
           $lt: new Date(new Date(end_date).setHours(23, 59, 59)),
         },
-
-        // createAt: { $gte: start_date, $lt: end_date },
       };
     }
+
     if (req.body.renter_id != "" && req.body.renter_id) {
       query = { provider_id: req.body.renter_id };
     }
@@ -822,6 +805,7 @@ exports.getOrdersSeacrh = async (req, reply) => {
         const response = {
           items: item,
           status_code: 200,
+          status: true,
           message: "returned successfully",
           Total: Total,
           Total_Discount: Total_Discount,
@@ -883,6 +867,7 @@ exports.getOrdersSeacrhExcel = async (req, reply) => {
         const response = {
           items: item,
           status_code: 200,
+          status: true,
           message: "returned successfully",
           Total: Total,
           Total_Discount: Total_Discount,
@@ -1380,10 +1365,10 @@ exports.getPaymentLogDetailsByRenterId = async (req, reply) => {
 
 exports.getPaymnetLog = async (req, reply) => {
   try {
+    var query = {};
     var page = parseFloat(req.query.page, 10);
     var limit = parseFloat(req.query.limit, 10);
 
-    var query = {};
     if (req.query.provider_id != "" && req.query.provider_id) {
       query["by_user_id"] = req.query.provider_id;
     }
@@ -1405,7 +1390,7 @@ exports.getPaymnetLog = async (req, reply) => {
     });
     const total = await PaymnetLog.find(query).count();
     const _PaymnetLog = await PaymnetLog.find(query)
-      .sort({ PeriodMonth: 1 })
+      .sort({ _id: -1 })
       .populate("by_user_id")
       .skip(page * limit)
       .limit(limit);

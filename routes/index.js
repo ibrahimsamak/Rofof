@@ -24,11 +24,6 @@ const fastify = require("fastify")({
 const routes = [
   {
     method: "GET",
-    url: "/api/testdate",
-    handler: userController.testdate,
-  },
-  {
-    method: "GET",
     url: "/api/getPaymnetLog",
     handler: orderController.getPaymnetLog,
   },

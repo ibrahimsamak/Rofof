@@ -4,9 +4,10 @@ const jwt = require("jsonwebtoken");
 const config = require("config");
 const cluster = require("cluster");
 let numCPUs = require("os").cpus().length;
+require("dotenv").config();
 
 const fastify = require("fastify")({
-  logger: true,
+  logger: { level: "error" },
 });
 
 // Require external modules
@@ -28,7 +29,7 @@ fastify.register(require("fastify-cors"), {});
 
 // Connect to DB
 mongoose
-  .connect("mongodb+srv://dbuser:dbuser123@cluster0.uscuz.mongodb.net/rofof", {
+  .connect(process.env.DB_HOST, {
     useNewUrlParser: true,
   })
   .then(() => "connect to db")

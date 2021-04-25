@@ -11,6 +11,7 @@ const multer = require("multer");
 var moment = require("moment-timezone");
 var nodemailer = require("nodemailer");
 const { Notifications } = require("../models/Notifications");
+require("dotenv").config();
 
 cloudinary.config({
   cloud_name: "dsz57mpwt",
@@ -222,7 +223,7 @@ exports.login = async (req, reply) => {
         _Users.id,
         {
           fcmToken: req.body.fcmToken,
-          token: jwt.sign({ _id: _Users._id }, config.get("jwtPrivateKey"), {
+          token: jwt.sign({ _id: _Users._id }, process.env.jwtPrivateKey, {
             expiresIn: "365d",
           }),
         },
@@ -261,7 +262,7 @@ exports.verfiy = async (req, reply) => {
       {
         isVerify: true,
         fcmToken: req.body.fcmToken,
-        token: jwt.sign({ _id: req.body.id }, config.get("jwtPrivateKey"), {
+        token: jwt.sign({ _id: req.body.id }, process.env.jwtPrivateKey, {
           expiresIn: "365d",
         }),
       },
@@ -876,18 +877,6 @@ exports.getAllUsers = async (req, reply) => {
       };
       reply.send(response);
     });
-  } catch (err) {
-    throw boom.boomify(err);
-  }
-};
-
-exports.testdate = async (req, reply) => {
-  try {
-    var msg =
-      "أهلا وسهلا بكم في منصة رفوف مقتنياتي كود التفعيل الخاص بكم هو : 1231";
-    var number = "966503015130";
-    sendSMS(number, "", "", msg);
-    reply.send("test");
   } catch (err) {
     throw boom.boomify(err);
   }

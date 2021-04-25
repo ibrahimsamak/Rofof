@@ -3,6 +3,7 @@ const boom = require("boom");
 const jwt = require("jsonwebtoken");
 const config = require("config");
 const util = require("util");
+require("dotenv").config();
 
 // Get Data Models
 const { Admin } = require("../models/Admin");
@@ -67,7 +68,7 @@ exports.addAdmin = async (req, reply) => {
       password: encryptPassword(req.body.password),
       phone_number: req.body.phone_number,
       roles: req.body.roles,
-      token: jwt.sign({ _id: req.body.id }, config.get("jwtPrivateKey"), {
+      token: jwt.sign({ _id: req.body.id }, process.env.jwtPrivateKey, {
         expiresIn: "365d",
       }),
     });
@@ -106,7 +107,7 @@ exports.login = async (req, reply) => {
       const _Admins = await Admin.findByIdAndUpdate(
         Admins._id,
         {
-          token: jwt.sign({ _id: req.params.id }, config.get("jwtPrivateKey"), {
+          token: jwt.sign({ _id: req.params.id }, process.env.jwtPrivateKey, {
             expiresIn: "365d",
           }),
         },
@@ -190,7 +191,7 @@ exports.updateAdmin = async (req, reply) => {
         password: encryptPassword(req.body.password),
         phone_number: req.body.phone_number,
         roles: req.body.roles,
-        token: jwt.sign({ _id: req.params.id }, config.get("jwtPrivateKey"), {
+        token: jwt.sign({ _id: req.params.id }, process.env.jwtPrivateKey, {
           expiresIn: "365d",
         }),
       },

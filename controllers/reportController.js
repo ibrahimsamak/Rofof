@@ -8,6 +8,7 @@ const { Product, Supplier } = require("../models/Product");
 const { renters } = require("../models/Renter");
 const { Users } = require("../models/User");
 const { rack, reserve } = require("../models/Rack");
+const { inventory, city } = require("../models/Constant");
 
 exports.getProductsCount = async (req, reply) => {
   try {

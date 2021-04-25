@@ -301,6 +301,7 @@ exports.getProductsForRenterById = async (req, reply) => {
       .populate("by_user_id")
       .populate("rack_id")
       .populate("reserve_id")
+      .populate("category_id")
       .exec(function (err, item) {
         const response = {
           status_code: 200,
