@@ -1,3 +1,23 @@
+/**
+ * @module controllers/renterController
+ * @description
+ * Manages renters (rack/shelf tenants) who list products on the Rufuf
+ * marketplace. Covers renter onboarding and login, profile management, password
+ * reset/change, SMS/email verification codes, blocking, Excel exports and the
+ * search/listing endpoints used by the admin dashboard.
+ *
+ * Exposed handlers:
+ * - getrenters / getSinglerenters / getRenters / RenterList / userlistInfo  List and fetch renters.
+ * - getRentersExcel                                   Export the renter list to Excel.
+ * - addrenters                                        Register a new renter account.
+ * - login / forgetPassword / changePassword           Authenticate and manage credentials.
+ * - updateprofileFromAdmin / updateAdd / updateEdit / userprofile  Update renter profiles.
+ * - ApproveCode / CheckApproveCode                    Issue and validate verification codes.
+ * - sendSMSRender / sendEmailRender                   Send SMS / email notifications to a renter.
+ * - uploadRenterPhoto                                 Upload a renter profile photo.
+ * - rentersearch / block                              Search and moderate renters.
+ */
+
 // External Dependancies
 const boom = require("boom");
 const jwt = require("jsonwebtoken");
