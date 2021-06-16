@@ -1,3 +1,25 @@
+/**
+ * @module controllers/productController
+ * @description
+ * Core catalog engine for the Rufuf marketplace. Manages product categories and
+ * products end to end: browsing and filtering (by rack, category, renter,
+ * barcode), featured/random/top-rated selections, creation and editing, image
+ * management and cover selection, price/quantity updates, approval workflows,
+ * stock transfer between racks, web search and Excel exports.
+ *
+ * Exposed handlers:
+ * - getCategories / getCategoriesAdmin / getSingleCategory   Category browsing and lookup.
+ * - addCategory / updateCategory / deleteCategory            Category CRUD.
+ * - getProducts / getAllProducts / getProductsByRackId / getProductsByCategory  Product listings.
+ * - getRandomProducts / getTop4RatedProducts / getActiveProducts  Curated product feeds.
+ * - getProductsRenters / getProductsForRenter(ById) / getSingleProductClient  Renter/client views.
+ * - getSingleProduct / getProductDetailsByBarCode           Single-product lookups.
+ * - addProduct / updateProduct / deleteProduct              Product CRUD.
+ * - updatePriceQty / updateProductStatus / approveAllProducts  Bulk price/status/approval updates.
+ * - uploadPhoto / deleteProductImage / makeCoverImage       Product image management.
+ * - transfer / searchWeb / getActiveProductsExcel           Stock transfer, web search, exports.
+ */
+
 // External Dependancies
 const boom = require("boom");
 const config = require("config");
