@@ -5,15 +5,18 @@ const Adminschema = mongoose.Schema(
   {
     full_name: {
       type: String,
-      required: true,
+      required: [true, "Name is required"],
+      minlength: [2, "Name must be least 2 character"],
     },
     email: {
       type: String,
-      required: true,
+      required: [true, "Admin email is required"],
+      match: [/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}$/, "Invalid email"],
     },
     password: {
       type: String,
-      required: true,
+      required: [true, "Password is required"],
+      minlength: [6, "Password must be at least 6 digit"],
     },
     phone_number: {
       type: String,

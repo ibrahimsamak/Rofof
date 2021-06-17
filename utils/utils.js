@@ -3,6 +3,13 @@ var request = require("request");
 var nodemailer = require("nodemailer");
 const fs = require("fs");
 var ejs = require("ejs");
+const cloudinary = require("cloudinary");
+
+cloudinary.config({
+  cloud_name: "dsz57mpwt",
+  api_key: "798849627961531",
+  api_secret: "mluiA31CtWFTj5E5EMPRS5tvQXw",
+});
 
 exports.encryptPassword = function (password) {
   try {
@@ -97,4 +104,52 @@ exports.mail_general = function (req, to, sub, text, data) {
   } catch (error) {
     console.error(error);
   }
+};
+
+exports.uploadImages = async function (img) {
+  return new Promise(function (resolve, reject) {
+    cloudinary.v2.uploader.upload("./uploads/" + img, function (error, result) {
+      if (error) {
+        reject(error);
+      } else {
+        console.log(result, error);
+        img = result["url"];
+        resolve(img);
+      }
+    });
+  });
+};
+
+exports.makeid = function () {
+  var text = "";
+  var possible = "0123456789";
+
+  for (var i = 0; i < 3; i++)
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+  return text;
+};
+
+exports.makeCode = function () {
+  var text = "";
+  var possible = "0123456789";
+
+  for (var i = 0; i < 4; i++)
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+  return text;
+};
+
+exports.handleError = function (error) {
+  var arr = [];
+  if (error != null && error != undefined) {
+    if (error.errors) {
+      Object.keys(error.errors).forEach((element) => {
+        if (error.errors[element].message != "") {
+          arr.push(error.errors[element].message);
+        }
+      });
+    }
+  }
+  return arr;
 };

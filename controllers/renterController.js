@@ -35,70 +35,12 @@ const {
   decryptPassword,
   sendSMS,
   mail_general,
+  makeid,
+  uploadImages,
+  makeCode,
+  handleError,
 } = require("../utils/utils");
 const { reserve } = require("../models/Rack");
-
-async function getAddress(lat, lng) {
-  var current_city = "";
-  return new Promise(function (resolve, reject) {
-    geocoder
-      .reverse({ lat: lat, lon: lng })
-      .then(async function (res) {
-        if (res) {
-          console.log(res[0]);
-          console.log(
-            res[0]["administrativeLevels"]["level1long"],
-            res[0].country
-          );
-          current_city = res[0]["administrativeLevels"]["level1long"];
-          resolve(current_city);
-        } else {
-          current_city = "";
-          resolve(current_city);
-        }
-      })
-      .catch(function (err) {
-        console.log(err);
-        reject(err);
-        current_city = "";
-      });
-  });
-}
-
-async function uploadImages(img) {
-  return new Promise(function (resolve, reject) {
-    cloudinary.v2.uploader.upload("./uploads/" + img, function (error, result) {
-      if (error) {
-        reject(error);
-      } else {
-        console.log(result, error);
-        img = result["url"];
-        resolve(img);
-      }
-    });
-  });
-}
-
-function makeid() {
-  var text = "";
-  var possible =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-  for (var i = 0; i < 6; i++)
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-  return text;
-}
-
-function makeCode() {
-  var text = "";
-  var possible = "0123456789";
-
-  for (var i = 0; i < 4; i++)
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-  return text;
-}
 
 // Get all renters
 exports.getrenters = async (req, reply) => {
@@ -123,112 +65,108 @@ exports.getrenters = async (req, reply) => {
         _renters.push(element.renter_id);
       });
       const total = await renters.find({ _id: { $in: _renters } }).count();
-      await renters
+      var item = await renters
         .find({ _id: { $in: _renters } })
         .sort({ [sort_field]: sort_value })
         .skip(page * limit)
-        .limit(limit)
-        .exec(async function (err, item) {
-          var newArray = [];
-          for await (const newItem of item) {
-            var newObject = newItem.toObject();
-            var _reserve = await reserve
-              .findOne({
-                $and: [{ renter_id: newItem._id }, { isApprove: true }],
-              })
-              .sort({ _id: -1 });
-            if (_reserve) {
-              newObject.contract_no = _reserve.contract_no;
-              newObject.amount = _reserve.amount;
-              newObject.start_date = _reserve.start_date;
-              newObject.end_date = _reserve.end_date;
-            } else {
-              newObject.contract_no = "";
-              newObject.amount = "";
-              newObject.start_date = "";
-              newObject.end_date = "";
-            }
+        .limit(limit);
+      var newArray = [];
+      for await (const newItem of item) {
+        var newObject = newItem.toObject();
+        var _reserve = await reserve
+          .findOne({
+            $and: [{ renter_id: newItem._id }, { isApprove: true }],
+          })
+          .sort({ _id: -1 });
+        if (_reserve) {
+          newObject.contract_no = _reserve.contract_no;
+          newObject.amount = _reserve.amount;
+          newObject.start_date = _reserve.start_date;
+          newObject.end_date = _reserve.end_date;
+        } else {
+          newObject.contract_no = "";
+          newObject.amount = "";
+          newObject.start_date = "";
+          newObject.end_date = "";
+        }
 
-            newArray.push(newObject);
-          }
-          if (sort_field == "contract_no") {
-            newArray.sort((a, b) => {
-              var nameA = a.contract_no;
-              var nameB = b.contract_no;
-              if (Number(sort_value) == 1) return nameA > nameB;
-              if (Number(sort_value) == -1) return nameA < nameB;
-            });
-          }
-
-          const response = {
-            status_code: 200,
-            status: true,
-            message: "تمت العملية بنجاح",
-            items: newArray,
-            pagenation: {
-              size: newArray.length,
-              totalElements: total,
-              totalPages: Math.floor(total / limit),
-              pageNumber: page,
-            },
-          };
-          reply.send(response);
+        newArray.push(newObject);
+      }
+      if (sort_field == "contract_no") {
+        newArray.sort((a, b) => {
+          var nameA = a.contract_no;
+          var nameB = b.contract_no;
+          if (Number(sort_value) == 1) return nameA > nameB;
+          if (Number(sort_value) == -1) return nameA < nameB;
         });
+      }
+
+      const response = {
+        status_code: 200,
+        status: true,
+        message: "تمت العملية بنجاح",
+        items: newArray,
+        pagenation: {
+          size: newArray.length,
+          totalElements: total,
+          totalPages: Math.floor(total / limit),
+          pageNumber: page,
+        },
+      };
+      reply.send(response);
     } else {
       query1[search_field] = { $regex: new RegExp(search_value, "i") };
       const total = await renters.find(query1).count();
 
-      await renters
+      var item = await renters
         .find(query1)
         .sort({ [sort_field]: sort_value })
         .skip(page * limit)
-        .limit(limit)
-        .exec(async function (err, item) {
-          var newArray = [];
-          for await (const newItem of item) {
-            var newObject = newItem.toObject();
-            var _reserve = await reserve
-              .findOne({
-                $and: [{ renter_id: newItem._id }, { isApprove: true }],
-              })
-              .sort({ _id: -1 });
-            if (_reserve) {
-              newObject.contract_no = _reserve.contract_no;
-              newObject.amount = _reserve.amount;
-              newObject.start_date = _reserve.start_date;
-              newObject.end_date = _reserve.end_date;
-            } else {
-              newObject.contract_no = "";
-              newObject.amount = "";
-              newObject.start_date = "";
-              newObject.end_date = "";
-            }
-            newArray.push(newObject);
-          }
+        .limit(limit);
+      var newArray = [];
+      for await (const newItem of item) {
+        var newObject = newItem.toObject();
+        var _reserve = await reserve
+          .findOne({
+            $and: [{ renter_id: newItem._id }, { isApprove: true }],
+          })
+          .sort({ _id: -1 });
+        if (_reserve) {
+          newObject.contract_no = _reserve.contract_no;
+          newObject.amount = _reserve.amount;
+          newObject.start_date = _reserve.start_date;
+          newObject.end_date = _reserve.end_date;
+        } else {
+          newObject.contract_no = "";
+          newObject.amount = "";
+          newObject.start_date = "";
+          newObject.end_date = "";
+        }
+        newArray.push(newObject);
+      }
 
-          if (sort_field == "contract_no") {
-            newArray.sort((a, b) => {
-              var nameA = a.contract_no;
-              var nameB = b.contract_no;
-              if (Number(sort_value) == 1) return nameA > nameB;
-              if (Number(sort_value) == -1) return nameA < nameB;
-            });
-          }
-
-          const response = {
-            status_code: 200,
-            status: true,
-            message: "تمت العملية بنجاح",
-            items: newArray,
-            pagenation: {
-              size: newArray.length,
-              totalElements: total,
-              totalPages: Math.floor(total / limit),
-              pageNumber: page,
-            },
-          };
-          reply.send(response);
+      if (sort_field == "contract_no") {
+        newArray.sort((a, b) => {
+          var nameA = a.contract_no;
+          var nameB = b.contract_no;
+          if (Number(sort_value) == 1) return nameA > nameB;
+          if (Number(sort_value) == -1) return nameA < nameB;
         });
+      }
+
+      const response = {
+        status_code: 200,
+        status: true,
+        message: "تمت العملية بنجاح",
+        items: newArray,
+        pagenation: {
+          size: newArray.length,
+          totalElements: total,
+          totalPages: Math.floor(total / limit),
+          pageNumber: page,
+        },
+      };
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);
@@ -252,91 +190,85 @@ exports.getRentersExcel = async (req, reply) => {
       contracts.forEach((element) => {
         _renters.push(element.renter_id);
       });
-      await renters
+      var item = await renters
         .find({ _id: { $in: _renters } })
-        .sort({ [sort_field]: sort_value })
-        .exec(async function (err, item) {
-          var newArray = [];
-          for await (const newItem of item) {
-            var newObject = newItem.toObject();
-            var _reserve = await reserve
-              .findOne({
-                $and: [{ renter_id: newItem._id }, { isApprove: true }],
-              })
-              .sort({ _id: -1 });
-            if (_reserve) {
-              newObject.contract_no = _reserve.contract_no;
-              newObject.amount = _reserve.amount;
-              newObject.start_date = _reserve.start_date;
-              newObject.end_date = _reserve.end_date;
-            } else {
-              newObject.contract_no = "";
-              newObject.amount = "";
-              newObject.start_date = "";
-              newObject.end_date = "";
-            }
+        .sort({ [sort_field]: sort_value });
+      var newArray = [];
+      for await (const newItem of item) {
+        var newObject = newItem.toObject();
+        var _reserve = await reserve
+          .findOne({
+            $and: [{ renter_id: newItem._id }, { isApprove: true }],
+          })
+          .sort({ _id: -1 });
+        if (_reserve) {
+          newObject.contract_no = _reserve.contract_no;
+          newObject.amount = _reserve.amount;
+          newObject.start_date = _reserve.start_date;
+          newObject.end_date = _reserve.end_date;
+        } else {
+          newObject.contract_no = "";
+          newObject.amount = "";
+          newObject.start_date = "";
+          newObject.end_date = "";
+        }
 
-            newArray.push(newObject);
-          }
-          if (sort_field == "contract_no") {
-            newArray.sort((a, b) => {
-              var nameA = a.contract_no;
-              var nameB = b.contract_no;
-              if (Number(sort_value) == 1) return nameA > nameB;
-              if (Number(sort_value) == -1) return nameA < nameB;
-            });
-          }
-          const response = {
-            status_code: 200,
-            status: true,
-            message: "تمت العملية بنجاح",
-            items: newArray,
-          };
-          reply.send(response);
+        newArray.push(newObject);
+      }
+      if (sort_field == "contract_no") {
+        newArray.sort((a, b) => {
+          var nameA = a.contract_no;
+          var nameB = b.contract_no;
+          if (Number(sort_value) == 1) return nameA > nameB;
+          if (Number(sort_value) == -1) return nameA < nameB;
         });
+      }
+      const response = {
+        status_code: 200,
+        status: true,
+        message: "تمت العملية بنجاح",
+        items: newArray,
+      };
+      reply.send(response);
     } else {
       query1[search_field] = { $regex: new RegExp(search_value, "i") };
-      await renters
-        .find(query1)
-        .sort({ [sort_field]: sort_value })
-        .exec(async function (err, item) {
-          var newArray = [];
-          for await (const newItem of item) {
-            var newObject = newItem.toObject();
-            var _reserve = await reserve
-              .findOne({
-                $and: [{ renter_id: newItem._id }, { isApprove: true }],
-              })
-              .sort({ _id: -1 });
-            if (_reserve) {
-              newObject.contract_no = _reserve.contract_no;
-              newObject.amount = _reserve.amount;
-              newObject.start_date = _reserve.start_date;
-              newObject.end_date = _reserve.end_date;
-            } else {
-              newObject.contract_no = "";
-              newObject.amount = "";
-              newObject.start_date = "";
-              newObject.end_date = "";
-            }
-            newArray.push(newObject);
-          }
-          if (sort_field == "contract_no") {
-            newArray.sort((a, b) => {
-              var nameA = a.contract_no;
-              var nameB = b.contract_no;
-              if (Number(sort_value) == 1) return nameA > nameB;
-              if (Number(sort_value) == -1) return nameA < nameB;
-            });
-          }
-          const response = {
-            status_code: 200,
-            status: true,
-            message: "تمت العملية بنجاح",
-            items: newArray,
-          };
-          reply.send(response);
+      var item = await renters.find(query1).sort({ [sort_field]: sort_value });
+      var newArray = [];
+      for await (const newItem of item) {
+        var newObject = newItem.toObject();
+        var _reserve = await reserve
+          .findOne({
+            $and: [{ renter_id: newItem._id }, { isApprove: true }],
+          })
+          .sort({ _id: -1 });
+        if (_reserve) {
+          newObject.contract_no = _reserve.contract_no;
+          newObject.amount = _reserve.amount;
+          newObject.start_date = _reserve.start_date;
+          newObject.end_date = _reserve.end_date;
+        } else {
+          newObject.contract_no = "";
+          newObject.amount = "";
+          newObject.start_date = "";
+          newObject.end_date = "";
+        }
+        newArray.push(newObject);
+      }
+      if (sort_field == "contract_no") {
+        newArray.sort((a, b) => {
+          var nameA = a.contract_no;
+          var nameB = b.contract_no;
+          if (Number(sort_value) == 1) return nameA > nameB;
+          if (Number(sort_value) == -1) return nameA < nameB;
         });
+      }
+      const response = {
+        status_code: 200,
+        status: true,
+        message: "تمت العملية بنجاح",
+        items: newArray,
+      };
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);
@@ -353,7 +285,7 @@ exports.getSinglerenters = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: _renters,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -368,7 +300,7 @@ exports.getRenters = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: _renters,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -388,7 +320,7 @@ exports.addrenters = async (req, reply) => {
           message: "تم حظر المستخدم من قبل الادارة",
           items: [],
         };
-        return response;
+        reply.send(response);
       } else {
         const response = {
           status_code: 400,
@@ -396,7 +328,7 @@ exports.addrenters = async (req, reply) => {
           message: "رقم الجوال موجود لدينا مسبقا",
           items: [],
         };
-        return response;
+        reply.send(response);
       }
     } else {
       let _user = new renters({
@@ -412,6 +344,16 @@ exports.addrenters = async (req, reply) => {
         IBAN: req.body.IBAN,
         BankName: req.body.BankName,
       });
+      var _return = handleError(_user.validateSync());
+      if (_return.length > 0) {
+        reply.code(200).send({
+          status_code: 400,
+          status: false,
+          message: _return[0],
+          items: _return,
+        });
+        return;
+      }
       let rs = await _user.save();
 
       const response = {
@@ -491,7 +433,7 @@ exports.forgetPassword = async (req, reply) => {
         message: "تم ارسال كلمة المرور الى رقم الجوال بنجاح",
         items: update,
       };
-      return response;
+      reply.send(response);
     } else {
       const response = {
         status_code: 404,
@@ -499,7 +441,7 @@ exports.forgetPassword = async (req, reply) => {
         message: "رقم الجوال غير مسجل لدينا",
         items: [],
       };
-      return response;
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);
@@ -519,8 +461,10 @@ exports.updateprofileFromAdmin = async (req, reply) => {
         });
       }
       var data = new Buffer(files.image.data);
+      let rand = makeid();
+
       fs.writeFile(
-        "./uploads/" + files.image.name,
+        "./uploads/" + rand + files.image.name,
         data,
         "binary",
         function (err) {
@@ -533,7 +477,7 @@ exports.updateprofileFromAdmin = async (req, reply) => {
       );
 
       let img = "";
-      await uploadImages(files.image.name).then((x) => {
+      await uploadImages(rand + files.image.name).then((x) => {
         img = x;
       });
       const categories = await renters.findByIdAndUpdate(
@@ -548,7 +492,19 @@ exports.updateprofileFromAdmin = async (req, reply) => {
           IBAN: req.raw.body.IBAN,
           BankName: req.raw.body.BankName,
         },
-        { new: true }
+        { new: true, runValidators: true },
+        function (err, model) {
+          var _return = handleError(err);
+          if (_return.length > 0) {
+            reply.code(200).send({
+              status_code: 400,
+              status: false,
+              message: _return[0],
+              items: _return,
+            });
+            return;
+          }
+        }
       );
       const response = {
         status_code: 200,
@@ -556,7 +512,7 @@ exports.updateprofileFromAdmin = async (req, reply) => {
         message: "تمت العملية بنجاح",
         items: categories,
       };
-      return response;
+      reply.send(response);
     } else {
       const categories = await renters.findByIdAndUpdate(
         req.params.id,
@@ -569,7 +525,19 @@ exports.updateprofileFromAdmin = async (req, reply) => {
           IBAN: req.raw.body.IBAN,
           BankName: req.raw.body.BankName,
         },
-        { new: true }
+        { new: true, runValidators: true },
+        function (err, model) {
+          var _return = handleError(err);
+          if (_return.length > 0) {
+            reply.code(200).send({
+              status_code: 400,
+              status: false,
+              message: _return[0],
+              items: _return,
+            });
+            return;
+          }
+        }
       );
       const response = {
         status_code: 200,
@@ -577,7 +545,7 @@ exports.updateprofileFromAdmin = async (req, reply) => {
         message: "تمت العملية بنجاح",
         items: categories,
       };
-      return response;
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);
@@ -605,7 +573,7 @@ exports.changePassword = async (req, reply) => {
           message: "تم تعديل كلمة المرور بنجاح بنجاح",
           items: update,
         };
-        return response;
+        reply.send(response);
       } else {
         const response = {
           status_code: 400,
@@ -613,7 +581,7 @@ exports.changePassword = async (req, reply) => {
           message: "كلمة المرور القديمة غير صحيحة",
           items: {},
         };
-        return response;
+        reply.send(response);
       }
     } else {
       const response = {
@@ -622,7 +590,7 @@ exports.changePassword = async (req, reply) => {
         message: "المستخدم غير موجود",
         items: [],
       };
-      return response;
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);
@@ -633,22 +601,19 @@ exports.changePassword = async (req, reply) => {
 exports.rentersearch = async (req, reply) => {
   try {
     var result = [];
-    await renters
-      .find({
-        $or: [
-          { full_name: { $regex: ".*" + req.body.full_name + ".*" } },
-          { phone_number: { $regex: ".*" + req.body.phone_number + ".*" } },
-        ],
-      })
-      .exec(function (err, xx) {
-        result = xx;
-        const response = {
-          items: result,
-          status_code: 200,
-          message: "returned successfully",
-        };
-        reply.send(response);
-      });
+    var xx = await renters.find({
+      $or: [
+        { full_name: { $regex: ".*" + req.body.full_name + ".*" } },
+        { phone_number: { $regex: ".*" + req.body.phone_number + ".*" } },
+      ],
+    });
+    result = xx;
+    const response = {
+      items: result,
+      status_code: 200,
+      message: "returned successfully",
+    };
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -666,7 +631,7 @@ exports.RenterList = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: _Users,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -680,7 +645,7 @@ exports.userlistInfo = async (req, reply) => {
       status_code: 200,
       message: "returned successfully",
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -702,7 +667,7 @@ exports.block = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: user,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -747,7 +712,7 @@ exports.ApproveCode = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: user,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -801,7 +766,7 @@ exports.CheckApproveCode = async (req, reply) => {
         message: "تمت العملية بنجاح",
         items: _user,
       };
-      return response;
+      reply.send(response);
     } else {
       const response = {
         status_code: 400,
@@ -809,7 +774,7 @@ exports.CheckApproveCode = async (req, reply) => {
         message: "كود التفعيل خاطئ",
         items: {},
       };
-      return response;
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);
@@ -845,8 +810,10 @@ exports.uploadRenterPhoto = async (req, reply) => {
       });
     }
     var data = new Buffer(files.image.data);
+    let rand = makeid();
+
     fs.writeFile(
-      "./uploads/" + files.image.name,
+      "./uploads/" + rand + files.image.name,
       data,
       "binary",
       function (err) {
@@ -859,7 +826,7 @@ exports.uploadRenterPhoto = async (req, reply) => {
     );
 
     cloudinary.v2.uploader.upload(
-      "./uploads/" + files.image.name,
+      "./uploads/" + rand + files.image.name,
       function (error, result) {
         console.log(result, error);
         reply.send(result);
@@ -879,7 +846,7 @@ exports.sendSMSRender = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: {},
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -900,7 +867,7 @@ exports.sendEmailRender = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: {},
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }

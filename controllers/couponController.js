@@ -16,7 +16,7 @@ exports.getcoupon = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: coupons,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -50,7 +50,7 @@ exports.addcoupon = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: rs,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -65,7 +65,7 @@ exports.deletecoupon = async (req, reply) => {
     message: "تمت العملية بنجاح",
     items: [],
   };
-  return response;
+  reply.send(response);
 };
 
 // Update an existing adv
@@ -110,14 +110,14 @@ exports.checkCoupon = async (req, reply) => {
           status_code: 400,
           message: "الكوبون غير صالح حاليا",
         };
-        return response;
+        reply.send(response);
       } else {
         const response = {
           items: sp,
           status_code: 200,
           message: "الكوبون متاح",
         };
-        return response;
+        reply.send(response);
       }
     } else {
       const response = {
@@ -125,7 +125,7 @@ exports.checkCoupon = async (req, reply) => {
         status_code: 400,
         message: "الكوبون غير صالح حاليا",
       };
-      return response;
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);

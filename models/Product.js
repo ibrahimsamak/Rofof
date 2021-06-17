@@ -5,11 +5,10 @@ const Productschema = mongoose.Schema(
   {
     name: {
       type: String,
-      required: false,
+      required: [true, "title is required"],
     },
     description: {
       type: String,
-      required: false,
     },
     barcode: {
       type: String,
@@ -19,15 +18,13 @@ const Productschema = mongoose.Schema(
     },
     qty: {
       type: Number,
-      required: false,
     },
     price: {
       type: Number,
-      required: false,
+      required: [true, "price is required"],
     },
     image: {
       type: String,
-      required: false,
     },
     status: {
       type: Boolean,
@@ -49,6 +46,7 @@ const Productschema = mongoose.Schema(
     category_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
+      required: [true, "category is required"],
     },
     discountPrice: {
       type: Number,
@@ -56,10 +54,12 @@ const Productschema = mongoose.Schema(
     rack_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "racks",
+      required: [true, "rack is required"],
     },
     reserve_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "reserve",
+      required: [true, "contract is required"],
     },
   },
   { versionKey: false }
@@ -68,22 +68,20 @@ const Productschema = mongoose.Schema(
 const schema = mongoose.Schema({
   name: {
     type: String,
-    required: true,
+    required: [true, "title is required"],
   },
   image: {
     type: String,
-    required: true,
   },
 });
 
 const Supplierschema = mongoose.Schema({
   name: {
     type: String,
-    required: true,
+    required: [true, "title is required"],
   },
   image: {
     type: String,
-    required: true,
   },
   details: {
     type: String,

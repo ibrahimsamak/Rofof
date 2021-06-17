@@ -43,59 +43,13 @@ const geocoder = NodeGeocoder(options);
 // Get Data Models
 const { Users, validateUsers } = require("../models/User");
 const { getCurrentDateTime } = require("../models/Constant");
-const { encryptPassword, sendSMS } = require("../utils/utils");
-
-async function getAddress(lat, lng) {
-  var current_city = "";
-  return new Promise(function (resolve, reject) {
-    geocoder
-      .reverse({ lat: lat, lon: lng })
-      .then(async function (res) {
-        if (res) {
-          console.log(res[0]);
-          console.log(
-            res[0]["administrativeLevels"]["level1long"],
-            res[0].country
-          );
-          current_city = res[0]["administrativeLevels"]["level1long"];
-          resolve(current_city);
-        } else {
-          current_city = "";
-          resolve(current_city);
-        }
-      })
-      .catch(function (err) {
-        console.log(err);
-        reject(err);
-        current_city = "";
-      });
-  });
-}
-
-async function uploadImages(img) {
-  return new Promise(function (resolve, reject) {
-    cloudinary.v2.uploader.upload("./uploads/" + img, function (error, result) {
-      if (error) {
-        reject(error);
-      } else {
-        console.log(result, error);
-        img = result["url"];
-        resolve(img);
-      }
-    });
-  });
-}
-
-function makeid() {
-  var text = "";
-  var possible =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-  for (var i = 0; i < 6; i++)
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-  return text;
-}
+const {
+  encryptPassword,
+  sendSMS,
+  makeid,
+  uploadImages,
+  handleError,
+} = require("../utils/utils");
 
 // Get all Users
 exports.getUsers = async (req, reply) => {
@@ -110,25 +64,23 @@ exports.getUsers = async (req, reply) => {
     query1[search_field] = { $regex: new RegExp(search_value, "i") };
 
     const total = await Users.find(query1).count();
-    await Users.find(query1)
+    var item = await Users.find(query1)
       .skip(page * limit)
-      .limit(limit)
-      .exec(function (err, item) {
-        console.log(item);
-        const response = {
-          status_code: 200,
-          status: true,
-          message: "تمت العملية بنجاح",
-          items: item,
-          pagenation: {
-            size: item.length,
-            totalElements: total,
-            totalPages: Math.floor(total / limit),
-            pageNumber: page,
-          },
-        };
-        reply.send(response);
-      });
+      .limit(limit);
+    console.log(item);
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: item,
+      pagenation: {
+        size: item.length,
+        totalElements: total,
+        totalPages: Math.floor(total / limit),
+        pageNumber: page,
+      },
+    };
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -145,7 +97,7 @@ exports.getSingleUsers = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: _Users,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -166,7 +118,7 @@ exports.addUsers = async (req, reply) => {
           message: "تم حظر المستخدم من قبل الادارة",
           items: [],
         };
-        return response;
+        reply.send(response);
       } else {
         const response = {
           status_code: 400,
@@ -174,7 +126,7 @@ exports.addUsers = async (req, reply) => {
           message: "البريد الالكتروني او رقم الجوال موجود لدينا مسبقا",
           items: [],
         };
-        return response;
+        reply.send(response);
       }
     } else {
       let user = new Users({
@@ -196,6 +148,16 @@ exports.addUsers = async (req, reply) => {
         currentCity: req.body.currentCity,
         RegisterType: req.body.RegisterType,
       });
+      var _return = handleError(user.validateSync());
+      if (_return.length > 0) {
+        reply.code(200).send({
+          status_code: 400,
+          status: false,
+          message: _return[0],
+          items: _return,
+        });
+        return;
+      }
       let rs = await user.save();
 
       const response = {
@@ -204,7 +166,7 @@ exports.addUsers = async (req, reply) => {
         message: "أهلا وسهلا بكم .. تسجيل حسابكم بنجاح",
         items: rs,
       };
-      return response;
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);
@@ -236,7 +198,7 @@ exports.login = async (req, reply) => {
         message: "تم التحقق بنجاح",
         items: user,
       };
-      return response;
+      reply.send(response);
     } else {
       const response = {
         status_code: 404,
@@ -244,7 +206,7 @@ exports.login = async (req, reply) => {
         message: "خطأ في الايميل او كلمة المرور",
         items: _Users,
       };
-      return response;
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);
@@ -276,7 +238,7 @@ exports.verfiy = async (req, reply) => {
         message: "حدث خطأ الرجاء المحاولة مرة اخرى",
         items: [],
       };
-      return response;
+      reply.send(response);
     } else {
       const response = {
         status_code: 200,
@@ -284,7 +246,7 @@ exports.verfiy = async (req, reply) => {
         message: "",
         items: user,
       };
-      return response;
+      reply.send(response);
     }
   } else {
     const response = {
@@ -293,7 +255,7 @@ exports.verfiy = async (req, reply) => {
       message: "خطأ!! في رقم التفعيل",
       items: [],
     };
-    return response;
+    reply.send(response);
   }
 };
 
@@ -458,7 +420,7 @@ exports.forgetPassword = async (req, reply) => {
         message: "تم ارسال كلمة المرور الى البريد الالكتروني بنجاح",
         items: update,
       };
-      return response;
+      reply.send(response);
     } else {
       const response = {
         status_code: 404,
@@ -466,7 +428,7 @@ exports.forgetPassword = async (req, reply) => {
         message: "البريد الالكتروني غير مسجل لدينا",
         items: [],
       };
-      return response;
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);
@@ -487,8 +449,10 @@ exports.updateprofileFromAdmin = async (req, reply) => {
         });
       }
       var data = new Buffer(files.image.data);
+      let rand = makeid();
+
       fs.writeFile(
-        "./uploads/" + files.image.name,
+        "./uploads/" + rand + files.image.name,
         data,
         "binary",
         function (err) {
@@ -501,7 +465,7 @@ exports.updateprofileFromAdmin = async (req, reply) => {
       );
 
       let img = "";
-      await uploadImages(files.image.name).then((x) => {
+      await uploadImages(rand + files.image.name).then((x) => {
         img = x;
       });
       const categories = await Users.findByIdAndUpdate(
@@ -513,7 +477,19 @@ exports.updateprofileFromAdmin = async (req, reply) => {
           phone_number: req.raw.body.phone_number,
           email: req.raw.body.email,
         },
-        { new: true }
+        { new: true, runValidators: true },
+        function (err, model) {
+          var _return = handleError(err);
+          if (_return.length > 0) {
+            reply.code(200).send({
+              status_code: 400,
+              status: false,
+              message: _return[0],
+              items: _return,
+            });
+            return;
+          }
+        }
       );
       const response = {
         status_code: 200,
@@ -521,7 +497,7 @@ exports.updateprofileFromAdmin = async (req, reply) => {
         message: "تمت العملية بنجاح",
         items: categories,
       };
-      return response;
+      reply.send(response);
     } else {
       const userPrev = await Users.findById(req.params.id);
       var pass;
@@ -539,7 +515,19 @@ exports.updateprofileFromAdmin = async (req, reply) => {
           address: req.raw.body.address,
           password: pass,
         },
-        { new: true }
+        { new: true, runValidators: true },
+        function (err, model) {
+          var _return = handleError(err);
+          if (_return.length > 0) {
+            reply.code(200).send({
+              status_code: 400,
+              status: false,
+              message: _return[0],
+              items: _return,
+            });
+            return;
+          }
+        }
       );
       const response = {
         status_code: 200,
@@ -547,7 +535,7 @@ exports.updateprofileFromAdmin = async (req, reply) => {
         message: "تم تعديل الاعدادات بنجاح",
         items: categories,
       };
-      return response;
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);
@@ -572,7 +560,7 @@ exports.changePassword = async (req, reply) => {
         message: "تم تعديل كلمة المرور بنجاح بنجاح",
         items: update,
       };
-      return response;
+      reply.send(response);
     } else {
       const response = {
         status_code: 404,
@@ -580,7 +568,7 @@ exports.changePassword = async (req, reply) => {
         message: "المستخدم غير موجود",
         items: [],
       };
-      return response;
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);
@@ -606,7 +594,7 @@ exports.logout = async (req, reply) => {
         message: "حدث خطأ الرجاء المحاولة مرة اخرى",
         items: [],
       };
-      return response;
+      reply.send(response);
     } else {
       const response = {
         status_code: 200,
@@ -614,7 +602,7 @@ exports.logout = async (req, reply) => {
         message: "تم تسجيل الخروج بنجاح",
         items: user,
       };
-      return response;
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);
@@ -640,7 +628,7 @@ exports.refreshToken = async (req, reply) => {
         message: "حدث خطأ الرجاء المحاولة مرة اخرى",
         items: [],
       };
-      return response;
+      reply.send(response);
     } else {
       const response = {
         status_code: 200,
@@ -648,7 +636,7 @@ exports.refreshToken = async (req, reply) => {
         message: "",
         items: user,
       };
-      return response;
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);
@@ -667,8 +655,10 @@ exports.uploadUserPhoto = async (req, reply) => {
       });
     }
     var data = new Buffer(files.image.data);
+    let rand = makeid();
+
     fs.writeFile(
-      "./uploads/" + files.image.name,
+      "./uploads/" + rand + files.image.name,
       data,
       "binary",
       function (err) {
@@ -681,7 +671,7 @@ exports.uploadUserPhoto = async (req, reply) => {
     );
 
     cloudinary.v2.uploader.upload(
-      "./uploads/" + files.image.name,
+      "./uploads/" + rand + files.image.name,
       function (error, result) {
         console.log(result, error);
         reply.send(result);
@@ -744,20 +734,19 @@ exports.updateUserAndroid = async (req, reply) => {
 exports.userSearch = async (req, reply) => {
   try {
     var result = [];
-    await Users.find({
+    var xx = await Users.find({
       $or: [
         { full_name: { $regex: ".*" + req.body.full_name + ".*" } },
         { phone_number: { $regex: ".*" + req.body.phone_number + ".*" } },
       ],
-    }).exec(function (err, xx) {
-      result = xx;
-      const response = {
-        items: result,
-        status_code: 200,
-        message: "returned successfully",
-      };
-      reply.send(response);
     });
+    result = xx;
+    const response = {
+      items: result,
+      status_code: 200,
+      message: "returned successfully",
+    };
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -769,26 +758,24 @@ exports.userslist = async (req, reply) => {
     const limit = parseInt(req.query.limit, 10);
     const total = await Users.find().count();
     var result = [];
-    const _Users = await Users.find()
+    const xx = await Users.find()
       .select(["-token", "-password"])
       .sort({ createAt: -1 })
       .skip(page * limit)
-      .limit(limit)
-      .exec(function (err, xx) {
-        result = xx;
-        const response = {
-          items: result,
-          status_code: 200,
-          message: "returned successfully",
-          pagenation: {
-            size: result.length,
-            totalElements: total,
-            totalPages: Math.floor(total / limit),
-            pageNumber: page,
-          },
-        };
-        reply.send(response);
-      });
+      .limit(limit);
+    result = xx;
+    const response = {
+      items: result,
+      status_code: 200,
+      message: "returned successfully",
+      pagenation: {
+        size: result.length,
+        totalElements: total,
+        totalPages: Math.floor(total / limit),
+        pageNumber: page,
+      },
+    };
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -802,7 +789,7 @@ exports.userlistInfo = async (req, reply) => {
       status_code: 200,
       message: "returned successfully",
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -824,7 +811,7 @@ exports.block = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: user,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -842,7 +829,7 @@ exports.userprofile = async (req, reply) => {
       message: "",
       items: user,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -851,15 +838,14 @@ exports.userprofile = async (req, reply) => {
 exports.getUserByCity = async (req, reply) => {
   try {
     var result = [];
-    await Users.find({ currentCity: req.params.id }).exec(function (err, xx) {
-      result = xx;
-      const response = {
-        items: result,
-        status_code: 200,
-        message: "returned successfully",
-      };
-      reply.send(response);
-    });
+    var xx = await Users.find({ currentCity: req.params.id });
+    result = xx;
+    const response = {
+      items: result,
+      status_code: 200,
+      message: "returned successfully",
+    };
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -868,15 +854,14 @@ exports.getUserByCity = async (req, reply) => {
 exports.getAllUsers = async (req, reply) => {
   try {
     var result = [];
-    await Users.find().exec(function (err, xx) {
-      result = xx;
-      const response = {
-        items: result,
-        status_code: 200,
-        message: "returned successfully",
-      };
-      reply.send(response);
-    });
+    var xx = await Users.find();
+    result = xx;
+    const response = {
+      items: result,
+      status_code: 200,
+      message: "returned successfully",
+    };
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }

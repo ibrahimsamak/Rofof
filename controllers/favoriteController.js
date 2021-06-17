@@ -20,7 +20,7 @@ exports.getFav = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: _Notification,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -36,7 +36,7 @@ exports.deleteFav = async (req, reply) => {
       message: "تم ازالة المنتج من المفضلة",
       items: null,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -66,7 +66,7 @@ exports.addFav = async (req, reply) => {
         message: "تم اضافة المنتج الى المفضلة",
         items: rs,
       };
-      return response;
+      reply.send(response);
     } else {
       const response = {
         status_code: 200,
@@ -74,7 +74,7 @@ exports.addFav = async (req, reply) => {
         message: "المنتج موجود مسبقا",
         items: [],
       };
-      return response;
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);

@@ -25,7 +25,7 @@ exports.getUpdates = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: updates,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -43,7 +43,7 @@ exports.getBuyUnits = async (req, reply) => {
     //         message: 'تمت العملية بنجاح',
     //         items: JSON.parse(cachedObj)
     //     }
-    //     return response
+    //     reply.send(response)
     // }
     const buyunits = await BuyUnits.find().sort({ _id: -1 });
     // client.set('BuyUnits', JSON.stringify(buyunits))
@@ -54,7 +54,7 @@ exports.getBuyUnits = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: buyunits,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -69,7 +69,7 @@ exports.getContactOption = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: ContactOptions,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -84,7 +84,7 @@ exports.getSocialOption = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: SocialOptions,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -99,7 +99,7 @@ exports.getStaticPage = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: staticpages,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -114,7 +114,7 @@ exports.getCity = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: cities,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -129,7 +129,7 @@ exports.getSingleCity = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: cities,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -144,7 +144,7 @@ exports.getContract = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: cities,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -161,7 +161,7 @@ exports.getContractDetails = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: cities,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -176,7 +176,7 @@ exports.getTransport = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: cities,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -191,7 +191,7 @@ exports.getInventory = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: cities,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -206,7 +206,7 @@ exports.getSingleTransport = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: cities,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -221,7 +221,7 @@ exports.getSingleInventory = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: cities,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -236,7 +236,7 @@ exports.getSettings = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: settings,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -251,7 +251,7 @@ exports.getSingleSettings = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: settings,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -266,7 +266,7 @@ exports.getdelivery_time = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: settings,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -287,7 +287,7 @@ exports.adddelivery_time = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: rs,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -310,7 +310,7 @@ exports.updatedelivery_time = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: _city,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -326,7 +326,7 @@ exports.deletedelivery_time = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: [],
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -349,7 +349,7 @@ exports.addSetting = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: rs,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -375,7 +375,7 @@ exports.updateSetting = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: _setting,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -391,7 +391,7 @@ exports.deleteSetting = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: [],
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -410,7 +410,7 @@ exports.addCity = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: rs,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -432,7 +432,7 @@ exports.updateCity = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: _city,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -448,7 +448,7 @@ exports.deleteCity = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: [],
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -470,7 +470,7 @@ exports.addContract = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: rs,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -495,7 +495,7 @@ exports.updateContract = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: _city,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -511,7 +511,7 @@ exports.deleteContract = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: [],
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -531,7 +531,7 @@ exports.addInventory = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: rs,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -551,7 +551,7 @@ exports.addTransport = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: rs,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -574,7 +574,7 @@ exports.updateInventory = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: _city,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -597,7 +597,7 @@ exports.updateTransport = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: _city,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -613,7 +613,7 @@ exports.deleteInventory = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: [],
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -629,7 +629,7 @@ exports.deleteTransport = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: [],
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -649,7 +649,7 @@ exports.addSocial = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: rs,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -672,7 +672,7 @@ exports.updateSocial = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: SocialOptions,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -688,7 +688,7 @@ exports.deleteSocial = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: [],
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -703,7 +703,7 @@ exports.getSingleStatic = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: StaticPages,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -723,7 +723,7 @@ exports.addStatic = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: rs,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -745,7 +745,7 @@ exports.updateStatic = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: staticpages,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -761,7 +761,7 @@ exports.deleteStatic = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: [],
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -776,7 +776,7 @@ exports.getSingleContract = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: ContactOptions,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -793,7 +793,7 @@ exports.getSingleContact = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: ContactOptions,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -813,7 +813,7 @@ exports.addContact = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: rs,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -835,7 +835,7 @@ exports.updateContact = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: ContactOptions,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -850,7 +850,7 @@ exports.deleteContact = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: [],
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }

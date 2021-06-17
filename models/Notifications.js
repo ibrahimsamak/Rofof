@@ -1,43 +1,37 @@
-const Joi = require('joi');
-const mongoose = require('mongoose');
+const Joi = require("joi");
+const mongoose = require("mongoose");
 
-const Notificationschema = mongoose.Schema({
+const Notificationschema = mongoose.Schema(
+  {
     from: {
-        type: String,
-        required: false
+      type: String,
     },
     user_id: {
-        type: String,
-        required: false
+      type: String,
     },
     title: {
-        type: String,
-        required: false
+      type: String,
     },
     msg: {
-        type: String,
-        required: false
+      type: String,
     },
     dt_date: {
-        type: Date,
-        required: false
+      type: Date,
     },
     type: {
-        type: Number,
-        required: false
+      type: Number,
     },
     body_parms: {
-        type: String,
-        required: false
+      type: String,
     },
     isRead: {
-        type: Boolean,
-        required: false
+      type: Boolean,
     },
-}, { versionKey: false });
+  },
+  { versionKey: false }
+);
 
-
-Notificationschema.index({ "user_id": 1, "isRead": 1 })
-const Notifications = mongoose.model('Notification', Notificationschema);
+Notificationschema.index({ user_id: 1, isRead: 1 });
+const Notifications = mongoose.model("Notification", Notificationschema);
 
 exports.Notifications = Notifications;

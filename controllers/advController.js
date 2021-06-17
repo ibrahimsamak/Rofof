@@ -1,31 +1,11 @@
 // External Dependancies
 const boom = require("boom");
 const fs = require("fs");
-const cloudinary = require("cloudinary");
-
-cloudinary.config({
-  cloud_name: "dsz57mpwt",
-  api_key: "798849627961531",
-  api_secret: "mluiA31CtWFTj5E5EMPRS5tvQXw",
-});
 
 // Get Data Models
 const { Adv } = require("../models/adv");
 const { getCurrentDateTime } = require("../models/Constant");
-
-async function uploadImages(img) {
-  return new Promise(function (resolve, reject) {
-    cloudinary.v2.uploader.upload("./uploads/" + img, function (error, result) {
-      if (error) {
-        reject(error);
-      } else {
-        console.log(result, error);
-        img = result["url"];
-        resolve(img);
-      }
-    });
-  });
-}
+const { uploadImages, makeid, handleError } = require("../utils/utils");
 
 // Get all advs
 exports.getAdv = async (req, reply) => {
@@ -50,7 +30,7 @@ exports.getAdv = async (req, reply) => {
         pageNumber: page,
       },
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -66,7 +46,7 @@ exports.getSingleAdv = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: Advs,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -85,8 +65,9 @@ exports.addAdv = async (req, reply) => {
         });
       }
       var data = new Buffer(files.image.data);
+      let rand = makeid();
       fs.writeFile(
-        "./uploads/" + files.image.name,
+        "./uploads/" + rand + files.image.name,
         data,
         "binary",
         function (err) {
@@ -99,7 +80,7 @@ exports.addAdv = async (req, reply) => {
       );
 
       let img = "";
-      await uploadImages(files.image.name).then((x) => {
+      await uploadImages(rand + files.image.name).then((x) => {
         img = x;
       });
 
@@ -115,7 +96,16 @@ exports.addAdv = async (req, reply) => {
         createAt: getCurrentDateTime(),
         name: req.raw.body.name,
       });
-
+      var _return = handleError(Advs.validateSync);
+      if (_return.length > 0) {
+        reply.code(200).send({
+          status_code: 400,
+          status: false,
+          message: _return[0],
+          items: _return,
+        });
+        return;
+      }
       let rs = await Advs.save();
       const response = {
         status_code: 200,
@@ -142,7 +132,7 @@ exports.deleteAdv = async (req, reply) => {
   };
   // await updateCacheWithDelete('Advs', req.params.id)
 
-  return response;
+  reply.send(response);
 };
 
 // Update an existing adv
@@ -158,8 +148,10 @@ exports.updateAdv = async (req, reply) => {
         });
       }
       var data = new Buffer(files.image.data);
+      let rand = makeid();
+
       fs.writeFile(
-        "./uploads/" + files.image.name,
+        "./uploads/" + rand + files.image.name,
         data,
         "binary",
         function (err) {
@@ -172,7 +164,7 @@ exports.updateAdv = async (req, reply) => {
       );
 
       let img = "";
-      await uploadImages(files.image.name).then((x) => {
+      await uploadImages(rand + files.image.name).then((x) => {
         img = x;
       });
 
@@ -189,7 +181,19 @@ exports.updateAdv = async (req, reply) => {
           by: req.raw.body.by,
           name: req.raw.body.name,
         },
-        { new: true }
+        { new: true, runValidators: true },
+        function (err, model) {
+          var _return = handleError(err);
+          if (_return.length > 0) {
+            reply.code(200).send({
+              status_code: 400,
+              status: false,
+              message: _return[0],
+              items: _return,
+            });
+            return;
+          }
+        }
       );
       // await updateCacheWithUpdate('Advs', Advs, req.params.id)
 
@@ -199,7 +203,7 @@ exports.updateAdv = async (req, reply) => {
         message: "تمت العملية بنجاح",
         items: Advs,
       };
-      return response;
+      reply.send(response);
     } else {
       const Advs = await Adv.findByIdAndUpdate(
         req.params.id,
@@ -213,7 +217,19 @@ exports.updateAdv = async (req, reply) => {
           by: req.raw.body.by,
           name: req.raw.body.name,
         },
-        { new: true }
+        { new: true, runValidators: true },
+        function (err, model) {
+          var _return = handleError(err);
+          if (_return.length > 0) {
+            reply.code(200).send({
+              status_code: 400,
+              status: false,
+              message: _return[0],
+              items: _return,
+            });
+            return;
+          }
+        }
       );
       // await updateCacheWithUpdate('Advs', Advs, req.params.id)
 
@@ -223,7 +239,7 @@ exports.updateAdv = async (req, reply) => {
         message: "تمت العملية بنجاح",
         items: Advs,
       };
-      return response;
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);

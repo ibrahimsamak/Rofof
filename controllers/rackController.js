@@ -13,7 +13,7 @@ const moment = require("moment");
 const { rack, reserve } = require("../models/Rack");
 const { Product } = require("../models/Product");
 const { renters } = require("../models/Renter");
-const { sendSMS } = require("../utils/utils");
+const { sendSMS, handleError } = require("../utils/utils");
 
 function makeid() {
   var text = "";
@@ -100,28 +100,26 @@ exports.getrack = async (req, reply) => {
       query["rack_no"] = { $regex: new RegExp(req.query.name, "i") };
     }
     const total = await rack.find(query).count();
-    await rack
+    var item = await rack
       .find(query)
       .populate("inventory_id")
       .sort({ _id: -1 })
       .skip(page * limit)
-      .limit(limit)
-      .exec(function (err, item) {
-        console.log(item);
-        const response = {
-          status_code: 200,
-          status: true,
-          message: "تمت العملية بنجاح",
-          items: item,
-          pagenation: {
-            size: item.length,
-            totalElements: total,
-            totalPages: Math.floor(total / limit),
-            pageNumber: page,
-          },
-        };
-        reply.send(response);
-      });
+      .limit(limit);
+    console.log(item);
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: item,
+      pagenation: {
+        size: item.length,
+        totalElements: total,
+        totalPages: Math.floor(total / limit),
+        pageNumber: page,
+      },
+    };
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -138,7 +136,7 @@ exports.getSinglerack = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: _rack,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -157,7 +155,7 @@ exports.addrack = async (req, reply) => {
         message: "عذرا الرقم المرجعي موجود مسبقا",
         items: {},
       };
-      return response;
+      reply.send(response);
     }
     let _rack = new rack({
       length: req.body.length,
@@ -171,7 +169,16 @@ exports.addrack = async (req, reply) => {
       widthUnit: req.body.widthUnit,
       heightUnit: req.body.heightUnit,
     });
-
+    var _return = handleError(_rack.validateSync());
+    if (_return.length > 0) {
+      reply.code(200).send({
+        status_code: 400,
+        status: false,
+        message: _return[0],
+        items: _return,
+      });
+      return;
+    }
     let rs = await _rack.save();
     const response = {
       status_code: 200,
@@ -179,7 +186,7 @@ exports.addrack = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: rs,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -194,7 +201,7 @@ exports.deleterack = async (req, reply) => {
     message: "تمت العملية بنجاح",
     items: [],
   };
-  return response;
+  reply.send(response);
 };
 
 // Update an existing rack
@@ -210,7 +217,7 @@ exports.updaterack = async (req, reply) => {
         message: "عذرا الرقم المرجعي موجود مسبقا",
         items: {},
       };
-      return response;
+      reply.send(response);
     }
 
     const _rack = await rack.findByIdAndUpdate(
@@ -226,7 +233,19 @@ exports.updaterack = async (req, reply) => {
         widthUnit: req.body.widthUnit,
         heightUnit: req.body.heightUnit,
       },
-      { new: true }
+      { new: true, runValidators: true },
+      function (err, model) {
+        var _return = handleError(err);
+        if (_return.length > 0) {
+          reply.code(200).send({
+            status_code: 400,
+            status: false,
+            message: _return[0],
+            items: _return,
+          });
+          return;
+        }
+      }
     );
 
     const response = {
@@ -235,7 +254,7 @@ exports.updaterack = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: _rack,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -244,23 +263,21 @@ exports.updaterack = async (req, reply) => {
 // Get all reserve rack by renter id
 exports.getReserveRack = async (req, reply) => {
   try {
-    await reserve
+    var item = await reserve
       .find({ $and: [{ renter_id: req.params.id }] })
       .populate({
         path: "rack_id",
       })
       .populate("renter_id")
       .populate("contract_id")
-      .sort({ _id: -1 })
-      .exec(function (err, item) {
-        const response = {
-          status_code: 200,
-          status: true,
-          message: "تمت العملية بنجاح",
-          items: item,
-        };
-        reply.send(response);
-      });
+      .sort({ _id: -1 });
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: item,
+    };
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -268,19 +285,15 @@ exports.getReserveRack = async (req, reply) => {
 
 exports.getReserveRackById = async (req, reply) => {
   try {
-    await reserve
-      .findById(req.params.id)
-      .sort({ _id: -1 })
-      .exec(function (err, item) {
-        console.log(item);
-        const response = {
-          status_code: 200,
-          status: true,
-          message: "تمت العملية بنجاح",
-          items: item,
-        };
-        reply.send(response);
-      });
+    var item = await reserve.findById(req.params.id).sort({ _id: -1 });
+    console.log(item);
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: item,
+    };
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -325,7 +338,7 @@ exports.addReserveRack = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: null,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -386,7 +399,7 @@ exports.renewReservRack = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: null,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -414,7 +427,7 @@ exports.updateReserveRack = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: _reserve,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -445,23 +458,19 @@ exports.deleteReserveRack = async (req, reply) => {
     message: "تمت العملية بنجاح",
     items: [],
   };
-  return response;
+  reply.send(response);
 };
 
 exports.rackList = async (req, reply) => {
   try {
-    await rack
-      .find()
-      .sort({ _id: -1 })
-      .exec(function (err, item) {
-        const response = {
-          status_code: 200,
-          status: true,
-          message: "تمت العملية بنجاح",
-          items: item,
-        };
-        reply.send(response);
-      });
+    var item = await rack.find().sort({ _id: -1 });
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: item,
+    };
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -469,18 +478,14 @@ exports.rackList = async (req, reply) => {
 
 exports.rackListNotReserved = async (req, reply) => {
   try {
-    await rack
-      .find({ isReserved: false })
-      .sort({ _id: -1 })
-      .exec(function (err, item) {
-        const response = {
-          status_code: 200,
-          status: true,
-          message: "تمت العملية بنجاح",
-          items: item,
-        };
-        reply.send(response);
-      });
+    var item = await rack.find({ isReserved: false }).sort({ _id: -1 });
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: item,
+    };
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -490,26 +495,22 @@ exports.getRackListNotReservedAndMyRacks = async (req, reply) => {
   try {
     var _reserve = await reserve.findById(req.params.id).populate("rack_id");
 
-    await rack
-      .find({ isReserved: false })
-      .sort({ _id: -1 })
-      .exec(function (err, item) {
-        var arr = [];
-        item.forEach((element) => {
-          arr.push(element);
-        });
-        _reserve.rack_id.forEach((element) => {
-          arr.push(element);
-        });
+    var item = await rack.find({ isReserved: false }).sort({ _id: -1 });
+    var arr = [];
+    item.forEach((element) => {
+      arr.push(element);
+    });
+    _reserve.rack_id.forEach((element) => {
+      arr.push(element);
+    });
 
-        const response = {
-          status_code: 200,
-          status: true,
-          message: "تمت العملية بنجاح",
-          items: arr,
-        };
-        reply.send(response);
-      });
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: arr,
+    };
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -547,7 +548,7 @@ exports.getRackReserveSeacrh = async (req, reply) => {
     }
 
     var total = await reserve.find(query).count();
-    await reserve
+    var item = await reserve
       .find(query)
       .sort(sort)
       .populate("renter_id")
@@ -556,22 +557,20 @@ exports.getRackReserveSeacrh = async (req, reply) => {
       })
       .populate("contract_id")
       .skip(page * limit)
-      .limit(limit)
-      .exec(function (err, item) {
-        const response = {
-          items: item,
-          status_code: 200,
-          status: true,
-          message: "returned successfully",
-          pagenation: {
-            size: item.length,
-            totalElements: total,
-            totalPages: Math.floor(total / limit),
-            pageNumber: page,
-          },
-        };
-        reply.send(response);
-      });
+      .limit(limit);
+    const response = {
+      items: item,
+      status_code: 200,
+      status: true,
+      message: "returned successfully",
+      pagenation: {
+        size: item.length,
+        totalElements: total,
+        totalPages: Math.floor(total / limit),
+        pageNumber: page,
+      },
+    };
+    reply.send(response);
   } catch {
     throw boom.boomify();
   }
@@ -606,23 +605,21 @@ exports.getRackReserveSeacrhExcel = async (req, reply) => {
       };
     }
 
-    await reserve
+    var item = await reserve
       .find(query)
       .sort(sort)
       .populate("renter_id")
       .populate({
         path: "rack_id",
       })
-      .populate("contract_id")
-      .exec(function (err, item) {
-        const response = {
-          status: true,
-          items: item,
-          status_code: 200,
-          message: "returned successfully",
-        };
-        reply.send(response);
-      });
+      .populate("contract_id");
+    const response = {
+      status: true,
+      items: item,
+      status_code: 200,
+      message: "returned successfully",
+    };
+    reply.send(response);
   } catch {
     throw boom.boomify();
   }
@@ -647,7 +644,7 @@ exports.getRackReserveAboutToFinish = async (req, reply) => {
       })
       .count();
 
-    await reserve
+    var item = await reserve
       .find({
         end_date: {
           $gt: current_date,
@@ -661,22 +658,20 @@ exports.getRackReserveAboutToFinish = async (req, reply) => {
       })
       .populate("contract_id")
       .skip(page * limit)
-      .limit(limit)
-      .exec(function (err, item) {
-        console.log(item);
-        const response = {
-          items: item,
-          status_code: 200,
-          message: "returned successfully",
-          pagenation: {
-            size: item.length,
-            totalElements: total,
-            totalPages: Math.floor(total / limit),
-            pageNumber: page,
-          },
-        };
-        reply.send(response);
-      });
+      .limit(limit);
+    console.log(item);
+    const response = {
+      items: item,
+      status_code: 200,
+      message: "returned successfully",
+      pagenation: {
+        size: item.length,
+        totalElements: total,
+        totalPages: Math.floor(total / limit),
+        pageNumber: page,
+      },
+    };
+    reply.send(response);
   } catch {
     throw boom.boomify();
   }
@@ -700,7 +695,7 @@ exports.getRackReserveAboutToFinishExcel = async (req, reply) => {
     //   })
     //   .count();
 
-    await reserve
+    var item = await reserve
       .find({
         end_date: {
           $gt: current_date,
@@ -712,24 +707,22 @@ exports.getRackReserveAboutToFinishExcel = async (req, reply) => {
       .populate({
         path: "rack_id",
       })
-      .populate("contract_id")
-      // .skip(page * limit)
-      // .limit(limit)
-      .exec(function (err, item) {
-        console.log(item);
-        const response = {
-          items: item,
-          status_code: 200,
-          message: "returned successfully",
-          // pagenation: {
-          //   size: item.length,
-          //   totalElements: total,
-          //   totalPages: Math.floor(total / limit),
-          //   pageNumber: page,
-          // },
-        };
-        reply.send(response);
-      });
+      .populate("contract_id");
+    // .skip(page * limit)
+    // .limit(limit)
+    console.log(item);
+    const response = {
+      items: item,
+      status_code: 200,
+      message: "returned successfully",
+      // pagenation: {
+      //   size: item.length,
+      //   totalElements: total,
+      //   totalPages: Math.floor(total / limit),
+      //   pageNumber: page,
+      // },
+    };
+    reply.send(response);
   } catch {
     throw boom.boomify();
   }

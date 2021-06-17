@@ -16,7 +16,7 @@ exports.getNotfications = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: _Notification,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -39,7 +39,7 @@ exports.readNotifications = async (req, reply) => {
       message: "تم تعديل حالة التنبيه بنجاح",
       items: _Notification,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }

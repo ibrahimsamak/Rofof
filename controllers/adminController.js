@@ -7,7 +7,12 @@ require("dotenv").config();
 
 // Get Data Models
 const { Admin } = require("../models/Admin");
-const { encryptPassword, decryptPassword, sendSMS } = require("../utils/utils");
+const {
+  encryptPassword,
+  decryptPassword,
+  sendSMS,
+  handleError,
+} = require("../utils/utils");
 
 // Get all Admins
 exports.getAdmins = async (req, reply) => {
@@ -16,26 +21,23 @@ exports.getAdmins = async (req, reply) => {
     var limit = parseFloat(req.query.limit, 10);
     const total = await Admin.find().count();
 
-    const Admins = await Admin.find()
+    const item = await Admin.find()
       .sort({ _id: -1 })
       .skip(page * limit)
-      .limit(limit)
-      .exec(function (err, item) {
-        console.log(item);
-        const response = {
-          status_code: 200,
-          status: true,
-          message: "تمت العملية بنجاح",
-          items: item,
-          pagenation: {
-            size: item.length,
-            totalElements: total,
-            totalPages: Math.floor(total / limit),
-            pageNumber: page,
-          },
-        };
-        reply.send(response);
-      });
+      .limit(limit);
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: item,
+      pagenation: {
+        size: item.length,
+        totalElements: total,
+        totalPages: Math.floor(total / limit),
+        pageNumber: page,
+      },
+    };
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -53,7 +55,7 @@ exports.getSingleAdmin = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: adminObjet,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -72,7 +74,16 @@ exports.addAdmin = async (req, reply) => {
         expiresIn: "365d",
       }),
     });
-
+    var _return = handleError(Admins.validateSync);
+    if (_return.length > 0) {
+      reply.code(200).send({
+        status_code: 400,
+        status: false,
+        message: _return[0],
+        items: _return,
+      });
+      return;
+    }
     let rs = await Admins.save();
 
     let msg =
@@ -88,7 +99,7 @@ exports.addAdmin = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: rs,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -120,7 +131,7 @@ exports.login = async (req, reply) => {
         message: "تمت العملية بنجاح",
         items: _Admins,
       };
-      return response;
+      reply.send(response);
     } else {
       const response = {
         status_code: 404,
@@ -128,7 +139,7 @@ exports.login = async (req, reply) => {
         message: "تمت العملية بنجاح",
         items: null,
       };
-      return response;
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);
@@ -153,7 +164,7 @@ exports.refreshToken = async (req, reply) => {
         message: "حدث خطأ الرجاء المحاولة مرة اخرى",
         items: [],
       };
-      return response;
+      reply.send(response);
     } else {
       const response = {
         status_code: 200,
@@ -161,7 +172,7 @@ exports.refreshToken = async (req, reply) => {
         message: "",
         items: user,
       };
-      return response;
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);
@@ -177,7 +188,7 @@ exports.deleteAdmin = async (req, reply) => {
     message: "تمت العملية بنجاح",
     items: [],
   };
-  return response;
+  reply.send(response);
 };
 
 // Update an existing Admin
@@ -195,7 +206,19 @@ exports.updateAdmin = async (req, reply) => {
           expiresIn: "365d",
         }),
       },
-      { new: true }
+      { new: true, runValidators: true },
+      function (err, model) {
+        var _return = handleError(err);
+        if (_return.length > 0) {
+          reply.code(200).send({
+            status_code: 400,
+            status: false,
+            message: _return[0],
+            items: _return,
+          });
+          return;
+        }
+      }
     );
 
     const response = {
@@ -204,7 +227,7 @@ exports.updateAdmin = async (req, reply) => {
       message: "تمت العملية بنجاح",
       items: Admins,
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -230,7 +253,7 @@ exports.logout = async (req, reply) => {
         message: "حدث خطأ الرجاء المحاولة مرة اخرى",
         items: [],
       };
-      return response;
+      reply.send(response);
     } else {
       const response = {
         status_code: 200,
@@ -238,7 +261,7 @@ exports.logout = async (req, reply) => {
         message: "تم تسجيل الخروج بنجاح",
         items: user,
       };
-      return response;
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);
@@ -266,7 +289,7 @@ exports.changePassword = async (req, reply) => {
           message: "تم تعديل كلمة المرور بنجاح بنجاح",
           items: update,
         };
-        return response;
+        reply.send(response);
       } else {
         const response = {
           status_code: 400,
@@ -274,7 +297,7 @@ exports.changePassword = async (req, reply) => {
           message: "كلمة المرور القديمة غير صحيحة",
           items: {},
         };
-        return response;
+        reply.send(response);
       }
     } else {
       const response = {
@@ -283,7 +306,7 @@ exports.changePassword = async (req, reply) => {
         message: "المستخدم غير موجود",
         items: [],
       };
-      return response;
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);

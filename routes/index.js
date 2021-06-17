@@ -1,21 +1,20 @@
 // Import our Controllers
+const auth = require("../controllers/auth");
 const userController = require("../controllers/userController");
 const notificationController = require("../controllers/notificationController");
 const constantController = require("../controllers/constantController");
-const auth = require("../controllers/auth");
 const productController = require("../controllers/productController");
 const orderController = require("../controllers/orderController");
 const reportController = require("../controllers/reportController");
 const adminController = require("../controllers/adminController");
 const renterController = require("../controllers/renterController");
-const pointController = require("../controllers/pointController");
 const advController = require("../controllers/advController");
 const couponController = require("../controllers/couponController");
 const favoriteController = require("../controllers/favoriteController");
 const rackController = require("../controllers/rackController");
 
 const fastify = require("fastify")({
-  logger: true,
+  logger: false,
 });
 
 // Import Swagger documentation
@@ -264,35 +263,6 @@ const routes = [
     beforeHandler: [auth.getToken],
     handler: adminController.refreshToken,
   },
-  {
-    method: "GET",
-    url: "/api/supplier",
-    handler: productController.getSupplier,
-  },
-  {
-    method: "GET",
-    url: "/api/getsupplier/:id",
-    handler: productController.getSingleSupplier,
-  },
-  {
-    method: "POST",
-    url: "/api/addsupplier",
-    beforeHandler: [auth.getToken],
-    handler: productController.addSupplier,
-  },
-  {
-    method: "POST",
-    url: "/api/updatesupplier/:id",
-    beforeHandler: [auth.getToken],
-    handler: productController.updateSupplier,
-  },
-  {
-    method: "POST",
-    url: "/api/deletesupplier/:id",
-    beforeHandler: [auth.getToken],
-    handler: productController.deleteSupplier,
-  },
-
   {
     method: "GET",
     url: "/api/getcategory/:id",
@@ -947,45 +917,6 @@ const routes = [
   },
 
   {
-    method: "POST",
-    url: "/api/addPoint",
-    beforeHandler: [auth.getToken],
-    handler: pointController.addPoint,
-  },
-  {
-    method: "POST",
-    url: "/api/updatePoint/:id",
-    beforeHandler: [auth.getToken],
-    handler: pointController.updatePoint,
-  },
-  {
-    method: "POST",
-    url: "/api/deletePoint/:id",
-    beforeHandler: [auth.getToken],
-    handler: pointController.deletePoint,
-  },
-  {
-    method: "GET",
-    url: "/api/getSupplierPoint/:id",
-    handler: pointController.getSupplierPoint,
-  },
-  {
-    method: "GET",
-    url: "/api/getSinglePoint/:id",
-    handler: pointController.getSinglePoint,
-  },
-  {
-    method: "GET",
-    url: "/api/UserPointById/:id",
-    handler: pointController.UserPointById,
-  },
-  {
-    method: "GET",
-    url: "/api/updateUserPoint/:id",
-    beforeHandler: [auth.getToken],
-    handler: pointController.updateUserPoint,
-  },
-  {
     method: "GET",
     url: "/api/getProductsCount/:id",
     handler: reportController.getProductsCount,
@@ -1093,24 +1024,6 @@ const routes = [
     url: "/api/getdelivery_time/:id",
     handler: constantController.getdelivery_time,
   },
-
-  {
-    method: "POST",
-    url: "/api/company/upload_file",
-    beforeHandler: [auth.getToken],
-    handler: productController.uploadPhoto,
-  },
-  {
-    method: "POST",
-    url: "/api/company/addPoint",
-    beforeHandler: [auth.getToken],
-    handler: pointController.addPoint,
-  },
-  {
-    method: "GET",
-    url: "/api/company/getOrderDetails",
-    handler: orderController.getOrderDetails,
-  },
   {
     method: "POST",
     url: "/api/addSettings",
@@ -1135,11 +1048,6 @@ const routes = [
     url: "/api/updatedelivery_time/:id",
     beforeHandler: [auth.getToken],
     handler: constantController.updatedelivery_time,
-  },
-  {
-    method: "GET",
-    url: "/api/company/getCategoriesAdmin",
-    handler: productController.getCategoriesAdmin,
   },
   {
     method: "GET",
@@ -1199,17 +1107,6 @@ const routes = [
     method: "GET",
     url: "/api/getProductsByRackId/:id",
     handler: productController.getProductsByRackId,
-  },
-  {
-    method: "GET",
-    url: "/api/company/importantCounters/:id",
-    handler: reportController.importantCounters,
-  },
-  {
-    method: "POST",
-    url: "/api/company/updateOrderByAdmin/:id",
-    beforeHandler: [auth.getToken],
-    handler: orderController.updateOrderByAdmin,
   },
 ];
 

@@ -31,8 +31,6 @@ var ref = geoFire.ref(); // ref === firebaseRef
 // Get Data Models
 const { Order } = require("../models/Order");
 const { Admin } = require("../models/Admin");
-const { Point } = require("../models/Point");
-const { UserPoint } = require("../models/userPoint");
 const { Notifications } = require("../models/Notifications");
 const { renters } = require("../models/Renter");
 const { sendSMS } = require("../utils/utils");
@@ -45,12 +43,11 @@ const {
   setting,
   contract,
 } = require("../models/Constant");
-const { Product, Category, Supplier } = require("../models/Product");
+const { Product, Category } = require("../models/Product");
 const { userRate, prodcutComment } = require("../models/userRate");
 const { getCurrentDateTime } = require("../models/Constant");
 const { coupon } = require("../models/couponmodel");
 const { tokens } = require("../models/Constant");
-const { companyCommision } = require("../models/companyCommision");
 const { PaymnetLog, TempPayment } = require("../models/Payment");
 const { reserve } = require("../models/Rack");
 
@@ -62,223 +59,6 @@ const options = {
 };
 const geocoder = NodeGeocoder(options);
 
-function makeid() {
-  var text = "";
-  var possible = "0123456789";
-
-  for (var i = 0; i < 3; i++)
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-  return text;
-}
-
-async function getAddress(lat, lng) {
-  var current_city = "";
-  return new Promise(function (resolve, reject) {
-    geocoder
-      .reverse({ lat: lat, lon: lng })
-      .then(async function (res) {
-        if (res) {
-          console.log(res[0]);
-          console.log(
-            res[0]["administrativeLevels"]["level1long"],
-            res[0].country
-          );
-          current_city = res[0]["administrativeLevels"]["level1long"];
-          resolve(current_city);
-        } else {
-          reject("");
-        }
-      })
-      .catch(function (err) {
-        console.log(err);
-        reject(err);
-      });
-  });
-}
-
-function CreateExtraNotification(
-  deviceId,
-  msg,
-  order_id,
-  from_userName,
-  to_user_id
-) {
-  return new Promise(function (resolve, reject) {
-    let postModel = {
-      notification: {
-        title: "متابعة الطلبات",
-        body: msg,
-        sound: "default",
-        badge: 1,
-      },
-      data: {
-        data: order_id,
-      },
-      to: deviceId,
-    };
-    var data = JSON.stringify(postModel);
-    var xhr = new XMLHttpRequest();
-    //xhr.withCredentials = true;
-
-    xhr.addEventListener("readystatechange", function () {
-      if (this.readyState === 4) {
-        console.log("send" + this.responseText);
-      }
-    });
-
-    xhr.open("POST", "https://fcm.googleapis.com/fcm/send");
-    xhr.setRequestHeader(
-      "Authorization",
-      "key=AAAAN6yOxXI:APA91bH99PN9-Cyfph4w4Tf1pWScF1M3OZOhpsM1FrTZdbjjhhPnDaSmP5MAqTsAY8hPNWx4FaCnBsqgLUlwtzc5cv4osE0uPwSvYwU31bHE_LaHMuLeB9qFcXKkIV59_Rr1eWZbWJoY"
-    );
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.send(data);
-    resolve(data);
-  });
-}
-
-function CreateNotification(
-  deviceId,
-  msg,
-  order_id,
-  from_userName,
-  to_user_id
-) {
-  return new Promise(function (resolve, reject) {
-    let _Notification = new Notifications({
-      from: from_userName,
-      user_id: to_user_id,
-      title: "متابعة الطلبات",
-      msg: msg,
-      dt_date: getCurrentDateTime(),
-      type: 1,
-      body_parms: order_id,
-      isRead: false,
-    });
-
-    let rs = _Notification.save();
-    console.log(rs);
-    let postModel = {
-      notification: {
-        title: "متابعة الطلبات",
-        body: msg,
-        sound: "default",
-        badge: 1,
-      },
-      data: {
-        data: order_id,
-      },
-      to: deviceId,
-    };
-    var data = JSON.stringify(postModel);
-    var xhr = new XMLHttpRequest();
-    //xhr.withCredentials = true;
-
-    xhr.addEventListener("readystatechange", function () {
-      if (this.readyState === 4) {
-        console.log("send" + this.responseText);
-      }
-    });
-
-    xhr.open("POST", "https://fcm.googleapis.com/fcm/send");
-    xhr.setRequestHeader(
-      "Authorization",
-      "key=AAAAN6yOxXI:APA91bH99PN9-Cyfph4w4Tf1pWScF1M3OZOhpsM1FrTZdbjjhhPnDaSmP5MAqTsAY8hPNWx4FaCnBsqgLUlwtzc5cv4osE0uPwSvYwU31bHE_LaHMuLeB9qFcXKkIV59_Rr1eWZbWJoY"
-    );
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.send(data);
-    resolve(data);
-  });
-}
-
-function CreateNotificationMultiple(
-  deviceId,
-  msg,
-  order_id,
-  from_userName,
-  to_user_id
-) {
-  return new Promise(function (resolve, reject) {
-    // let _Notification = new Notifications({
-    //     from: from_userName,
-    //     user_id: to_user_id,
-    //     title: 'متابعة الطلبات',
-    //     msg: msg,
-    //     dt_date: getCurrentDateTime(),
-    //     type: 1,
-    //     body_parms: order_id,
-    //     isRead: false
-    // });
-
-    // let rs = _Notification.save();
-    // console.log(rs);
-
-    let postModel = {
-      notification: {
-        title: "متابعة الطلبات",
-        body: msg,
-        sound: "default",
-        icon: "assets/images/logo.png",
-        badge: 1,
-      },
-      data: {
-        data: order_id,
-      },
-      registration_ids: deviceId,
-    };
-    var data = JSON.stringify(postModel);
-    var xhr = new XMLHttpRequest();
-    //xhr.withCredentials = true;
-
-    xhr.addEventListener("readystatechange", function () {
-      if (this.readyState === 4) {
-        console.log("send" + this.responseText);
-      }
-    });
-
-    xhr.open("POST", "https://fcm.googleapis.com/fcm/send");
-    xhr.setRequestHeader(
-      "Authorization",
-      "key=AAAAN6yOxXI:APA91bH99PN9-Cyfph4w4Tf1pWScF1M3OZOhpsM1FrTZdbjjhhPnDaSmP5MAqTsAY8hPNWx4FaCnBsqgLUlwtzc5cv4osE0uPwSvYwU31bHE_LaHMuLeB9qFcXKkIV59_Rr1eWZbWJoY"
-    );
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.send(data);
-    resolve(data);
-  });
-}
-
-async function updateNanaOrder(obj) {
-  let url = "https://nana.sa/api/change_order_level_by_key";
-  let config = {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: obj.token,
-    },
-  };
-
-  try {
-    let requestData = axios.post(url, obj, config);
-    // .then(async function (response) {
-    //     console.log(response.data);
-    //     return response
-    // })
-    // .catch(function (error) {
-    //     console.log(error);
-    //     return error
-    // });
-    console.log(requestData.data);
-    return requestData;
-  } catch (err) {
-    console.log(err);
-    return err;
-  }
-}
-
-exports.testNana = async (req, reply) => {
-  const obj = Order.find({ nanaOrderId: req.params.id });
-  return obj;
-};
 // add new order of products
 // order type : 1 - product , 2 - refill , 3 - gaz Tunck , 4 - gaz Product
 
@@ -293,10 +73,10 @@ exports.addOrder = async (req, reply) => {
     }
 
     for await (const data of req.body.items) {
-      var prod = await Product.findOne({ _id: data.product_id });
-      var reserve_id = await reserve.findOne({ _id: prod.reserve_id });
-      var contract_id = await contract.findOne({ _id: reserve_id.contract_id });
-
+      var prod = await Product.findById(data.product_id);
+      var reserve_id = await reserve.findById(prod.reserve_id);
+      var contract_id = await contract.findById(reserve_id.contract_id);
+      console.log(reserve_id);
       percentage = Number(contract_id.value);
     }
 
@@ -467,7 +247,7 @@ exports.addRate = async (req, reply) => {
       items: [],
     };
 
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -490,7 +270,7 @@ exports.addProcutComment = async (req, reply) => {
       items: [],
     };
 
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -508,7 +288,7 @@ exports.approveRate = async (req, reply) => {
       message: "تم التعديل بنجاح",
       items: [],
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -554,7 +334,7 @@ exports.getUserOrder = async (req, reply) => {
         query["StatusId"] = req.query.staustId;
       }
 
-      await Order.find(query)
+      var item = await Order.find(query)
         .sort({ _id: -1 })
         .populate("user_id")
         .populate("driver_id")
@@ -563,25 +343,26 @@ exports.getUserOrder = async (req, reply) => {
           populate: { path: "product_id" },
         })
         .skip(page * limit)
-        .limit(limit)
-        .exec(function (err, item) {
-          console.log(item);
-          const response = {
-            status_code: 200,
-            status: true,
-            message: "تمت العملية بنجاح",
-            items: item,
-            pagenation: {
-              size: item.length,
-              totalElements: total,
-              totalPages: Math.floor(total / limit),
-              pageNumber: page,
-            },
-          };
-          reply.send(response);
-        });
+        .limit(limit);
+      console.log(item);
+      const response = {
+        status_code: 200,
+        status: true,
+        message: "تمت العملية بنجاح",
+        items: item,
+        pagenation: {
+          size: item.length,
+          totalElements: total,
+          totalPages: Math.floor(total / limit),
+          pageNumber: page,
+        },
+      };
+      reply.send(response);
     } else {
-      await Order.find({ user_id: req.query.id, StatusId: req.query.staustId })
+      var item = await Order.find({
+        user_id: req.query.id,
+        StatusId: req.query.staustId,
+      })
         .sort({ _id: -1 })
         .populate("user_id")
         // .populate('driver_id')
@@ -590,23 +371,21 @@ exports.getUserOrder = async (req, reply) => {
           populate: { path: "product_id" },
         })
         .skip(page * limit)
-        .limit(limit)
-        .exec(function (err, item) {
-          console.log(item);
-          const response = {
-            status_code: 200,
-            status: true,
-            message: "تمت العملية بنجاح",
-            items: item,
-            pagenation: {
-              size: item.length,
-              totalElements: total,
-              totalPages: Math.floor(total / limit),
-              pageNumber: page,
-            },
-          };
-          reply.send(response);
-        });
+        .limit(limit);
+      console.log(item);
+      const response = {
+        status_code: 200,
+        status: true,
+        message: "تمت العملية بنجاح",
+        items: item,
+        pagenation: {
+          size: item.length,
+          totalElements: total,
+          totalPages: Math.floor(total / limit),
+          pageNumber: page,
+        },
+      };
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);
@@ -617,22 +396,20 @@ exports.getUserOrder = async (req, reply) => {
 exports.getOrderDetails = async (req, reply) => {
   try {
     console.log(req.query.id);
-    await Order.find({ Order_no: req.params.id })
+    var item = await Order.find({ Order_no: req.params.id })
       .sort({ _id: -1 })
       .populate("user_id")
       .populate({
         path: "items.product_id",
         populate: { path: "product_id" },
-      })
-      .exec(async function (err, item) {
-        const response = {
-          status_code: 200,
-          status: true,
-          message: "تمت العملية بنجاح",
-          items: item,
-        };
-        reply.send(response);
       });
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: item,
+    };
+    reply.send(response);
   } catch {
     throw boom.boomify(err);
   }
@@ -640,67 +417,24 @@ exports.getOrderDetails = async (req, reply) => {
 
 exports.getOrderDetailsByRenter = async (req, reply) => {
   try {
-    await Order.find({ Order_no: req.params.id })
+    var item = await Order.find({ Order_no: req.params.id })
       .sort({ _id: -1 })
       .populate("user_id")
       .populate({
         path: "items.product_id",
         populate: { path: "product_id" },
-      })
-      .exec(async function (err, item) {
-        const response = {
-          status_code: 200,
-          status: true,
-          message: "تمت العملية بنجاح",
-          items: item,
-        };
-        reply.send(response);
       });
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: item,
+    };
+    reply.send(response);
   } catch {
     throw boom.boomify(err);
   }
 };
-
-// cPanel
-// exports.getOrders = async (req, reply) => {
-//   try {
-//     const supplier_id = req.params.id;
-
-//     var page = parseFloat(req.query.page, 10);
-//     var limit = parseFloat(req.query.limit, 10);
-//     const total = await Order.find({
-//       $and: [{ orderType: { $ne: 3 } }, { supplier_id: supplier_id }],
-//     }).count();
-
-//     await Order.find({
-//       $and: [{ orderType: { $ne: 3 } }, { supplier_id: supplier_id }],
-//     })
-//       .sort({ _id: -1 })
-//       .populate("user_id")
-//       .populate("driver_id")
-//       .populate({ path: "items.product_id", populate: { path: "product_id" } })
-//       .skip(page * limit)
-//       .limit(limit)
-//       .exec(function (err, item) {
-//         // if (err) return handleError(err);
-//         const response = {
-//           status_code: 200,
-//           status: true,
-//           message: "تمت العملية بنجاح",
-//           items: item,
-//           pagenation: {
-//             size: item.length,
-//             totalElements: total,
-//             totalPages: Math.floor(total / limit),
-//             pageNumber: page,
-//           },
-//         };
-//         reply.send(response);
-//       });
-//   } catch {
-//     throw boom.boomify(err);
-//   }
-// };
 
 exports.getOrdersByUserId = async (req, reply) => {
   try {
@@ -710,29 +444,27 @@ exports.getOrdersByUserId = async (req, reply) => {
       user_id: req.params.id,
     }).count();
 
-    await Order.find({
+    var item = await Order.find({
       user_id: req.params.id,
     })
       .sort({ _id: -1 })
       .populate({ path: "items.product_id", populate: { path: "product_id" } })
       .skip(page * limit)
-      .limit(limit)
-      .exec(function (err, item) {
-        // if (err) return handleError(err);
-        const response = {
-          status_code: 200,
-          status: true,
-          message: "تمت العملية بنجاح",
-          items: item,
-          pagenation: {
-            size: item.length,
-            totalElements: total,
-            totalPages: Math.floor(total / limit),
-            pageNumber: page,
-          },
-        };
-        reply.send(response);
-      });
+      .limit(limit);
+    // if (err) return handleError(err);
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: item,
+      pagenation: {
+        size: item.length,
+        totalElements: total,
+        totalPages: Math.floor(total / limit),
+        pageNumber: page,
+      },
+    };
+    reply.send(response);
   } catch {
     throw boom.boomify(err);
   }
@@ -773,7 +505,7 @@ exports.getOrdersSeacrh = async (req, reply) => {
       return o.Renter_Total;
     });
     var total = await Order.find(query).count();
-    await Order.find(query)
+    var item = await Order.find(query)
       .sort({ _id: -1 })
       .populate("user_id")
       .populate("city_id")
@@ -781,45 +513,25 @@ exports.getOrdersSeacrh = async (req, reply) => {
       .populate({ path: "items.by_admin_id", populate: { path: "admins" } })
       .populate({ path: "items.by_user_id", populate: { path: "renters" } })
       .skip(page * limit)
-      .limit(limit)
-      .exec(function (err, item) {
-        // console.log(item);
-        // var result = _.filter(item, function (itm) {
-        //   console.log(req.body.renter_id);
-        //   return item;
-        //   // if (req.body.renter_id) {
-        //   //   return itm.items.some(function(x) {
-        //   //     console.log(x);
-        //   //     if (x.by_user_id) {
-        //   //       return x.product_id.by_user_id == req.body.renter_id;
-        //   //     }
-        //   //   });
-        //   // } else {
+      .limit(limit);
 
-        //   // }
-        // });
-        // var result1 = lodash(result)
-        //   .slice(page * limit)
-        //   .take(limit)
-        //   .value();
-        const response = {
-          items: item,
-          status_code: 200,
-          status: true,
-          message: "returned successfully",
-          Total: Total,
-          Total_Discount: Total_Discount,
-          Admin_Total: Admin_Total,
-          Renter_Total: Renter_Total,
-          pagenation: {
-            size: item.length,
-            totalElements: total,
-            totalPages: Math.floor(total / limit),
-            pageNumber: page,
-          },
-        };
-        reply.send(response);
-      });
+    const response = {
+      items: item,
+      status_code: 200,
+      status: true,
+      message: "returned successfully",
+      Total: Total,
+      Total_Discount: Total_Discount,
+      Admin_Total: Admin_Total,
+      Renter_Total: Renter_Total,
+      pagenation: {
+        size: item.length,
+        totalElements: total,
+        totalPages: Math.floor(total / limit),
+        pageNumber: page,
+      },
+    };
+    reply.send(response);
   } catch {
     throw boom.boomify();
   }
@@ -856,26 +568,24 @@ exports.getOrdersSeacrhExcel = async (req, reply) => {
     var Renter_Total = lodash.sumBy(allOrders, function (o) {
       return o.Renter_Total;
     });
-    await Order.find(query)
+    var item = await Order.find(query)
       .sort({ _id: -1 })
       .populate("user_id")
       .populate("city_id")
       .populate({ path: "items.product_id", populate: { path: "product_id" } })
       .populate({ path: "items.by_admin_id", populate: { path: "admins" } })
-      .populate({ path: "items.by_user_id", populate: { path: "renters" } })
-      .exec(function (err, item) {
-        const response = {
-          items: item,
-          status_code: 200,
-          status: true,
-          message: "returned successfully",
-          Total: Total,
-          Total_Discount: Total_Discount,
-          Admin_Total: Admin_Total,
-          Renter_Total: Renter_Total,
-        };
-        reply.send(response);
-      });
+      .populate({ path: "items.by_user_id", populate: { path: "renters" } });
+    const response = {
+      items: item,
+      status_code: 200,
+      status: true,
+      message: "returned successfully",
+      Total: Total,
+      Total_Discount: Total_Discount,
+      Admin_Total: Admin_Total,
+      Renter_Total: Renter_Total,
+    };
+    reply.send(response);
   } catch {
     throw boom.boomify();
   }
@@ -887,30 +597,28 @@ exports.getRatedOrders = async (req, reply) => {
     var limit = parseFloat(req.query.limit, 10);
     const total = await userRate.find().count();
 
-    await userRate
+    var item = await userRate
       .find()
       .sort({ _id: -1 })
       .populate("user_id")
       .populate("order_id")
       .populate("product_id")
       .skip(page * limit)
-      .limit(limit)
-      .exec(function (err, item) {
-        // if (err) return handleError(err);
-        const response = {
-          status_code: 200,
-          status: true,
-          message: "تمت العملية بنجاح",
-          items: item,
-          pagenation: {
-            size: item.length,
-            totalElements: total,
-            totalPages: Math.floor(total / limit),
-            pageNumber: page,
-          },
-        };
-        reply.send(response);
-      });
+      .limit(limit);
+    // if (err) return handleError(err);
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: item,
+      pagenation: {
+        size: item.length,
+        totalElements: total,
+        totalPages: Math.floor(total / limit),
+        pageNumber: page,
+      },
+    };
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -918,22 +626,20 @@ exports.getRatedOrders = async (req, reply) => {
 
 exports.getApproveRatedOrders = async (req, reply) => {
   try {
-    await userRate
+    var item = await userRate
       .find({ isCommentApproved: true })
       .sort({ _id: -1 })
       .populate("user_id")
       .populate("order_id")
       .populate("product_id")
-      .limit(8)
-      .exec(function (err, item) {
-        const response = {
-          status_code: 200,
-          status: true,
-          message: "تمت العملية بنجاح",
-          items: item,
-        };
-        reply.send(response);
-      });
+      .limit(8);
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: item,
+    };
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -945,30 +651,28 @@ exports.getRatedProducts = async (req, reply) => {
     var limit = parseFloat(req.query.limit, 10);
     const total = await prodcutComment.find().count();
 
-    await prodcutComment
+    var item = await prodcutComment
       .find()
       .sort({ _id: -1 })
       .populate("user_id")
       .populate("product_id")
       .skip(page * limit)
-      .limit(limit)
-      .exec(function (err, item) {
-        console.log(item);
-        // if (err) return handleError(err);
-        const response = {
-          status_code: 200,
-          status: true,
-          message: "تمت العملية بنجاح",
-          items: item,
-          pagenation: {
-            size: item.length,
-            totalElements: total,
-            totalPages: Math.floor(total / limit),
-            pageNumber: page,
-          },
-        };
-        reply.send(response);
-      });
+      .limit(limit);
+    console.log(item);
+    // if (err) return handleError(err);
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: item,
+      pagenation: {
+        size: item.length,
+        totalElements: total,
+        totalPages: Math.floor(total / limit),
+        pageNumber: page,
+      },
+    };
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -982,34 +686,33 @@ exports.getRatedProductsById = async (req, reply) => {
       .find({ product_id: req.params.id, isCommentApproved: true })
       .count();
 
-    await prodcutComment
+    var item = await prodcutComment
       .find({ product_id: req.params.id, isCommentApproved: true })
       .sort({ _id: -1 })
       .populate("user_id")
       .populate("product_id")
       .skip(page * limit)
-      .limit(limit)
-      .exec(function (err, item) {
-        console.log(item);
-        // if (err) return handleError(err);
-        const response = {
-          status_code: 200,
-          status: true,
-          message: "تمت العملية بنجاح",
-          items: item,
-          pagenation: {
-            size: item.length,
-            totalElements: total,
-            totalPages: Math.floor(total / limit),
-            pageNumber: page,
-          },
-        };
-        reply.send(response);
-      });
+      .limit(limit);
+    console.log(item);
+    // if (err) return handleError(err);
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: item,
+      pagenation: {
+        size: item.length,
+        totalElements: total,
+        totalPages: Math.floor(total / limit),
+        pageNumber: page,
+      },
+    };
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
 };
+
 exports.getNewOrder = async (req, reply) => {
   try {
     const supplier_id = req.params.id;
@@ -1103,7 +806,7 @@ exports.updateOrderByAdmin = async (req, reply) => {
     //   );
     // }
 
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -1137,36 +840,6 @@ exports.DailyOrders = async (req, reply) => {
     //     items: order
     // }
     // reply.send(response);
-  } catch (err) {
-    throw boom.boomify(err);
-  }
-};
-
-exports.updateeee = async (req, reply) => {
-  try {
-    Order.updateMany(
-      {},
-      { supplier_id: "5c67f4ba0fb3d50d6e9f03f3" },
-      function (err, res) {
-        if (err) {
-          const response = {
-            status_code: 400,
-            status: false,
-            message: "حدث خطأ الرجاء المحاولة مرة اخرى",
-            items: [],
-          };
-          reply.send(response);
-        } else {
-          const response = {
-            status_code: 200,
-            status: true,
-            message: "تم تعديل بنجاح",
-            items: [],
-          };
-          reply.send(response);
-        }
-      }
-    );
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -1246,7 +919,7 @@ exports.deleteOrder = async (req, reply) => {
         message: "تم ارجاع المنتج بنجاح",
         items: [],
       };
-      return response;
+      reply.send(response);
     } else if (_order.items && _order.items.length > 1) {
       var total = Number(req.body.total);
       // let percentage = await setting.findOne({
@@ -1331,7 +1004,7 @@ exports.deleteOrder = async (req, reply) => {
         message: "تم ارجاع المنتج بنجاح",
         items: [],
       };
-      return response;
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);
@@ -1408,7 +1081,7 @@ exports.getPaymnetLog = async (req, reply) => {
         pageNumber: page,
       },
     };
-    return response;
+    reply.send(response);
   } catch (err) {
     throw boom.boomify(err);
   }
@@ -1451,7 +1124,7 @@ exports.updatePayment = async (req, reply) => {
         message: "تمت العملية بنجاح",
         items: _PaymnetLog,
       };
-      return response;
+      reply.send(response);
     } else {
       const response = {
         status_code: 400,
@@ -1459,7 +1132,7 @@ exports.updatePayment = async (req, reply) => {
         message: "الرجاء التأكد من القيم المدخلة",
         items: {},
       };
-      return response;
+      reply.send(response);
     }
   } catch (err) {
     throw boom.boomify(err);

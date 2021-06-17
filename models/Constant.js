@@ -1,11 +1,12 @@
 const Joi = require("joi");
 const mongoose = require("mongoose");
+const moment = require("moment-timezone");
 
 const schema = mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: [true, "title is required"],
     },
   },
   { versionKey: false }
@@ -27,7 +28,7 @@ const Socialschema = mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: [true, "title is required"],
     },
     data: {
       type: String,
@@ -40,19 +41,19 @@ const settings = mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: [true, "title is required"],
     },
     max: {
       type: String,
-      required: true,
+      required: [true, "max is required"],
     },
     min: {
       type: String,
-      required: true,
+      required: [true, "min is required"],
     },
     value: {
       type: String,
-      required: true,
+      required: [true, "value is required"],
     },
   },
   { versionKey: false }
@@ -62,16 +63,16 @@ const delivery_timeSchema = mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: [true, "title is required"],
     },
     isSort: {
       type: Number,
-      required: false,
+      required: [true, "sort is required"],
     },
     supplier_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Supplier",
-      required: true,
+      required: [true, "supplier is required"],
     },
   },
   { versionKey: false }
@@ -96,7 +97,7 @@ const StaticPageSchema = mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
+      required: [true, "title is required"],
     },
     content: {
       type: String,
@@ -109,7 +110,7 @@ const inventorySchema = mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: [true, "title is required"],
     },
     city_id: { type: mongoose.Schema.Types.ObjectId, ref: "city" },
   },
@@ -120,7 +121,7 @@ const contractSchema = mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: [true, "title is required"],
     },
     numberOfMonths: {
       type: Number,
@@ -130,7 +131,7 @@ const contractSchema = mongoose.Schema(
     },
     value: {
       type: String,
-      required: true,
+      required: [true, "value is required"],
     },
   },
   { versionKey: false }
@@ -140,9 +141,11 @@ const transportSchema = mongoose.Schema(
   {
     name: {
       type: String,
+      required: [true, "title is required"],
     },
     value: {
       type: Number,
+      required: [true, "value is required"],
     },
   },
   { versionKey: false }
@@ -170,8 +173,8 @@ function validateCustomer(customer) {
 }
 
 function getCurrentDateTime() {
-  var utc = new Date();
-  var current = utc.setHours(utc.getHours() + 3);
+  // var utc = new Date();
+  var current = moment().tz("Asia/Riyadh"); //utc.setHours(utc.getHours() + 3);
   return current;
 }
 

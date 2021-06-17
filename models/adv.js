@@ -5,35 +5,34 @@ const Advschema = mongoose.Schema(
   {
     image: {
       type: String,
-      required: true
     },
     ads_for: {
-      type: String
+      type: String,
     },
     createAt: {
-      type: Date
+      type: Date,
     },
     is_ads_redirect_to_store: {
-      type: Boolean
+      type: Boolean,
     },
     url: {
-      type: String
+      type: String,
     },
     store_id: {
-      type: String
+      type: String,
     },
     product_id: {
-      type: String
+      type: String,
     },
     is_ads_have_expiry_date: {
-      type: Boolean
+      type: Boolean,
     },
     by: {
-      type: String
+      type: String,
     },
     name: {
-      type: String
-    }
+      type: String,
+    },
   },
   { versionKey: false }
 );

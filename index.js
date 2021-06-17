@@ -17,11 +17,9 @@ const mongoose = require("mongoose");
 const routes = require("./routes");
 
 // Import Swagger Options
-const swagger = require("./config/swagger");
 const rackController = require("./controllers/rackController");
 
 // Register Swagger
-fastify.register(require("fastify-swagger"), swagger.options);
 fastify.register(require("fastify-formbody"));
 // fastify.register(require('fastify-multipart'))
 fastify.register(require("fastify-file-upload"));
@@ -31,6 +29,8 @@ fastify.register(require("fastify-cors"), {});
 mongoose
   .connect(process.env.DB_HOST, {
     useNewUrlParser: true,
+    useFindAndModify: true,
+    useCreateIndex: true,
   })
   .then(() => "connect to db")
   .catch(() => "err");
@@ -49,7 +49,6 @@ const start = async () => {
   //   }
   // } else {
   await fastify.listen(process.env.PORT || 3000, "0.0.0.0");
-  fastify.swagger();
   fastify.log.info(`server listening on ${fastify.server.address().port}`);
   rackController.FinishingRentRacks();
 
