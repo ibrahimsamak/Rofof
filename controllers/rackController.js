@@ -1,3 +1,22 @@
+/**
+ * @module controllers/rackController
+ * @description
+ * Manages physical racks/shelves and their reservations — the inventory space
+ * that renters lease to display products. Covers rack CRUD, reservation
+ * lifecycle (create, renew, update, delete), availability listings, search and
+ * Excel exports, plus the scheduled sweep that closes expired rentals.
+ *
+ * Exposed handlers:
+ * - FinishingRentRacks                              Cron task that finalizes expired rack rentals.
+ * - getrack / getSinglerack / rackList             List racks or fetch one by id.
+ * - addrack / updaterack / deleterack              Rack CRUD.
+ * - getReserveRack / getReserveRackById            List/fetch rack reservations.
+ * - addReserveRack / renewReservRack / updateReserveRack / deleteReserveRack  Reservation lifecycle.
+ * - rackListNotReserved / getRackListNotReservedAndMyRacks  Availability listings.
+ * - getRackReserveSeacrh(Excel)                    Search reservations, with Excel export.
+ * - getRackReserveAboutToFinish(Excel)             Report soon-to-expire reservations.
+ */
+
 // External Dependancies
 const boom = require("boom");
 const jwt = require("jsonwebtoken");
