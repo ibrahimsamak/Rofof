@@ -33,6 +33,13 @@ const routes = [
     handler: orderController.updatePayment,
   },
   {
+    method: "POST",
+    url: "/api/addPayment",
+    beforeHandler: [auth.getToken],
+    handler: orderController.addPayment,
+  },
+  
+  {
     method: "GET",
     url: "/api/rackList",
     handler: rackController.rackList,
@@ -112,7 +119,7 @@ const routes = [
     handler: rackController.deleterack,
   },
   {
-    method: "GET",
+    method: "POST",
     url: "/api/getRackReserveAboutToFinish",
     handler: rackController.getRackReserveAboutToFinish,
   },
@@ -787,6 +794,18 @@ const routes = [
     handler: orderController.getOrdersSeacrh,
   },
   {
+    method: "GET",
+    url: "/api/getTransactionSeacrh",
+    beforeHandler: [auth.getToken],
+    handler: orderController.getTransactionSeacrh,
+  },
+  {
+    method: "GET",
+    url: "/api/orderDetailsByUserId",
+    // beforeHandler: [auth.getToken],
+    handler: orderController.orderDetailsByUserId,
+  },
+  {
     method: "POST",
     url: "/api/getOrdersSeacrhExcel",
     beforeHandler: [auth.getToken],
@@ -876,6 +895,18 @@ const routes = [
   },
   {
     method: "POST",
+    url: "/api/updateAdd",
+    beforeHandler: [auth.getToken],
+    handler: renterController.updateAdd,
+  },
+  {
+    method: "POST",
+    url: "/api/updateEdit",
+    beforeHandler: [auth.getToken],
+    handler: renterController.updateEdit,
+  },
+  {
+    method: "POST",
     url: "/api/send_sms",
     beforeHandler: [auth.getToken],
     handler: renterController.sendSMSRender,
@@ -891,6 +922,12 @@ const routes = [
     url: "/api/ApproveCode",
     beforeHandler: [auth.getToken],
     handler: renterController.ApproveCode,
+  },
+  {
+    method: "POST",
+    url: "/api/transfer",
+    beforeHandler: [auth.getToken],
+    handler: productController.transfer,
   },
   {
     method: "POST",

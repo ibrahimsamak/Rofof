@@ -54,13 +54,9 @@ exports.getTop10Cities = async (req, reply) => {
       // if (element.items) {
       // element.forEach(elm => {
       products.push(element);
-      console.log(element);
       // });
       // }
     });
-
-    // var result = lodash.countBy(products, 'product_id.name');
-    // console.log(result);
 
     var _result = lodash(products)
       .groupBy("city")
@@ -281,14 +277,10 @@ exports.getMostProductSells = async (req, reply) => {
         element.items.forEach((elm) => {
           if (elm.product_id) {
             products.push(elm);
-            console.log(elm);
           }
         });
       }
     });
-
-    // var result = lodash.countBy(products, 'product_id.name');
-    // console.log(result);
 
     var _result = lodash(products)
       .groupBy("product_id.name")
@@ -332,9 +324,6 @@ exports.getMostProductSellsRenter = async (req, reply) => {
         });
       }
     });
-
-    // var result = lodash.countBy(products, 'product_id.name');
-    // console.log(result);
 
     var _result = lodash(products)
       .groupBy("product_id.name")
@@ -425,7 +414,7 @@ exports.getMostRenter = async (req, reply) => {
 
     var orderedResult = lodash.orderBy(_result, ["value"], ["desc"]);
     var FinalResult = lodash.take(orderedResult, 10);
-    console.log(FinalResult.length);
+
     var arr = [];
     FinalResult.forEach((element) => {
       if (element && element != null) {

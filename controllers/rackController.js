@@ -13,7 +13,7 @@ const moment = require("moment");
 const { rack, reserve } = require("../models/Rack");
 const { Product } = require("../models/Product");
 const { renters } = require("../models/Renter");
-const { sendSMS, handleError } = require("../utils/utils");
+const { sendSMS, handleError, Padder } = require("../utils/utils");
 
 function makeid() {
   var text = "";
@@ -99,6 +99,16 @@ exports.getrack = async (req, reply) => {
     if (req.query.name && req.query.name != "") {
       query["rack_no"] = { $regex: new RegExp(req.query.name, "i") };
     }
+    
+    var all_racks = await rack.find().lean();
+    var all_rack = all_racks.length;
+    var reserved_rack = lodash.sumBy(all_racks, function (o) {
+      return o.isReserved;
+    });
+    var free_rack = lodash.sumBy(all_racks, function (o) {
+      return !o.isReserved;
+    });
+ 
     const total = await rack.find(query).count();
     var item = await rack
       .find(query)
@@ -106,12 +116,15 @@ exports.getrack = async (req, reply) => {
       .sort({ _id: -1 })
       .skip(page * limit)
       .limit(limit);
-    console.log(item);
-    const response = {
+
+      const response = {
       status_code: 200,
       status: true,
       message: "تمت العملية بنجاح",
       items: item,
+      reserved_rack: reserved_rack,
+      free_rack: free_rack,
+      all_rack: all_rack,
       pagenation: {
         size: item.length,
         totalElements: total,
@@ -286,7 +299,6 @@ exports.getReserveRack = async (req, reply) => {
 exports.getReserveRackById = async (req, reply) => {
   try {
     var item = await reserve.findById(req.params.id).sort({ _id: -1 });
-    console.log(item);
     const response = {
       status_code: 200,
       status: true,
@@ -302,8 +314,7 @@ exports.getReserveRackById = async (req, reply) => {
 // Add a new reserve rack
 exports.addReserveRack = async (req, reply) => {
   try {
-    let current_year = new Date().getFullYear();
-    let contract_no = String(current_year) + makeid();
+    let contract_no = await Padder()
     let _reserve = new reserve({
       rack_id: req.body.rack_id,
       renter_id: req.body.renter_id,
@@ -347,8 +358,10 @@ exports.addReserveRack = async (req, reply) => {
 exports.renewReservRack = async (req, reply) => {
   try {
     var first_rack = [];
-    let current_year = new Date().getFullYear();
-    let contract_no = String(current_year) + makeid();
+
+    let contract_no = await Padder()
+
+
     var previous_reserve_id = req.body.previous_reserve_id;
     let _reserve = new reserve({
       rack_id: req.body.rack_id,
@@ -364,11 +377,7 @@ exports.renewReservRack = async (req, reply) => {
     });
 
     for await (const element of req.body.rack_id) {
-      await rack.findByIdAndUpdate(
-        element,
-        { isReserved: true },
-        { new: true }
-      );
+      await rack.findByIdAndUpdate(element,{ isReserved: true },{ new: true });
     }
 
     var rs = await _reserve.save();
@@ -408,7 +417,6 @@ exports.renewReservRack = async (req, reply) => {
 // Update an existing rack
 exports.updateReserveRack = async (req, reply) => {
   try {
-    console.log(req.body);
     const _reserve = await reserve.findByIdAndUpdate(
       req.params.id,
       {
@@ -547,6 +555,12 @@ exports.getRackReserveSeacrh = async (req, reply) => {
       };
     }
 
+
+    var all_racks = await reserve.find(query).lean();
+    var total_reserved_racks = lodash.sumBy(all_racks, function (o) {
+      return o.amount;
+    });
+
     var total = await reserve.find(query).count();
     var item = await reserve
       .find(query)
@@ -563,6 +577,7 @@ exports.getRackReserveSeacrh = async (req, reply) => {
       status_code: 200,
       status: true,
       message: "returned successfully",
+      total_reserved_racks:total_reserved_racks,
       pagenation: {
         size: item.length,
         totalElements: total,
@@ -628,30 +643,40 @@ exports.getRackReserveSeacrhExcel = async (req, reply) => {
 // new
 exports.getRackReserveAboutToFinish = async (req, reply) => {
   try {
-    // const admin_id = req.params.id;
-
     var page = parseFloat(req.query.page, 10);
     var limit = parseFloat(req.query.limit, 10);
-    // const total = await Order.find().count();
     var current_date_more_than_10_days = moment().add(10, "days");
     var current_date = moment();
-    var total = await reserve
-      .find({
-        end_date: {
+
+    let query1 = {$and:[{}]};
+    if (req.body.status && req.body.status != "" && req.body.status == "0" ) {
+      query1.$and.push({ end_date: {
           $gt: current_date,
           $lte: current_date_more_than_10_days,
-        },
-      })
+      }});
+    }
+    if (req.body.status && req.body.status != "" && req.body.status == "1" ) {
+      query1.$and.push({isFinish:false});
+    }
+    if (req.body.status && req.body.status != "" && req.body.status == "2" ) {
+      query1.$and.push({isFinish:true});
+    }
+    if (req.body.by_user_id && req.body.by_user_id != "") {
+      query1.$and.push({by_user_id:req.body.by_user_id});
+    }
+    if (req.body.contract_no && req.body.contract_no != "") {
+      query1.$and.push({contract_no:req.body.contract_no});
+    }
+    
+    
+
+    var total = await reserve
+      .find(query1)
       .count();
 
     var item = await reserve
-      .find({
-        end_date: {
-          $gt: current_date,
-          $lte: current_date_more_than_10_days,
-        },
-      })
-      .sort({ _id: -1 })
+      .find(query1)
+      .sort({ end_date: 1 })
       .populate("renter_id")
       .populate({
         path: "rack_id",
@@ -659,7 +684,6 @@ exports.getRackReserveAboutToFinish = async (req, reply) => {
       .populate("contract_id")
       .skip(page * limit)
       .limit(limit);
-    console.log(item);
     const response = {
       items: item,
       status_code: 200,
@@ -679,51 +703,48 @@ exports.getRackReserveAboutToFinish = async (req, reply) => {
 
 exports.getRackReserveAboutToFinishExcel = async (req, reply) => {
   try {
-    // const admin_id = req.params.id;
-
-    // var page = parseFloat(req.query.page, 10);
-    // var limit = parseFloat(req.query.limit, 10);
-    // const total = await Order.find().count();
     var current_date_more_than_10_days = moment().add(10, "days");
     var current_date = moment();
-    // var total = await reserve
-    //   .find({
-    //     end_date: {
-    //       $gt: current_date,
-    //       $lte: current_date_more_than_10_days,
-    //     },
-    //   })
-    //   .count();
 
-    var item = await reserve
-      .find({
-        end_date: {
+    let query1 = {$and:[{}]};
+    if (req.body.status && req.body.status != "" && req.body.status == "0" ) {
+      query1.$and.push({ end_date: {
           $gt: current_date,
           $lte: current_date_more_than_10_days,
-        },
-      })
-      .sort({ _id: -1 })
+      }});
+    }
+    if (req.body.status && req.body.status != "" && req.body.status == "1" ) {
+      query1.$and.push({isFinish:false});
+    }
+    if (req.body.status && req.body.status != "" && req.body.status == "2" ) {
+      query1.$and.push({isFinish:true});
+    }
+    if (req.body.by_user_id && req.body.by_user_id != "") {
+      query1.$and.push({by_user_id:req.body.by_user_id});
+    }
+    if (req.body.contract_no && req.body.contract_no != "") {
+      query1.$and.push({contract_no:req.body.contract_no});
+    }
+    
+
+    var item = await reserve
+      .find(query1)
+      .sort({ end_date: 1 })
       .populate("renter_id")
       .populate({
         path: "rack_id",
       })
       .populate("contract_id");
-    // .skip(page * limit)
-    // .limit(limit)
-    console.log(item);
     const response = {
       items: item,
       status_code: 200,
       message: "returned successfully",
-      // pagenation: {
-      //   size: item.length,
-      //   totalElements: total,
-      //   totalPages: Math.floor(total / limit),
-      //   pageNumber: page,
-      // },
     };
     reply.send(response);
   } catch {
     throw boom.boomify();
   }
 };
+
+
+

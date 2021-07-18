@@ -51,7 +51,6 @@ exports.addFav = async (req, reply) => {
         { product_id: req.body.product_id },
       ],
     });
-    console.log(checkObj);
     if (!checkObj) {
       let _Favorit = new Favorit({
         user_id: req.body.user_id,

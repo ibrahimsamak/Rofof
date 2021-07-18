@@ -48,11 +48,9 @@ exports.getProducts = async (req, reply) => {
     let sort_field = req.body.sort_field;
     let sort_value = req.body.sort_value;
 
-    console.log(req.body);
     let query1 = {};
     query1[search_field] = { $regex: new RegExp(search_value, "i") };
     query1["by_admin_id"] = req.body.by_admin_id;
-    console.log(query1);
     const total = await Product.find(query1).count();
     var item = await Product.find(query1)
       .sort({ [sort_field]: sort_value })
@@ -84,7 +82,7 @@ exports.getProductsByRackId = async (req, reply) => {
     // if (renter) {
     var item = await Product.find({
       $and: [{ status: true }, { rack_id: req.params.id }],
-    });
+    }).sort({_id:-1});
     const response = {
       status_code: 200,
       status: true,
@@ -136,7 +134,7 @@ exports.getProductsByCategory = async (req, reply) => {
 
 exports.getAllProducts = async (req, reply) => {
   try {
-    var item = await Product.find();
+    var item = await Product.find().sort({_id:-1});
     const response = {
       status_code: 200,
       status: true,
@@ -193,14 +191,12 @@ exports.getProductsRenters = async (req, reply) => {
     let sort_value = req.body.sort_value;
     let reserve_id = req.body.reserve_id;
 
-    console.log(req.body);
     let query1 = {};
     query1[search_field] = { $regex: new RegExp(search_value, "i") };
     query1["by_user_id"] = req.body.by_user_id;
     if (reserve_id && reserve_id != "") {
       query1["reserve_id"] = reserve_id;
     }
-    console.log(query1);
     const total = await Product.find(query1).count();
     var item = await Product.find(query1)
       .sort({ [sort_field]: sort_value })
@@ -241,7 +237,6 @@ exports.getProductsForRenter = async (req, reply) => {
     if (reserve_id && reserve_id != "") {
       query1["reserve_id"] = reserve_id;
     }
-    console.log(query1);
     const total = await Product.find(query1).count();
     var item = await Product.find(query1).sort({ [sort_field]: sort_value });
     // .skip(page * limit)
@@ -266,7 +261,7 @@ exports.getProductsForRenter = async (req, reply) => {
 
 exports.getProductsForRenterById = async (req, reply) => {
   try {
-    var item = await Product.find({ by_user_id: req.body.by_user_id })
+    var item = await Product.find({ by_user_id: req.body.by_user_id }).sort({_id:-1})
       .populate("by_user_id")
       .populate("rack_id")
       .populate("reserve_id")
@@ -320,7 +315,6 @@ exports.uploadPhoto = async (req, reply) => {
   cloudinary.v2.uploader.upload(
     "./public/" + req.files[0].filename,
     function (error, result) {
-      console.log(result, error);
       reply.send(result);
     }
   );
@@ -372,7 +366,6 @@ exports.addCategory = async (req, reply) => {
       await uploadImages(rand + files.image.name).then((x) => {
         img = x;
       });
-      console.log(img);
 
       let category = new Category({
         name: req.raw.body.name,
@@ -512,13 +505,11 @@ exports.deleteCategory = async (req, reply) => {
 exports.addProduct = async (req, reply) => {
   try {
     if (req.raw.files) {
-      console.log(req.raw.files);
       var img = [];
       var img_url = "";
       async.eachSeries(
         req.raw.files,
         async function updateObject(data, done) {
-          console.log(data);
           var _data = new Buffer(data.data);
           let rand = makeid();
 
@@ -542,8 +533,6 @@ exports.addProduct = async (req, reply) => {
           // });
         },
         async function allDone(err) {
-          console.log("all done");
-          console.log(img);
           let products = new Product({
             name: req.raw.body.name,
             description: req.raw.body.description,
@@ -624,7 +613,6 @@ exports.updateProduct = async (req, reply) => {
       async.eachSeries(
         req.raw.files,
         async function updateObject(data, done) {
-          console.log(data.data);
           var _data = new Buffer(data.data);
           let rand = makeid();
 
@@ -645,8 +633,6 @@ exports.updateProduct = async (req, reply) => {
           });
         },
         async function allDone(err) {
-          console.log("all done");
-          console.log(img);
           Product.update(
             { _id: req.params.id },
             {
@@ -770,7 +756,7 @@ exports.updatePriceQty = async (req, reply) => {
 exports.approveAllProducts = async (req, reply) => {
   try {
     Product.updateMany(
-      { by_user_id: req.params.id },
+      { $and:[{ by_user_id: req.params.id },{ reserve_id: req.body.reserve_id }]},
       { status: true },
       function (err, res) {
         if (err) {
@@ -799,7 +785,6 @@ exports.approveAllProducts = async (req, reply) => {
 
 exports.deleteProduct = async (req, reply) => {
   try {
-    console.log(req.params.id);
     const products = await Product.findByIdAndDelete(req.params.id);
     reply.send(products);
   } catch (err) {
@@ -855,7 +840,7 @@ exports.getProductDetailsByBarCode = async (req, reply) => {
         { $or: [{ barcode: req.body.barcode }, { name: req.body.name }] },
       ],
     });
-    console.log(products);
+
     if (products) {
       const response = {
         status_code: 200,
@@ -965,15 +950,21 @@ exports.getActiveProducts = async (req, reply) => {
     let by_user_id = req.body.by_user_id;
     let contract_no = req.body.contract_no;
 
-    let query1 = {};
+    let query1 = {$and:[{}]};
     if (by_user_id && by_user_id != "") {
-      query1["by_user_id"] = by_user_id;
+      query1.$and.push({by_user_id:by_user_id}) 
     }
+    if (req.body.product_name && req.body.product_name != "") {
+      query1.$and.push({name: {$regex: new RegExp(req.body.product_name, "i")}}) 
+    }
+
     if (contract_no && contract_no != "") {
       var reserve_id = await reserve.findOne({ contract_no: contract_no });
-      query1["reserve_id"] = reserve_id._id;
+      query1.$and.push({reserve_id:reserve_id._id}) 
+
     }
-    query1["status"] = true;
+    query1.$and.push({status:req.body.status}) 
+
     const total = await Product.find(query1).count();
     var item = await Product.find(query1)
       .populate("by_user_id")
@@ -982,6 +973,7 @@ exports.getActiveProducts = async (req, reply) => {
       .sort({ _id: -1 })
       .skip(page * limit)
       .limit(limit);
+
     const response = {
       status_code: 200,
       status: true,
@@ -1002,38 +994,67 @@ exports.getActiveProducts = async (req, reply) => {
 
 exports.getActiveProductsExcel = async (req, reply) => {
   try {
-    // let search_field = req.body.search_field;
-    // let search_value = req.body.search_value;
     let by_user_id = req.body.by_user_id;
-
-    let query1 = {};
-    // query1[search_field] = { $regex: new RegExp(search_value, "i") };
+    let contract_no = req.body.contract_no;
+    
+    let query1 = {$and:[{}]};
     if (by_user_id && by_user_id != "") {
-      query1["by_user_id"] = by_user_id;
+      query1.$and.push({by_user_id:by_user_id}) 
     }
-    query1["status"] = true;
+    if (req.body.product_name && req.body.product_name != "") {
+      query1.$and.push({name: {$regex: new RegExp(req.body.product_name, "i")}}) 
+    }
 
-    // const total = await Product.find(query1).count();
+    if (contract_no && contract_no != "") {
+      var reserve_id = await reserve.findOne({ contract_no: contract_no });
+      query1.$and.push({reserve_id:reserve_id._id}) 
+
+    }
+    query1.$and.push({status:req.body.status}) 
+
     var item = await Product.find(query1)
       .populate("by_user_id")
       .populate("category_id")
       .populate("reserve_id")
       .sort({ _id: -1 });
-    // .skip(page * limit)
-    // .limit(limit)
     const response = {
       status_code: 200,
       status: true,
       message: "تمت العملية بنجاح",
       items: item,
-      // pagenation: {
-      //   size: item.length,
-      //   totalElements: total,
-      //   totalPages: Math.floor(total / limit),
-      //   pageNumber: page,
-      // },
     };
     reply.send(response);
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+
+exports.transfer = async (req, reply) => {
+  try {
+    Product.updateMany(
+      { _id: {$in:req.body.products} },
+      { reserve_id: req.body.reserved_id },
+      function (err, res) {
+        if (err) {
+          const response = {
+            status_code: 400,
+            status: false,
+            message: "حدث خطأ الرجاء المحاولة مرة اخرى",
+            items: [],
+          };
+          reply.send(response);
+        } else {
+          const response = {
+            status_code: 200,
+            status: true,
+            message: "تمت نقل المنتجات بنجاح ",
+            items: [],
+          };
+          reply.send(response);
+        }
+      }
+    );
   } catch (err) {
     throw boom.boomify(err);
   }

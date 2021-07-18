@@ -173,8 +173,7 @@ function validateCustomer(customer) {
 }
 
 function getCurrentDateTime() {
-  // var utc = new Date();
-  var current = moment().tz("Asia/Riyadh"); //utc.setHours(utc.getHours() + 3);
+  var current = moment().tz("Asia/Riyadh");
   return current;
 }
 

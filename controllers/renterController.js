@@ -45,7 +45,6 @@ const { reserve } = require("../models/Rack");
 // Get all renters
 exports.getrenters = async (req, reply) => {
   try {
-    console.log(req.body);
     var page = parseFloat(req.query.page, 10);
     var limit = parseFloat(req.query.limit, 10);
     let search_field = req.body.search_field;
@@ -55,7 +54,7 @@ exports.getrenters = async (req, reply) => {
 
     let sort = {};
     sort[sort_field] = Number(sort_value);
-    console.log(sort);
+
     let query1 = {};
     var contracts = [];
     var _renters = [];
@@ -343,6 +342,8 @@ exports.addrenters = async (req, reply) => {
         isOnlineSupport: req.body.isOnlineSupport,
         IBAN: req.body.IBAN,
         BankName: req.body.BankName,
+        isEnableEdit:false,
+        isEnableAdd:false
       });
       var _return = handleError(_user.validateSync());
       if (_return.length > 0) {
@@ -373,7 +374,7 @@ exports.addrenters = async (req, reply) => {
 exports.login = async (req, reply) => {
   try {
     let pass = encryptPassword(req.body.password);
-    console.log(pass);
+
     const user = await renters.findOne({
       phone_number: req.body.phone_number,
       password: pass,
@@ -673,10 +674,74 @@ exports.block = async (req, reply) => {
   }
 };
 
+
+exports.updateAdd = async (req, reply) => {
+  try {
+    const user = await renters.findByIdAndUpdate(
+      req.body._id,
+      {
+        isEnableAdd: req.body.isEnableAdd ? req.body.isEnableAdd : false,
+      },
+      { new: true }
+    );
+
+    var msg = ""
+    if(String(req.body.isEnableAdd) == "true"){
+      msg = "تم تفعيل اضافة المنتجات"
+    }else{
+      msg = "تم تعطيل اضافة المنتجات"
+    }
+
+    
+
+    const response = {
+      status_code: 200,
+      status: true,
+      message: msg,
+      items: user,
+    };
+    reply.send(response);
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.updateEdit = async (req, reply) => {
+  try {
+    const user = await renters.findByIdAndUpdate(
+      req.body._id,
+      {
+        isEnableEdit: req.body.isEnableEdit ? req.body.isEnableEdit : false,
+      },
+      { new: true }
+    );
+
+    var msg = ""
+    if(String(req.body.isEnableEdit) == "true"){
+      msg = "تم تفعيل تعديل المنتجات"
+    }else{
+      msg = "تم تعطيل تعديل المنتجات"
+    }
+
+    
+    const response = {
+      status_code: 200,
+      status: true,
+      message: msg,
+      items: user,
+    };
+    reply.send(response);
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+
 exports.ApproveCode = async (req, reply) => {
   try {
     var code = makeCode();
     var url = "https://rufuf.sa/خدمة-استئجار-الرفوف/page-517561797";
+  
     const user = await renters.findByIdAndUpdate(
       req.body.id,
       {
@@ -686,12 +751,21 @@ exports.ApproveCode = async (req, reply) => {
       { new: true }
     );
 
+     await reserve.findByIdAndUpdate(
+      req.body.reserve_id,
+      {
+        ApproveCode: code,
+        isApproveCode: false,
+      },
+      { new: true }
+    );
+
     let _reserve = await reserve
-      .find({ renter_id: req.body.id })
+      .findById(req.body.reserve_id)
       .sort({ _id: -1 });
     let contract_no = "";
-    if (_reserve.length > 0) {
-      contract_no = _reserve[0].contract_no;
+    if (_reserve) {
+      contract_no = _reserve.contract_no;
     }
     // var msg = `تم إنشاء/تجديد عقد رقم ${contract_no} نرجو مشاركة رقم الكود ${code} مع موظف المتجر لتأكيد الموافقة على العقد.`;
 
@@ -721,6 +795,7 @@ exports.ApproveCode = async (req, reply) => {
 exports.CheckApproveCode = async (req, reply) => {
   try {
     const user = await renters.findById(req.body.id);
+    const reserve_check = await reserve.findById(req.body.reserve_id);
     if (user.ApproveCode == req.body.ApproveCode) {
       const _user = await renters.findByIdAndUpdate(
         req.body.id,
@@ -729,6 +804,15 @@ exports.CheckApproveCode = async (req, reply) => {
         },
         { new: true }
       );
+      if (reserve_check.ApproveCode == req.body.ApproveCode) {
+         await reserve.findByIdAndUpdate(
+          req.body.reserve_id,
+          {
+            isApproveCode: true,
+          },
+          { new: true }
+        );
+      }
 
       let url = "https://rent.rufuf.sa";
       let username = _user.phone_number;
@@ -742,14 +826,13 @@ exports.CheckApproveCode = async (req, reply) => {
       };
       mail_general(req, _user.email, "ادارة منصة رفوف مقتنياتي", "", data);
 
-      let _reserve = await reserve
-        .find({ renter_id: req.body.id })
+      let _reserve = await reserve.findById(req.body.reserve_id)
         .sort({ _id: -1 });
       let contract_no = "";
-      if (_reserve.length > 0) {
-        contract_no = _reserve[0].contract_no;
-        start_date = moment(_reserve[0].start_date).format("DD/MM/YYYY");
-        end_date = moment(_reserve[0].end_date).format("DD/MM/YYYY");
+      if (_reserve) {
+        contract_no = _reserve.contract_no;
+        start_date = moment(_reserve.start_date).format("DD/MM/YYYY");
+        end_date = moment(_reserve.end_date).format("DD/MM/YYYY");
       }
       var msg2 = `تم تفعيل عقد رقم ${contract_no} بنجاح \n بداية العقد: ${start_date} \n نهاية العقد: ${end_date} \n`;
       sendSMS(_user.phone_number, "", "", msg2);

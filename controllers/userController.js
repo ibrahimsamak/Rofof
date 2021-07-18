@@ -54,7 +54,6 @@ const {
 // Get all Users
 exports.getUsers = async (req, reply) => {
   try {
-    console.log(req.body);
     var page = parseFloat(req.query.page, 10);
     var limit = parseFloat(req.query.limit, 10);
     let search_field = req.body.search_field;
@@ -67,7 +66,6 @@ exports.getUsers = async (req, reply) => {
     var item = await Users.find(query1)
       .skip(page * limit)
       .limit(limit);
-    console.log(item);
     const response = {
       status_code: 200,
       status: true,
@@ -216,7 +214,6 @@ exports.login = async (req, reply) => {
 //verfy code
 exports.verfiy = async (req, reply) => {
   const _user = await Users.findOne({ _id: req.body.id }).select("verify_code");
-  console.log(_user);
 
   if (_user.verify_code === req.body.verify_code) {
     const user = await Users.findByIdAndUpdate(
@@ -438,7 +435,6 @@ exports.forgetPassword = async (req, reply) => {
 // Update an existing Users
 exports.updateprofileFromAdmin = async (req, reply) => {
   try {
-    console.log(req.raw.body);
     if (req.raw.files) {
       const files = req.raw.files;
       let fileArr = [];

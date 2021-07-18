@@ -47,6 +47,12 @@ const renterschema = mongoose.Schema(
     isApproveCode: {
       type: Boolean,
     },
+    isEnableEdit:{
+      type:Boolean
+    },
+    isEnableAdd:{
+        type:Boolean
+    }
   },
   { versionKey: false }
 );

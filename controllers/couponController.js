@@ -103,7 +103,6 @@ exports.checkCoupon = async (req, reply) => {
       const myReq = await Order.find({
         $and: [{ coupon: req.body.coupon }, { user_id: user_id }],
       }).count();
-      console.log("ts" + myReq);
       if (myReq == 1) {
         const response = {
           items: [],

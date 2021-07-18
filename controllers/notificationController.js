@@ -52,7 +52,6 @@ exports.updateNotifications = async (req, reply) => {
       { isRead: true },
       { multi: true },
       function (err, res) {
-        console.log(err, res);
         if (err) {
           const response = {
             status_code: 400,

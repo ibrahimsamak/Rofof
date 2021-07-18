@@ -46,8 +46,29 @@ const TempPaymentSchema = mongoose.Schema(
   { versionKey: false }
 );
 
+const TransactionSchema = mongoose.Schema(
+  {
+    order_no: { type: String },
+    reserve_id: { type: mongoose.Schema.Types.ObjectId,ref: "reserve"},   
+    provider_id: { type: mongoose.Schema.Types.ObjectId, ref: "renters" },
+    amount: { type: Number},
+    createAt: { type: Date},
+    type:{
+      type:String,
+      enum:["worthy","paid","admin"]
+    },
+    note: { type: String},
+  },
+  { versionKey: false }
+);
+
+TransactionSchema.index({ reserve_id: 1, provider_id: 1 });
+
+
 const PaymnetLog = mongoose.model("paymnetlogs", PaymentSchema);
 const TempPayment = mongoose.model("temppayments", TempPaymentSchema);
+const Transaction = mongoose.model("transaction", TransactionSchema);
 
 exports.PaymnetLog = PaymnetLog;
 exports.TempPayment = TempPayment;
+exports.Transaction = Transaction;

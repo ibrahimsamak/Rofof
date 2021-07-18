@@ -4,6 +4,9 @@ var nodemailer = require("nodemailer");
 const fs = require("fs");
 var ejs = require("ejs");
 const cloudinary = require("cloudinary");
+const { Transaction } = require("../models/Payment");
+const { getCurrentDateTime } = require("../models/Constant");
+const { reserve } = require("../models/Rack");
 
 cloudinary.config({
   cloud_name: "dsz57mpwt",
@@ -44,7 +47,7 @@ exports.sendSMS = async function (number, from, to, message) {
       if (err) {
         console.log(httpResponse);
       } else {
-        console.log(httpResponse);
+        console.log(body);
       }
     }
   );
@@ -112,7 +115,6 @@ exports.uploadImages = async function (img) {
       if (error) {
         reject(error);
       } else {
-        console.log(result, error);
         img = result["url"];
         resolve(img);
       }
@@ -153,3 +155,31 @@ exports.handleError = function (error) {
   }
   return arr;
 };
+
+exports.addTransaction = async function(provider_id,order_no,reserve_id,amount,type,note){
+  let transaction = new Transaction({
+    order_no : order_no,
+    reserve_id : reserve_id,
+    provider_id:provider_id,
+    createAt: getCurrentDateTime(),
+    amount: amount,
+    type:type,
+    note:note,
+
+  })    
+   await transaction.save();
+}
+
+exports.Padder = async function() {
+  let prev_reserve = await reserve.find({}).sort({_id:-1}).limit(1)
+  let current_year = new Date().getFullYear();
+  let input = String(prev_reserve[0].contract_no)
+  let lastFourDigits = input.substring(input.length - 4)
+  
+  var str = Number(lastFourDigits)+1
+  var pad = "0000"
+  var ans = pad.substring(0, pad.length - String(str).length) + String(str)
+
+  let contract_no = `${current_year}${ans}` 
+  return contract_no;
+}

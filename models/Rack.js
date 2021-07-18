@@ -80,9 +80,20 @@ const RackReservationSchema = mongoose.Schema(
     isFinish: {
       type: Boolean,
     },
+    ApproveCode:{
+      type: String,
+      default:""
+    },
+    isApproveCode:{
+      type: Boolean,
+      default:false
+    },
   },
   { versionKey: false }
 );
+
+RackSchema.index({ rack_no: -1});
+RackReservationSchema.index({ amount: 1  ,contract_id: 1 });
 
 const racks = mongoose.model("racks", RackSchema);
 const reserve = mongoose.model("reserve", RackReservationSchema);

@@ -152,9 +152,7 @@ exports.getContract = async (req, reply) => {
 
 exports.getContractDetails = async (req, reply) => {
   try {
-    console.log(req.params.id);
     const cities = await contract.findById(req.params.id).sort({ _id: -1 });
-    console.log(cities);
     const response = {
       status_code: 200,
       status: true,

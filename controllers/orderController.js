@@ -33,7 +33,7 @@ const { Order } = require("../models/Order");
 const { Admin } = require("../models/Admin");
 const { Notifications } = require("../models/Notifications");
 const { renters } = require("../models/Renter");
-const { sendSMS } = require("../utils/utils");
+const { sendSMS, addTransaction, makeid } = require("../utils/utils");
 const {
   BuyUnits,
   ContactOption,
@@ -48,7 +48,7 @@ const { userRate, prodcutComment } = require("../models/userRate");
 const { getCurrentDateTime } = require("../models/Constant");
 const { coupon } = require("../models/couponmodel");
 const { tokens } = require("../models/Constant");
-const { PaymnetLog, TempPayment } = require("../models/Payment");
+const { PaymnetLog, TempPayment, Transaction } = require("../models/Payment");
 const { reserve } = require("../models/Rack");
 
 const options = {
@@ -75,36 +75,42 @@ exports.addOrder = async (req, reply) => {
     for await (const data of req.body.items) {
       var prod = await Product.findById(data.product_id);
       var reserve_id = await reserve.findById(prod.reserve_id);
+      if(!reserve_id){
+        const response = {
+          items: {},
+          status: false,
+          status_code: 400,
+          message: "عذرا .. هذا المنتج غير مرتبط بعقد",
+        };
+        reply.send(response);
+        return
+      }
       var contract_id = await contract.findById(reserve_id.contract_id);
-      console.log(reserve_id);
       percentage = Number(contract_id.value);
+
+
+      //add transaction payment
+      let _newTotal = Number(data.price) * Number(data.qty)
+      let admin_amount = (parseFloat(percentage).toFixed(2) * _newTotal).toFixed(2);
+      let provider_amount = -1 * Number(_newTotal - admin_amount);
+      
+      await addTransaction(data.by_user_id,req.body.Order_no,reserve_id._id,provider_amount,"worthy","عملية شراء");
+      await addTransaction(data.by_user_id,req.body.Order_no,reserve_id._id,admin_amount,"admin","مستحقات الادارة");
     }
-
-    console.log("percentage:" + percentage);
-    // let percentage = await contract.findOne({
-    //   min: { $lte: req.body.Total },
-    //   max: { $gte: req.body.Total },
-    // });
-
-    // let _reserve = await reserve.findOne({ renter_id: req.body.provider_id });
-    // let percentage = await contract.findOne({ _reserve.contract_id });
 
     var shipment = 0;
     if (req.body.Shipment && req.body.Shipment != "0") {
       shipment = req.body.Shipment;
     }
-    var newTotal =
-      shipment +
-      parseFloat(req.body.Total, 10).toFixed(2) -
-      parseFloat(req.body.Total_Discount, 10).toFixed(2);
+
+    var newTotal = shipment + parseFloat(req.body.Total, 10).toFixed(2) - parseFloat(req.body.Total_Discount, 10).toFixed(2);
 
     let Orders = new Order({
       provider_id: req.body.provider_id,
       Order_no: req.body.Order_no,
       Total: newTotal,
       Admin_Total: (parseFloat(percentage).toFixed(2) * newTotal).toFixed(2),
-      Renter_Total:
-        newTotal - (parseFloat(percentage).toFixed(2) * newTotal).toFixed(2),
+      Renter_Total: newTotal - (parseFloat(percentage).toFixed(2) * newTotal).toFixed(2),
       StatusId: 1,
       user_id: user_id,
       items: req.body.items,
@@ -131,6 +137,8 @@ exports.addOrder = async (req, reply) => {
       ],
     });
 
+
+    // add to monthly payment log
     if (checkPayment) {
       //update increament
       await PaymnetLog.findByIdAndUpdate(
@@ -151,7 +159,6 @@ exports.addOrder = async (req, reply) => {
       );
     } else {
       //add payment logs
-      console.log("add payment logs");
       let _Payment = new PaymnetLog({
         by_user_id: req.body.provider_id,
         Total: Number(newTotal),
@@ -181,6 +188,8 @@ exports.addOrder = async (req, reply) => {
 
     // خصم الكمية بعد اضافة الشراء
     let rs = await Orders.save();
+
+
     const response = {
       items: rs,
       status: true,
@@ -225,11 +234,9 @@ exports.addRate = async (req, reply) => {
             product_id: element.product_id,
           })
           .count();
-        console.log("allOrderLikeItems: " + allOrderLikeItems);
         const summationOfRates = await userRate.find({
           product_id: element.product_id,
         });
-        console.log("summationOfRates: " + summationOfRates);
 
         let sum = lodash.sumBy(summationOfRates, function (o) {
           return o.rate;
@@ -344,7 +351,6 @@ exports.getUserOrder = async (req, reply) => {
         })
         .skip(page * limit)
         .limit(limit);
-      console.log(item);
       const response = {
         status_code: 200,
         status: true,
@@ -372,7 +378,6 @@ exports.getUserOrder = async (req, reply) => {
         })
         .skip(page * limit)
         .limit(limit);
-      console.log(item);
       const response = {
         status_code: 200,
         status: true,
@@ -395,7 +400,6 @@ exports.getUserOrder = async (req, reply) => {
 // Get Order Details
 exports.getOrderDetails = async (req, reply) => {
   try {
-    console.log(req.query.id);
     var item = await Order.find({ Order_no: req.params.id })
       .sort({ _id: -1 })
       .populate("user_id")
@@ -490,7 +494,6 @@ exports.getOrdersSeacrh = async (req, reply) => {
     if (req.body.renter_id != "" && req.body.renter_id) {
       query = { provider_id: req.body.renter_id };
     }
-    console.log(query);
     var allOrders = await Order.find(query);
     var Total = lodash.sumBy(allOrders, function (o) {
       return o.Total;
@@ -554,7 +557,6 @@ exports.getOrdersSeacrhExcel = async (req, reply) => {
     if (req.body.renter_id != "" && req.body.renter_id) {
       query = { provider_id: req.body.renter_id };
     }
-    console.log(query);
     var allOrders = await Order.find(query);
     var Total = lodash.sumBy(allOrders, function (o) {
       return o.Total;
@@ -658,7 +660,6 @@ exports.getRatedProducts = async (req, reply) => {
       .populate("product_id")
       .skip(page * limit)
       .limit(limit);
-    console.log(item);
     // if (err) return handleError(err);
     const response = {
       status_code: 200,
@@ -693,7 +694,6 @@ exports.getRatedProductsById = async (req, reply) => {
       .populate("product_id")
       .skip(page * limit)
       .limit(limit);
-    console.log(item);
     // if (err) return handleError(err);
     const response = {
       status_code: 200,
@@ -760,7 +760,6 @@ exports.updateRate = async (req, reply) => {
 
 exports.updateOrderByAdmin = async (req, reply) => {
   try {
-    console.log(req.params.id);
     const sp = await Order.findByIdAndUpdate(
       req.params.id,
       {
@@ -819,7 +818,6 @@ exports.DailyOrders = async (req, reply) => {
 
     var utc = new Date();
     var current = utc.setHours(utc.getHours() + 3);
-    console.log(utc, current);
     // const today = moment().startOf('day')
     // console.log(today.add(3, 'hours').toDate())
     // const order = await Order.find({
@@ -855,7 +853,6 @@ exports.deleteOrder = async (req, reply) => {
         populate: { path: "product_id" },
       });
 
-    console.log(_order.items.length);
     if (_order.items && _order.items.length == 1) {
       var percentage = 0.0;
       // let percentage = await setting.findOne({
@@ -875,6 +872,14 @@ exports.deleteOrder = async (req, reply) => {
         });
 
         percentage = Number(contract_id.value);
+
+        //add transaction payment
+        let admin_amount = _order.Admin_Total;
+        let Renter_Total = _order.Renter_Total;
+
+        await addTransaction(_order.provider_id,_order.Order_no,reserve_id._id,Renter_Total,"worthy","ارجاع منتجات");
+        await addTransaction(_order.provider_id,_order.Order_no,reserve_id._id,Number(-1 * admin_amount),"admin","ارجاع مستحقات الادارة");
+          
       }
 
       var prevOrder = await Order.findById(req.params.id);
@@ -913,6 +918,8 @@ exports.deleteOrder = async (req, reply) => {
         );
       }
 
+
+   
       const response = {
         status_code: 200,
         status: true,
@@ -926,8 +933,6 @@ exports.deleteOrder = async (req, reply) => {
       //   min: { $lte: total },
       //   max: { $gte: total },
       // });
-
-      console.log("percentage:" + percentage);
       var prod = await Product.findOneAndUpdate(
         { _id: req.body.product_id },
         { $inc: { qty: +parseInt(req.body.qty) } },
@@ -940,9 +945,7 @@ exports.deleteOrder = async (req, reply) => {
 
       var percentage = Number(contract_id.value);
 
-      console.log(percentage);
-      console.log(Number(prod.price * req.body.qty * percentage));
-      console.log(Number(req.body.total));
+
       var newTotal = Number(_order.Total) - Number(req.body.total);
       var New_Renter_Total =
         Number(newTotal) - Number(percentage) * Number(newTotal);
@@ -1138,3 +1141,188 @@ exports.updatePayment = async (req, reply) => {
     throw boom.boomify(err);
   }
 };
+
+//add transaction
+exports.addPayment = async (req, reply) => {
+  try {
+
+    await addTransaction(req.body.by_user_id,req.body.order_no,req.body.reserve_id,req.body.amount,"paid",req.body.note)
+
+    var msg = `تم تسليم مستحاقتكم بمبلغ ${req.body.amount} ريال وذلك عن ${req.body.note} نتمنى لكم تجارة مربحة معنا`;
+    var user = await renters.findById(req.body.by_user_id);
+
+      sendSMS(user.phone_number, "الادارة", "", msg);
+      const response = {
+        status_code: 200,
+        status: true,
+        message: "تمت العملية بنجاح",
+        items: {},
+      };
+      reply.send(response);
+
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+//get payment search
+
+exports.getTransactionSeacrh = async (req, reply) => {
+  try {
+    var page = parseFloat(req.query.page, 10);
+    var limit = parseFloat(req.query.limit, 10);
+    var start_date = req.query.start_date;
+    var end_date = req.query.end_date;
+    var query = {$and:[{}]};
+    var query_total = {$and:[{}]};
+
+    if (start_date != "" && end_date != "") {
+      query.$and.push({
+        createAt: {
+          $gte: new Date(new Date(start_date).setHours(00, 00, 00)),
+          $lt: new Date(new Date(end_date).setHours(23, 59, 59)),
+        },
+      })
+      query_total.$and.push({
+        createAt: {
+          $gte: new Date(new Date(start_date).setHours(00, 00, 00)),
+          $lt: new Date(new Date(end_date).setHours(23, 59, 59)),
+        },
+      })
+    }
+
+    if (req.query.provider_id != "" && req.query.provider_id) {
+      query.$and.push({ provider_id: req.query.provider_id })
+      query_total.$and.push({ provider_id: req.query.provider_id })
+    }
+
+    if (req.query.reserve_id != "" && req.query.reserve_id) {
+      query.$and.push({ reserve_id: req.query.reserve_id })
+      query_total.$and.push({ reserve_id: req.query.reserve_id })
+    }
+    
+    if (req.query.type != "" && req.query.type) {
+      query.$and.push({ type: req.query.type })
+    }
+
+    var allOrders = await Transaction.find(query_total);
+    
+    var Total_Worthy = 0;
+    var Total_Admin = 0;
+    var Total_Paid = 0;
+    allOrders.forEach(element => {
+      if(element.type == "worthy") Total_Worthy += element.amount
+      if(element.type == "admin") Total_Admin += element.amount
+      if(element.type == "paid") Total_Paid += element.amount
+    });
+    
+    var total = await Transaction.find(query).count();
+    var item = await Transaction.find(query)
+      .sort({ _id: -1 })
+      .populate("provider_id")
+      .populate("reserve_id")
+      .skip(page * limit)
+      .limit(limit);
+
+    const response = {
+      items: item,
+      status_code: 200,
+      status: true,
+      message: "returned successfully",
+      Total_Worthy: Total_Worthy,
+      Total_Admin: Total_Admin,
+      Total_Paid: Total_Paid,
+      Total: Number(-1*Total_Worthy)+Number(Total_Admin),
+      pagenation: {
+        size: item.length,
+        totalElements: total,
+        totalPages: Math.floor(total / limit),
+        pageNumber: page,
+      },
+    };
+    reply.send(response);
+  } catch {
+    throw boom.boomify();
+  }
+};
+
+
+
+exports.orderDetailsByUserId = async (req, reply) => {
+  try {
+    var start_date = req.query.start_date;
+    var end_date = req.query.end_date;
+    var query = {$and:[{}]};
+    var query_total = {$and:[{}]};
+    var products = []
+    
+    if (start_date != "" && end_date != "") {
+      query.$and.push({
+        createAt: {
+          $gte: new Date(new Date(start_date).setHours(00, 00, 00)),
+          $lt: new Date(new Date(end_date).setHours(23, 59, 59)),
+        },
+      })
+      query_total.$and.push({
+        createAt: {
+          $gte: new Date(new Date(start_date).setHours(00, 00, 00)),
+          $lt: new Date(new Date(end_date).setHours(23, 59, 59)),
+        },
+      })
+    }
+
+    if (req.query.provider_id != "" && req.query.provider_id) {
+      query.$and.push({ provider_id: req.query.provider_id })
+    }
+    
+    // if (req.query.reserve_id != "" && req.query.reserve_id) {
+    //   query.$and.push({ reserve_id: req.query.reserve_id })
+    // }
+
+    var orders = await Order.find(query)
+      .sort({ _id: -1 })
+      .populate("provider_id")
+      .populate({
+        path: "items.product_id",
+        populate: { path: "product_id" },
+      });
+
+      var objs = []
+      orders.forEach((element) => {
+        if (element.items.length > 0) {
+          element.items.forEach((elm) => {
+            if (elm.product_id) { 
+              products.push(elm.product_id);
+            }
+          });
+        }
+      });
+
+    products.forEach(element => {
+      let exsit = objs.filter(x=>String(x.product_id) == String(element._id))
+      if(exsit.length > 0){
+        //exsits find index and update counts
+        let index = objs.findIndex(x=>String(x.product_id) == String(element._id))
+        objs[index].product_payments_count += 1;
+      }else{
+        let newObject = {
+          product_id: element._id,
+          product_image: element.image,
+          product_name: element.name,
+          product_qty: element.qty,
+          product_payments_count: 1
+        }
+        objs.push(newObject)
+      }
+    });
+    const response = {
+      items: objs,
+      status_code: 200,
+      status: true,
+      message: "returned successfully",
+    };
+    reply.send(response);
+  } catch {
+    throw boom.boomify();
+  }
+}

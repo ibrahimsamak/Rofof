@@ -69,7 +69,8 @@ const UserSchema = mongoose.Schema({
     },
     RegisterType: {
         type: Number
-    }
+    },
+
 }, { versionKey: false });
 
 const Users = mongoose.model('Users', UserSchema);
