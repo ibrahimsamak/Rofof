@@ -37,6 +37,9 @@ const RackSchema = mongoose.Schema(
     heightUnit: {
       type: String,
     },
+    isDeleted:{
+      type:Boolean
+    }
   },
   { versionKey: false }
 );
@@ -51,6 +54,15 @@ const RackReservationSchema = mongoose.Schema(
         },
       ],
     },
+    extras: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "extra",
+        },
+      ],
+    },
+
     contract_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "contract",

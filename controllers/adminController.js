@@ -19,7 +19,7 @@ exports.getAdmins = async (req, reply) => {
   try {
     var page = parseFloat(req.query.page, 10);
     var limit = parseFloat(req.query.limit, 10);
-    const total = await Admin.find().count();
+    const total = await Admin.countDocuments()
 
     const item = await Admin.find()
       .sort({ _id: -1 })

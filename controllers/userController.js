@@ -62,7 +62,7 @@ exports.getUsers = async (req, reply) => {
     let query1 = {};
     query1[search_field] = { $regex: new RegExp(search_value, "i") };
 
-    const total = await Users.find(query1).count();
+    const total = await Users.countDocuments(query1);
     var item = await Users.find(query1)
       .skip(page * limit)
       .limit(limit);
@@ -752,7 +752,7 @@ exports.userslist = async (req, reply) => {
   try {
     const page = parseInt(req.query.page, 10);
     const limit = parseInt(req.query.limit, 10);
-    const total = await Users.find().count();
+    const total = await Users.countDocuments();
     var result = [];
     const xx = await Users.find()
       .select(["-token", "-password"])

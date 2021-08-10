@@ -14,6 +14,7 @@ const {
   inventory,
   contract,
   transport,
+  extra,
 } = require("../models/Constant");
 
 exports.getUpdates = async (req, reply) => {
@@ -847,6 +848,97 @@ exports.deleteContact = async (req, reply) => {
       status: true,
       message: "تمت العملية بنجاح",
       items: [],
+    };
+    reply.send(response);
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+
+exports.add_extra = async (req, reply) => {
+  try {
+    let _extra = new extra({
+      name: req.body.name,
+      price: req.body.price,
+    });
+
+    let rs = await _extra.save();
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: rs,
+    };
+    reply.send(response);
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.update_extra = async (req, reply) => {
+  try {
+    const _extra = await extra.findByIdAndUpdate(
+      req.params.id,
+      {
+        name: req.body.name,
+        price: req.body.price,
+      },
+      { new: true }
+    );
+
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: _extra,
+    };
+    reply.send(response);
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.delete_extra = async (req, reply) => {
+  try {
+    const _extra = await extra.findByIdAndRemove(req.params.id);
+
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: [],
+    };
+    reply.send(response);
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+exports.get_extra= async (req, reply) => {
+  try {
+    const _extra = await extra.find().sort({ _id: -1 });
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: _extra,
+    };
+    reply.send(response);
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
+
+exports.getSingle_extra= async (req, reply) => {
+  try {
+    const _extra = await extra.findById(req.params.id).sort({ _id: -1 });
+    const response = {
+      status_code: 200,
+      status: true,
+      message: "تمت العملية بنجاح",
+      items: _extra,
     };
     reply.send(response);
   } catch (err) {

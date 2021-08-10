@@ -129,9 +129,7 @@ exports.addOrder = async (req, reply) => {
     let currentYear = moment(currentDate).format("YYYY");
     var checkPayment = await PaymnetLog.findOne({
       $and: [
-        {
-          by_user_id: req.body.provider_id,
-        },
+        { by_user_id: req.body.provider_id },
         { PeriodMonth: currentMonth },
         { PeriodYear: currentYear },
       ],
@@ -146,13 +144,8 @@ exports.addOrder = async (req, reply) => {
         {
           $inc: {
             Total: Number(newTotal),
-            Admin_Total: Number(
-              (parseFloat(percentage).toFixed(2) * newTotal).toFixed(2)
-            ),
-            provider_Total: Number(
-              newTotal -
-                (parseFloat(percentage).toFixed(2) * newTotal).toFixed(2)
-            ),
+            Admin_Total: Number((parseFloat(percentage).toFixed(2) * newTotal).toFixed(2)),
+            provider_Total: Number(newTotal - (parseFloat(percentage).toFixed(2) * newTotal).toFixed(2)),
           },
         },
         { new: true }
@@ -230,10 +223,9 @@ exports.addRate = async (req, reply) => {
         await _userRate.save();
 
         const allOrderLikeItems = await userRate
-          .find({
+          .countDocuments({
             product_id: element.product_id,
-          })
-          .count();
+          });
         const summationOfRates = await userRate.find({
           product_id: element.product_id,
         });
@@ -324,10 +316,10 @@ exports.getUserOrder = async (req, reply) => {
   try {
     var page = parseFloat(req.query.page, 10);
     var limit = parseFloat(req.query.limit, 10);
-    const total = await Order.find({
+    const total = await Order.countDocuments({
       user_id: req.query.id,
       StatusId: req.query.staustId,
-    }).count();
+    });
 
     var result = [];
     var query = {};
@@ -407,6 +399,7 @@ exports.getOrderDetails = async (req, reply) => {
         path: "items.product_id",
         populate: { path: "product_id" },
       });
+      console.log(item)
     const response = {
       status_code: 200,
       status: true,
@@ -444,9 +437,9 @@ exports.getOrdersByUserId = async (req, reply) => {
   try {
     var page = parseFloat(req.query.page, 10);
     var limit = parseFloat(req.query.limit, 10);
-    const total = await Order.find({
+    const total = await Order.countDocuments({
       user_id: req.params.id,
-    }).count();
+    })
 
     var item = await Order.find({
       user_id: req.params.id,
@@ -507,7 +500,7 @@ exports.getOrdersSeacrh = async (req, reply) => {
     var Renter_Total = lodash.sumBy(allOrders, function (o) {
       return o.Renter_Total;
     });
-    var total = await Order.find(query).count();
+    var total = await Order.countDocuments(query);
     var item = await Order.find(query)
       .sort({ _id: -1 })
       .populate("user_id")
@@ -597,7 +590,7 @@ exports.getRatedOrders = async (req, reply) => {
   try {
     var page = parseFloat(req.query.page, 10);
     var limit = parseFloat(req.query.limit, 10);
-    const total = await userRate.find().count();
+    const total = await userRate.countDocuments()
 
     var item = await userRate
       .find()
@@ -651,7 +644,7 @@ exports.getRatedProducts = async (req, reply) => {
   try {
     var page = parseFloat(req.query.page, 10);
     var limit = parseFloat(req.query.limit, 10);
-    const total = await prodcutComment.find().count();
+    const total = await prodcutComment.countDocuments()
 
     var item = await prodcutComment
       .find()
@@ -684,8 +677,7 @@ exports.getRatedProductsById = async (req, reply) => {
     var page = parseFloat(req.query.page, 10);
     var limit = parseFloat(req.query.limit, 10);
     const total = await prodcutComment
-      .find({ product_id: req.params.id, isCommentApproved: true })
-      .count();
+      .countDocuments({ product_id: req.params.id, isCommentApproved: true })
 
     var item = await prodcutComment
       .find({ product_id: req.params.id, isCommentApproved: true })
@@ -716,9 +708,9 @@ exports.getRatedProductsById = async (req, reply) => {
 exports.getNewOrder = async (req, reply) => {
   try {
     const supplier_id = req.params.id;
-    const total = await Order.find({
+    const total = await Order.countDocuments({
       $and: [{ StatusId: 1 }, { supplier_id: supplier_id }],
-    }).count();
+    })
     reply.send(total);
   } catch (err) {
     throw boom.boomify(err);
@@ -728,9 +720,9 @@ exports.getNewOrder = async (req, reply) => {
 exports.getNewRatedOrder = async (req, reply) => {
   try {
     const supplier_id = req.params.id;
-    const total = await Order.find({
+    const total = await Order.countDocuments({
       $and: [{ supplier_id: supplier_id }, { isRate: true }, { isOpen: false }],
-    }).count();
+    })
     reply.send(total);
   } catch {
     throw boom.boomify(err);
@@ -877,7 +869,7 @@ exports.deleteOrder = async (req, reply) => {
         let admin_amount = _order.Admin_Total;
         let Renter_Total = _order.Renter_Total;
 
-        await addTransaction(_order.provider_id,_order.Order_no,reserve_id._id,Renter_Total,"worthy","ارجاع منتجات");
+        await addTransaction(_order.provider_id,_order.Order_no,reserve_id._id,Number(-1 * Renter_Total),"worthy","ارجاع منتجات");
         await addTransaction(_order.provider_id,_order.Order_no,reserve_id._id,Number(-1 * admin_amount),"admin","ارجاع مستحقات الادارة");
           
       }
@@ -1014,6 +1006,89 @@ exports.deleteOrder = async (req, reply) => {
   }
 };
 
+exports.newDeleteOrder = async (req, reply) => {
+  try {
+    var percentage = 0.0;
+    const _order = await Order.findById(req.params.id)
+      .sort({ _id: -1 })
+      .populate("user_id")
+      .populate({ path: "items.product_id", populate: { path: "product_id" } });
+
+
+      for await (const data of req.body.items) {
+        var prod = await Product.findByIdAndUpdate(data.product_id,
+          { $inc: { qty: + parseInt(data.selectedQty) } },
+          { new: true }
+        );
+        var reserve_id = await reserve.findOne({ _id: prod.reserve_id });
+        var contract_id = await contract.findOne({_id: reserve_id.contract_id});
+  
+        percentage = Number(contract_id.value);
+
+        let _newTotal = Number(data.price) * (Number(data.selectedQty));
+        let admin_amount = (parseFloat(percentage).toFixed(2) * _newTotal).toFixed(2);
+        let provider_amount = -1 * Number(_newTotal - admin_amount);
+        
+        await addTransaction(_order.provider_id,_order.Order_no,reserve_id._id,Number(-1 * provider_amount),"worthy","ارجاع منتجات");
+        await addTransaction(_order.provider_id,_order.Order_no,reserve_id._id,Number(-1 * admin_amount),"admin","ارجاع مستحقات الادارة");
+        
+      }
+    
+      var newTotal = Number(req.body.Total) - Number(req.body.Total_Discount)
+      await Order.findByIdAndUpdate(
+        req.params.id,
+        {
+          items: req.body.items,
+          Total: newTotal,
+          Admin_Total: Number(percentage * newTotal),
+          Renter_Total: newTotal - Number(percentage * newTotal)
+        },
+        {new:true}
+      );
+
+      // var prevOrder = await Order.findById(req.params.id);
+      let currentDate = new Date(_order.createAt);
+      let currentMonth = moment(currentDate).format("MM");
+      let currentYear = moment(currentDate).format("YYYY");
+      var checkPayment = await PaymnetLog.findOne({
+        $and: [
+          {
+            by_user_id: _order.provider_id,
+          },
+          { PeriodMonth: currentMonth },
+          { PeriodYear: currentYear },
+        ],
+      });
+
+      if (checkPayment) {
+        //update increament
+        await PaymnetLog.findByIdAndUpdate(checkPayment._id,
+          {
+            $inc: {
+              Total: -Number(req.body.Return_total),
+              Admin_Total: -Number((parseFloat(percentage).toFixed(2) * Number(req.body.Return_total)).toFixed(2)),
+              provider_Total: -Number(Number(req.body.Return_total) - (parseFloat(percentage).toFixed(2) * Number(req.body.Return_total)).toFixed(2)),
+            },
+          },
+          { new: true }
+        );
+      }
+     
+      const response = {
+        status_code: 200,
+        status: true,
+        message: "تم الارجاع بنجاح",
+        items: [],
+      };
+      reply.send(response);
+    // }
+
+
+  } catch (err) {
+    throw boom.boomify(err);
+  }
+};
+
 exports.getPaymentLogDetailsByRenterId = async (req, reply) => {
   try {
     var _paymentLog = await PaymnetLog.find({ by_user_id: req.params.id });
@@ -1064,7 +1139,7 @@ exports.getPaymnetLog = async (req, reply) => {
     let TotalPaied = lodash.sumBy(_paymentLogAll, function (o) {
       return o.TotalPaied;
     });
-    const total = await PaymnetLog.find(query).count();
+    const total = await PaymnetLog.countDocuments(query);
     const _PaymnetLog = await PaymnetLog.find(query)
       .sort({ _id: -1 })
       .populate("by_user_id")
@@ -1216,7 +1291,7 @@ exports.getTransactionSeacrh = async (req, reply) => {
       if(element.type == "paid") Total_Paid += element.amount
     });
     
-    var total = await Transaction.find(query).count();
+    var total = await Transaction.countDocuments(query);
     var item = await Transaction.find(query)
       .sort({ _id: -1 })
       .populate("provider_id")

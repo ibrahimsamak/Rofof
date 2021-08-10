@@ -15,9 +15,8 @@ exports.getProductsCount = async (req, reply) => {
     const supplier_id = req.params.id;
 
     var _items = [];
-    var Products = await Product.find().count();
-    var Suppliers = await Supplier.find().count();
-
+    var Products = await Product.countDocuments({isDeleted:false})
+    var Suppliers = await Supplier.countDocuments()
     var allOrders = await Order.find({
       $and: [{ $or: [{ StatusId: 4 }, { StatusId: 3 }] }],
     });
@@ -84,14 +83,14 @@ exports.importantCounters = async (req, reply) => {
   try {
     var _items = [];
 
-    var Userss = await Users.find({ isBlock: false }).count();
-    var _renters = await renters.find({ isBlock: false }).count();
-    var _inventory = await inventory.find().count();
-    var _rack = await rack.find().count();
-    var allOrders = await Order.find().count();
-    var _reserve = await reserve.find({ isFinish: false }).count();
-    var _city = await city.find().count();
-    var _Product = await Product.find({ status: true }).count();
+    var Userss = await Users.countDocuments({ isBlock: false })
+    var _renters = await renters.countDocuments({ $and:[{isBlock: false},{isDeleted:false}] })
+    var _inventory = await inventory.countDocuments()
+    var _rack = await rack.countDocuments({isDeleted:false})
+    var allOrders = await Order.countDocuments()
+    var _reserve = await reserve.countDocuments({ isFinish: false })
+    var _city = await city.countDocuments()
+    var _Product = await Product.countDocuments({ $and:[{status: true},{isDeleted:false}] })
 
     _items.push({
       total_users: Userss,
@@ -122,8 +121,8 @@ exports.importantCountersForRenter = async (req, reply) => {
     let by_user_id = req.params.id;
     var _items = [];
 
-    var _reserve = await reserve.find({ renter_id: by_user_id }).count();
-    var _Product = await Product.find({ by_user_id: by_user_id }).count();
+    var _reserve = await reserve.countDocuments({ renter_id: by_user_id });
+    var _Product = await Product.countDocuments({ $and:[{by_user_id: by_user_id },{isDeleted:false}]});
 
     _items.push({
       reserve: _reserve,
@@ -186,7 +185,7 @@ exports.UsersRenterPerYear = async (req, reply) => {
       items.push({ month: month_name, user: element._id });
     });
 
-    var result2 = await renters.find().sort({ createAt: 1 });
+    var result2 = await renters.find({isDeleted:false}).sort({ createAt: 1 });
     result2.forEach((element2) => {
       var month_number = new Date(element2.createAt).getMonth();
       var month_name = monthNames[month_number];
@@ -352,7 +351,7 @@ exports.getMostProductSellsRenter = async (req, reply) => {
 exports.getMostProductQty = async (req, reply) => {
   try {
     var products = [];
-    var item = await Product.find().sort({ qty: 1 }).limit(10);
+    var item = await Product.find({isDeleted:false}).sort({ qty: 1 }).limit(10);
     var _result = lodash(item)
       .map(function (items, _name) {
         return { name: items.name, value: items.qty };
@@ -377,7 +376,7 @@ exports.getMostProductQtyRenter = async (req, reply) => {
   try {
     let user_id = req.params.id;
     var products = [];
-    var item = await Product.find({ by_user_id: user_id })
+    var item = await Product.find({ $and:[{isDeleted:false},{by_user_id: user_id}]})
       .sort({ qty: 1 })
       .limit(10);
     var _result = lodash(item)

@@ -21,6 +21,12 @@ const fastify = require("fastify")({
 // const documentation = require('./documentation/carApi')
 
 const routes = [
+  
+  {
+    method: "POST",
+    url: "/api/testupdatemany",
+    handler: productController.testupdatemany,
+  },
   {
     method: "GET",
     url: "/api/getPaymnetLog",
@@ -292,6 +298,31 @@ const routes = [
     url: "/api/deletecategory/:id",
     beforeHandler: [auth.getToken],
     handler: productController.deleteCategory,
+  },
+  {
+    method: "GET",
+    url: "/api/extra",
+    handler: constantController.get_extra,
+  },
+  {
+    method: "GET",
+    url: "/api/extra/:id",
+    handler: constantController.getSingle_extra,
+  },
+  {
+    method: "POST",
+    url: "/api/extra",
+    handler: constantController.add_extra,
+  },
+  {
+    method: "POST",
+    url: "/api/extra/:id",
+    handler: constantController.update_extra,
+  },
+  {
+    method: "POST",
+    url: "/api/delete-extra/:id",
+    handler: constantController.delete_extra,
   },
   {
     method: "GET",
@@ -723,6 +754,12 @@ const routes = [
     url: "/api/deleteOrder/:id",
     beforeHandler: [auth.getToken],
     handler: orderController.deleteOrder,
+  },
+  {
+    method: "POST",
+    url: "/api/newDeleteOrder/:id",
+    beforeHandler: [auth.getToken],
+    handler: orderController.newDeleteOrder,
   },
   {
     method: "POST",

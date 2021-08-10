@@ -14,6 +14,7 @@ const { rack, reserve } = require("../models/Rack");
 const { Product } = require("../models/Product");
 const { renters } = require("../models/Renter");
 const { sendSMS, handleError, Padder } = require("../utils/utils");
+const { extra } = require("../models/Constant");
 
 function makeid() {
   var text = "";
@@ -100,7 +101,8 @@ exports.getrack = async (req, reply) => {
       query["rack_no"] = { $regex: new RegExp(req.query.name, "i") };
     }
     
-    var all_racks = await rack.find().lean();
+    query["isDeleted"] = false
+    var all_racks = await rack.find({isDeleted:false}).lean();
     var all_rack = all_racks.length;
     var reserved_rack = lodash.sumBy(all_racks, function (o) {
       return o.isReserved;
@@ -109,7 +111,7 @@ exports.getrack = async (req, reply) => {
       return !o.isReserved;
     });
  
-    const total = await rack.find(query).count();
+    const total = await rack.countDocuments(query);
     var item = await rack
       .find(query)
       .populate("inventory_id")
@@ -159,7 +161,7 @@ exports.getSinglerack = async (req, reply) => {
 exports.addrack = async (req, reply) => {
   try {
     const prev_rack = await rack.findOne({
-      rack_no: req.body.rack_no,
+      $and:[{rack_no: req.body.rack_no,},{isDeleted:false}]
     });
     if (prev_rack) {
       const response = {
@@ -207,7 +209,7 @@ exports.addrack = async (req, reply) => {
 
 // delete rack
 exports.deleterack = async (req, reply) => {
-  const _rack = await rack.findByIdAndRemove(req.params.id);
+  const _rack = await rack.findByIdAndUpdate(req.params.id,{isDeleted:true},{new:true});
   const response = {
     status_code: 200,
     status: true,
@@ -221,7 +223,7 @@ exports.deleterack = async (req, reply) => {
 exports.updaterack = async (req, reply) => {
   try {
     const prev_rack = await rack.findOne({
-      $and: [{ rack_no: req.body.rack_no }, { _id: { $ne: req.params.id } }],
+      $and: [{ rack_no: req.body.rack_no },{isDeleted:false} , { _id: { $ne: req.params.id } }],
     });
     if (prev_rack) {
       const response = {
@@ -315,13 +317,22 @@ exports.getReserveRackById = async (req, reply) => {
 exports.addReserveRack = async (req, reply) => {
   try {
     let contract_no = await Padder()
+    let newTotal = Number(req.body.amount);
+    if(req.body.extras.length > 0){
+      let exxtras = await extra.find({_id:{$in:req.body.extras}})
+      exxtras.forEach(element => {
+        newTotal += Number(element.price)
+      });
+    }
+
     let _reserve = new reserve({
       rack_id: req.body.rack_id,
+      extras: req.body.extras,
       renter_id: req.body.renter_id,
       renter_type: req.body.renter_type,
       start_date: req.body.start_date,
       end_date: req.body.end_date,
-      amount: req.body.amount,
+      amount: newTotal,
       contract_id: req.body.contract_id,
       contract_no: contract_no,
       isApprove: true,
@@ -363,15 +374,23 @@ exports.renewReservRack = async (req, reply) => {
 
 
     var previous_reserve_id = req.body.previous_reserve_id;
+    let newTotal = Number(req.body.amount);
+    if(req.body.extras.length > 0){
+      let exxtras = await extra.find({_id:{$in:req.body.extras}})
+      exxtras.forEach(element => {
+        newTotal += Number(element.price)
+      });
+    }
     let _reserve = new reserve({
       rack_id: req.body.rack_id,
       renter_id: req.body.renter_id,
       renter_type: req.body.renter_type,
       start_date: req.body.start_date,
       end_date: req.body.end_date,
-      amount: req.body.amount,
+      amount: newTotal,
       contract_id: req.body.contract_id,
       contract_no: contract_no,
+      extras: req.body.extras,
       isApprove: true,
       isFinish: false,
     });
@@ -417,14 +436,24 @@ exports.renewReservRack = async (req, reply) => {
 // Update an existing rack
 exports.updateReserveRack = async (req, reply) => {
   try {
+    
+    let newTotal = Number(req.body.amount);
+    if(req.body.extras.length > 0){
+      let exxtras = await extra.find({_id:{$in:req.body.extras}})
+      exxtras.forEach(element => {
+        newTotal += Number(element.price)
+      });
+    }
+
     const _reserve = await reserve.findByIdAndUpdate(
       req.params.id,
       {
         renter_type: req.body.renter_type,
         start_date: req.body.start_date,
         end_date: req.body.end_date,
-        amount: req.body.amount,
+        amount: newTotal,
         contract_id: req.body.contract_id,
+        extras: req.body.extras,
       },
       { new: true }
     );
@@ -471,7 +500,7 @@ exports.deleteReserveRack = async (req, reply) => {
 
 exports.rackList = async (req, reply) => {
   try {
-    var item = await rack.find().sort({ _id: -1 });
+    var item = await rack.find({isDeleted:false}).sort({ _id: -1 });
     const response = {
       status_code: 200,
       status: true,
@@ -486,7 +515,7 @@ exports.rackList = async (req, reply) => {
 
 exports.rackListNotReserved = async (req, reply) => {
   try {
-    var item = await rack.find({ isReserved: false }).sort({ _id: -1 });
+    var item = await rack.find({ $and:[{isReserved: false},{isDeleted:false}] }).sort({ _id: -1 });
     const response = {
       status_code: 200,
       status: true,
@@ -503,7 +532,7 @@ exports.getRackListNotReservedAndMyRacks = async (req, reply) => {
   try {
     var _reserve = await reserve.findById(req.params.id).populate("rack_id");
 
-    var item = await rack.find({ isReserved: false }).sort({ _id: -1 });
+    var item = await rack.find({ $and:[{isReserved: false},{isDeleted:false}] }).sort({ _id: -1 });
     var arr = [];
     item.forEach((element) => {
       arr.push(element);
@@ -557,11 +586,13 @@ exports.getRackReserveSeacrh = async (req, reply) => {
 
 
     var all_racks = await reserve.find(query).lean();
+    var count_racks = await rack.count({$and:[{isReserved:true},{isDeleted:false}]})
+   
     var total_reserved_racks = lodash.sumBy(all_racks, function (o) {
       return o.amount;
     });
 
-    var total = await reserve.find(query).count();
+    var total = await reserve.countDocuments(query);
     var item = await reserve
       .find(query)
       .sort(sort)
@@ -569,15 +600,31 @@ exports.getRackReserveSeacrh = async (req, reply) => {
       .populate({
         path: "rack_id",
       })
+      .populate({
+        path: "extras",
+      })
       .populate("contract_id")
       .skip(page * limit)
       .limit(limit);
+
+      var newItems = []
+      item.forEach(element => {
+        let new_item = element.toObject()
+        var newTotalExtra = 0;
+        element.extras.forEach(_element => {
+          newTotalExtra += _element.price;
+        });
+        new_item.extra_total = newTotalExtra
+        newItems.push(new_item)
+      });
+    
     const response = {
-      items: item,
+      items: newItems,
       status_code: 200,
       status: true,
       message: "returned successfully",
       total_reserved_racks:total_reserved_racks,
+      count_racks:count_racks,
       pagenation: {
         size: item.length,
         totalElements: total,
@@ -662,17 +709,18 @@ exports.getRackReserveAboutToFinish = async (req, reply) => {
       query1.$and.push({isFinish:true});
     }
     if (req.body.by_user_id && req.body.by_user_id != "") {
-      query1.$and.push({by_user_id:req.body.by_user_id});
+      query1.$and.push({renter_id: req.body.by_user_id});
     }
     if (req.body.contract_no && req.body.contract_no != "") {
       query1.$and.push({contract_no:req.body.contract_no});
     }
-    
+    if (req.body.rack_id && req.body.rack_id != "") {
+      let racks = await rack.find({$and:[{rack_no:req.body.rack_id},{isDeleted:false}]})
+      query1.$and.push({rack_id:{$in:racks}});
+    }
     
 
-    var total = await reserve
-      .find(query1)
-      .count();
+    var total = await reserve.countDocuments(query1)
 
     var item = await reserve
       .find(query1)
@@ -725,7 +773,9 @@ exports.getRackReserveAboutToFinishExcel = async (req, reply) => {
     if (req.body.contract_no && req.body.contract_no != "") {
       query1.$and.push({contract_no:req.body.contract_no});
     }
-    
+    if (req.body.rack_id && req.body.rack_id != "") {
+      query1.$and.push({rack_id:{$in:[req.body.rack_id]}});
+    }
 
     var item = await reserve
       .find(query1)

@@ -40,7 +40,10 @@ const {
   makeCode,
   handleError,
 } = require("../utils/utils");
-const { reserve } = require("../models/Rack");
+const { reserve, rack } = require("../models/Rack");
+const { Product } = require("../models/Product");
+const { Order } = require("../models/Order");
+const { PaymnetLog, Transaction } = require("../models/Payment");
 
 // Get all renters
 exports.getrenters = async (req, reply) => {
@@ -63,9 +66,9 @@ exports.getrenters = async (req, reply) => {
       contracts.forEach((element) => {
         _renters.push(element.renter_id);
       });
-      const total = await renters.find({ _id: { $in: _renters } }).count();
+      const total = await renters.countDocuments({$and:[{ _id: { $in: _renters }},{isDeleted: false}] })
       var item = await renters
-        .find({ _id: { $in: _renters } })
+        .find({$and:[{ _id: { $in: _renters }},{isDeleted: false}] })
         .sort({ [sort_field]: sort_value })
         .skip(page * limit)
         .limit(limit);
@@ -115,7 +118,8 @@ exports.getrenters = async (req, reply) => {
       reply.send(response);
     } else {
       query1[search_field] = { $regex: new RegExp(search_value, "i") };
-      const total = await renters.find(query1).count();
+      query1["isDeleted"] = false
+      const total = await renters.countDocuments(query1);
 
       var item = await renters
         .find(query1)
@@ -190,7 +194,7 @@ exports.getRentersExcel = async (req, reply) => {
         _renters.push(element.renter_id);
       });
       var item = await renters
-        .find({ _id: { $in: _renters } })
+        .find({$and:[{ _id: { $in: _renters }},{isDeleted:false}] })
         .sort({ [sort_field]: sort_value });
       var newArray = [];
       for await (const newItem of item) {
@@ -231,6 +235,7 @@ exports.getRentersExcel = async (req, reply) => {
       reply.send(response);
     } else {
       query1[search_field] = { $regex: new RegExp(search_value, "i") };
+      query1["isDeleted"] = false
       var item = await renters.find(query1).sort({ [sort_field]: sort_value });
       var newArray = [];
       for await (const newItem of item) {
@@ -292,7 +297,7 @@ exports.getSinglerenters = async (req, reply) => {
 
 exports.getRenters = async (req, reply) => {
   try {
-    const _renters = await renters.find();
+    const _renters = await renters.find({isDeleted:false});
     const response = {
       status_code: 200,
       status: true,
@@ -309,7 +314,7 @@ exports.getRenters = async (req, reply) => {
 exports.addrenters = async (req, reply) => {
   try {
     const _user = await renters.findOne({
-      phone_number: req.body.phone_number,
+     $and:[{  phone_number: req.body.phone_number},{isDeleted:false}]
     });
     if (_user) {
       if (_user.isBlock == true) {
@@ -376,8 +381,8 @@ exports.login = async (req, reply) => {
     let pass = encryptPassword(req.body.password);
 
     const user = await renters.findOne({
-      phone_number: req.body.phone_number,
-      password: pass,
+     $and:[{ phone_number: req.body.phone_number},
+      {password: pass,},{isDeleted:false}]
     });
     if (!user) {
       const response = {
@@ -417,7 +422,10 @@ exports.forgetPassword = async (req, reply) => {
     let newPassword = makeid();
     let pass = encryptPassword(newPassword);
     const _renters = await renters.findOne({
-      phone_number: req.body.phone_number,
+      $and:[
+        {phone_number: req.body.phone_number},
+        {isDeleted:false}
+      ]
     });
     if (_renters) {
       const update = await renters.findByIdAndUpdate(
@@ -603,10 +611,12 @@ exports.rentersearch = async (req, reply) => {
   try {
     var result = [];
     var xx = await renters.find({
-      $or: [
+     $and:[
+      {isDeleted:false},
+      { $or: [
         { full_name: { $regex: ".*" + req.body.full_name + ".*" } },
-        { phone_number: { $regex: ".*" + req.body.phone_number + ".*" } },
-      ],
+        { phone_number: { $regex: ".*" + req.body.phone_number + ".*" } }]
+      }]
     });
     result = xx;
     const response = {
@@ -623,7 +633,7 @@ exports.rentersearch = async (req, reply) => {
 exports.RenterList = async (req, reply) => {
   try {
     const _Users = await renters
-      .find()
+      .find({isDeleted:false})
       .sort({ createAt: -1 })
       .select(["-token", "-password"]);
     const response = {
@@ -640,7 +650,7 @@ exports.RenterList = async (req, reply) => {
 
 exports.userlistInfo = async (req, reply) => {
   try {
-    const ـrenters = await renters.find().sort({ createAt: -1 });
+    const ـrenters = await renters.find({isDeleted:false}).sort({ createAt: -1 });
     const response = {
       items: ـrenters,
       status_code: 200,
@@ -654,19 +664,66 @@ exports.userlistInfo = async (req, reply) => {
 
 exports.block = async (req, reply) => {
   try {
-    const user = await renters.findByIdAndUpdate(
-      req.body._id,
-      {
-        isBlock: req.body.isBlock,
-      },
-      { new: true }
+   await renters.findByIdAndUpdate(req.body._id,{ isDeleted:true },{new: true});
+
+  //  Transaction.deleteMany(
+  //   { provider_id: req.body._id },
+  //   function (err, res) {}
+  // );
+
+  //  PaymnetLog.deleteMany(
+  //   { by_user_id: req.body._id },
+  //   function (err, res) {}
+  // );
+
+
+    Product.updateMany(
+      { by_user_id: req.body._id },
+      {isDeleted:true},
+      function (err, res) {}
     );
+
+    let reserve_rack = await reserve.find({renter_id:req.body._id})
+    for await (const item of reserve_rack){
+      for await (const reserve_rack of item.rack_id) {
+        await rack.findByIdAndUpdate(
+          reserve_rack._id,
+          {
+            isReserved: false,
+          },
+          {
+            new: true,
+          }
+        );
+        Product.updateMany(
+          {
+            $and: [{ reserve_id: item._id }, { rack_id: reserve_rack._id }],
+          },
+          {
+            status: false,
+          },
+          function (err, res) {}
+        );
+      }
+    }
+  
+
+    reserve.updateMany(
+      { renter_id: req.body._id },
+      { isFinish: true },
+      function (err, res) {}
+    );
+
+    // Order.deleteMany(
+    //   { renter_id: req.body._id },
+    //   function (err, res) {}
+    // );
 
     const response = {
       status_code: 200,
       status: true,
       message: "تمت العملية بنجاح",
-      items: user,
+      items: {},
     };
     reply.send(response);
   } catch (err) {

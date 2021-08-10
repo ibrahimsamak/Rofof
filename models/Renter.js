@@ -52,6 +52,9 @@ const renterschema = mongoose.Schema(
     },
     isEnableAdd:{
         type:Boolean
+    },
+    isDeleted:{
+      type:Boolean
     }
   },
   { versionKey: false }

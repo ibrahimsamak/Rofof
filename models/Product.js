@@ -61,6 +61,9 @@ const Productschema = mongoose.Schema(
       ref: "reserve",
       required: [true, "contract is required"],
     },
+    isDeleted:{
+      type:Boolean
+    }
   },
   { versionKey: false }
 );

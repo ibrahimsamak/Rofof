@@ -2,6 +2,21 @@ const Joi = require("joi");
 const mongoose = require("mongoose");
 const moment = require("moment-timezone");
 
+const extraSchema = mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "title is required"],
+    },
+    price: {
+      type: Number,
+      required: [true, "price is required"],
+    },
+  },
+  { versionKey: false }
+);
+
+
 const schema = mongoose.Schema(
   {
     name: {
@@ -163,6 +178,7 @@ const tokens = mongoose.model("tokens", tokenschema);
 const StaticPage = mongoose.model("StaticPage", StaticPageSchema);
 const inventory = mongoose.model("inventory", inventorySchema);
 const transport = mongoose.model("transport", transportSchema);
+const extra = mongoose.model("extra", extraSchema);
 
 function validateCustomer(customer) {
   const schema = {
@@ -191,3 +207,4 @@ exports.tokens = tokens;
 exports.inventory = inventory;
 exports.contract = contract;
 exports.transport = transport;
+exports.extra = extra

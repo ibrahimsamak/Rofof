@@ -17,7 +17,7 @@ exports.getAdv = async (req, reply) => {
       .sort({ _id: -1 })
       .skip(page * limit)
       .limit(limit);
-    const total = await Adv.find().count();
+    const total = await Adv.countDocuments()
     const response = {
       status_code: 200,
       status: true,

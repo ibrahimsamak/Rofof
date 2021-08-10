@@ -100,9 +100,9 @@ exports.checkCoupon = async (req, reply) => {
       ],
     });
     if (sp) {
-      const myReq = await Order.find({
+      const myReq = await Order.countDocuments({
         $and: [{ coupon: req.body.coupon }, { user_id: user_id }],
-      }).count();
+      });
       if (myReq == 1) {
         const response = {
           items: [],

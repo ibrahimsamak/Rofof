@@ -22,6 +22,7 @@ const { getCurrentDateTime } = require("../models/Constant");
 const { setting } = require("../models/Constant");
 const { rack, reserve } = require("../models/Rack");
 const { uploadImages, makeid, handleError } = require("../utils/utils");
+const { renters } = require("../models/Renter");
 
 // Get All Categories
 exports.getCategories = async (req, reply) => {
@@ -51,7 +52,8 @@ exports.getProducts = async (req, reply) => {
     let query1 = {};
     query1[search_field] = { $regex: new RegExp(search_value, "i") };
     query1["by_admin_id"] = req.body.by_admin_id;
-    const total = await Product.find(query1).count();
+    query1["isDeleted"] = false
+    const total = await Product.countDocuments(query1);
     var item = await Product.find(query1)
       .sort({ [sort_field]: sort_value })
       .skip(page * limit)
@@ -81,7 +83,7 @@ exports.getProductsByRackId = async (req, reply) => {
     // });
     // if (renter) {
     var item = await Product.find({
-      $and: [{ status: true }, { rack_id: req.params.id }],
+      $and: [{ status: true }, { rack_id: req.params.id },{isDeleted:false}],
     }).sort({_id:-1});
     const response = {
       status_code: 200,
@@ -108,9 +110,9 @@ exports.getProductsByCategory = async (req, reply) => {
   try {
     var page = parseFloat(req.query.page, 10);
     var limit = parseFloat(req.query.limit, 10);
-    const total = await Product.find({ category_id: req.params.id }).count();
+    const total = await Product.countDocuments({ $and:[{category_id: req.params.id},{isDeleted:false}] });
 
-    var item = await Product.find({ category_id: req.params.id })
+    var item = await Product.find({ $and:[{category_id: req.params.id},{isDeleted:false}] })
       .sort({ _id: 1 })
       .skip(page * limit)
       .limit(limit);
@@ -134,7 +136,7 @@ exports.getProductsByCategory = async (req, reply) => {
 
 exports.getAllProducts = async (req, reply) => {
   try {
-    var item = await Product.find().sort({_id:-1});
+    var item = await Product.find({isDeleted:false}).sort({_id:-1});
     const response = {
       status_code: 200,
       status: true,
@@ -151,7 +153,7 @@ exports.getRandomProducts = async (req, reply) => {
   try {
     // var count = await Product.find().count();
     // var random = Math.floor(Math.random() * count);
-    var item = await Product.find().sort({ createat: -1 }).limit(20);
+    var item = await Product.find({isDeleted:false}).sort({ createat: -1 }).limit(20);
     // .skip(random)
     const response = {
       status_code: 200,
@@ -168,7 +170,7 @@ exports.getRandomProducts = async (req, reply) => {
 // --New
 exports.getTop4RatedProducts = async (req, reply) => {
   try {
-    var item = await Product.find({ rate: 5 }).limit(4);
+    var item = await Product.find({ rate: 5,isDeleted:false }).limit(4);
     const response = {
       status_code: 200,
       status: true,
@@ -197,7 +199,8 @@ exports.getProductsRenters = async (req, reply) => {
     if (reserve_id && reserve_id != "") {
       query1["reserve_id"] = reserve_id;
     }
-    const total = await Product.find(query1).count();
+    query1["isDeleted"] = false
+    const total = await Product.countDocuments(query1);
     var item = await Product.find(query1)
       .sort({ [sort_field]: sort_value })
       .skip(page * limit)
@@ -237,7 +240,8 @@ exports.getProductsForRenter = async (req, reply) => {
     if (reserve_id && reserve_id != "") {
       query1["reserve_id"] = reserve_id;
     }
-    const total = await Product.find(query1).count();
+    query1["isDeleted"] = false
+    const total = await Product.countDocuments(query1);
     var item = await Product.find(query1).sort({ [sort_field]: sort_value });
     // .skip(page * limit)
     // .limit(limit)
@@ -261,7 +265,7 @@ exports.getProductsForRenter = async (req, reply) => {
 
 exports.getProductsForRenterById = async (req, reply) => {
   try {
-    var item = await Product.find({ by_user_id: req.body.by_user_id }).sort({_id:-1})
+    var item = await Product.find({ $and:[{by_user_id: req.body.by_user_id },{isDeleted:false}]}).sort({_id:-1})
       .populate("by_user_id")
       .populate("rack_id")
       .populate("reserve_id")
@@ -785,7 +789,7 @@ exports.approveAllProducts = async (req, reply) => {
 
 exports.deleteProduct = async (req, reply) => {
   try {
-    const products = await Product.findByIdAndDelete(req.params.id);
+    const products = await Product.findByIdAndUpdate(req.params.id,{isDeleted:true},{new:true});
     reply.send(products);
   } catch (err) {
     throw boom.boomify(err);
@@ -836,6 +840,7 @@ exports.getProductDetailsByBarCode = async (req, reply) => {
     const products = await Product.findOne({
       $and: [
         { status: true },
+        { isDeleted: false  },
         { qty: { $gt: 0 } },
         { $or: [{ barcode: req.body.barcode }, { name: req.body.name }] },
       ],
@@ -912,14 +917,20 @@ exports.searchWeb = async (req, reply) => {
   try {
     var page = parseFloat(req.query.page, 10);
     var limit = parseFloat(req.query.limit, 10);
-    const total = await Product.find({
-      category_id: req.body.category_id,
-      name: { $regex: ".*" + req.body.name + ".*" },
-    }).count();
+    const total = await Product.countDocuments({
+      $and:[
+        {isDeleted:false},
+        { category_id: req.body.category_id},
+        {name: { $regex: ".*" + req.body.name + ".*" }
+       }]
+    });
 
     var xx = await Product.find({
-      category_id: req.body.category_id,
-      name: { $regex: ".*" + req.body.name + ".*" },
+     $and:[
+       {isDeleted:false},
+       { category_id: req.body.category_id},
+       {name: { $regex: ".*" + req.body.name + ".*" }
+      }]
     })
       .populate("category_id")
       .populate("product_id")
@@ -964,8 +975,9 @@ exports.getActiveProducts = async (req, reply) => {
 
     }
     query1.$and.push({status:req.body.status}) 
+    query1.$and.push({isDeleted:false}) 
 
-    const total = await Product.find(query1).count();
+    const total = await Product.countDocuments(query1);
     var item = await Product.find(query1)
       .populate("by_user_id")
       .populate("category_id")
@@ -1011,6 +1023,7 @@ exports.getActiveProductsExcel = async (req, reply) => {
 
     }
     query1.$and.push({status:req.body.status}) 
+    query1.$and.push({isDeleted:false}) 
 
     var item = await Product.find(query1)
       .populate("by_user_id")
@@ -1032,30 +1045,105 @@ exports.getActiveProductsExcel = async (req, reply) => {
 
 exports.transfer = async (req, reply) => {
   try {
-    Product.updateMany(
-      { _id: {$in:req.body.products} },
-      { reserve_id: req.body.reserved_id },
-      function (err, res) {
-        if (err) {
-          const response = {
-            status_code: 400,
-            status: false,
-            message: "حدث خطأ الرجاء المحاولة مرة اخرى",
-            items: [],
-          };
-          reply.send(response);
-        } else {
-          const response = {
-            status_code: 200,
-            status: true,
-            message: "تمت نقل المنتجات بنجاح ",
-            items: [],
-          };
-          reply.send(response);
+    if(req.body.reserved_id && req.body.reserved_id != ""){
+      Product.updateMany(
+        { _id: {$in:req.body.products} },
+        { reserve_id: req.body.reserved_id },
+        function (err, res) {
+          if (err) {
+            const response = {
+              status_code: 400,
+              status: false,
+              message: "حدث خطأ الرجاء المحاولة مرة اخرى",
+              items: [],
+            };
+            reply.send(response);
+          } else {
+            const response = {
+              status_code: 200,
+              status: true,
+              message: "تمت نقل المنتجات بنجاح ",
+              items: [],
+            };
+            reply.send(response);
+          }
         }
+      );
+    }else{
+      let renter = await renters.findOne({name:{ $regex: new RegExp("رفوف", "i") }})
+      if(!renter){
+        const response = {
+          status_code: 400,
+          status: false,
+          message: "لا يوجد مستأجر باسم متجر رفوف",
+          items: {},
+        };
+        reply.send(response);
+        return
       }
-    );
+      let _reserve = await reserve.findOne({renter_id:renter._id})
+      if(!_reserve){
+        const response = {
+          status_code: 400,
+          status: false,
+          message: "لا يوجد عقد متاح لمتجر رفوف",
+          items: {},
+        };
+        reply.send(response);
+        return
+      }
+
+      Product.updateMany(
+        { _id: {$in:req.body.products} },
+        { reserve_id: _reserve._id },
+        function (err, res) {
+          if (err) {
+            const response = {
+              status_code: 400,
+              status: false,
+              message: "حدث خطأ الرجاء المحاولة مرة اخرى",
+              items: [],
+            };
+            reply.send(response);
+          } else {
+            const response = {
+              status_code: 200,
+              status: true,
+              message: "تمت نقل المنتجات بنجاح ",
+              items: [],
+            };
+            reply.send(response);
+          }
+        }
+      );
+    }
+
+  
   } catch (err) {
     throw boom.boomify(err);
   }
 };
+
+
+
+exports.testupdatemany = async (req, reply) => {
+  await Product.updateMany(
+    { },
+    { isDeleted: false },
+    function (err, res) {
+    }
+  );
+  await renters.updateMany(
+    { },
+    { isDeleted: false },
+    function (err, res) {
+    }
+  );
+  await rack.updateMany(
+    { },
+    { isDeleted: false },
+    function (err, res) {
+    }
+  );
+  reply.send("done")
+}
