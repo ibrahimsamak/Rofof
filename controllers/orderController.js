@@ -1,3 +1,21 @@
+/**
+ * @module controllers/orderController
+ * @description
+ * Drives the purchasing flow of the Rufuf marketplace: placing orders, product
+ * ratings and comments with admin approval, order retrieval for customers and
+ * renters, search and Excel exports, daily order reports, deletion/refund
+ * handling and the full payment-log lifecycle (record, update, search).
+ *
+ * Exposed handlers:
+ * - addOrder                                          Place a new order.
+ * - addRate / approveRate / updateRate / getRatedOrders / getApproveRatedOrders  Order ratings.
+ * - addProcutComment / approveComment / getRatedProducts(ById)  Product reviews.
+ * - getUserOrder / getOrderDetails / getOrderDetailsByRenter / getOrdersByUserId / orderDetailsByUserId  Order lookups.
+ * - getOrdersSeacrh(Excel) / getNewOrder / getNewRatedOrder / DailyOrders  Search and reports.
+ * - updateOrderByAdmin / deleteOrder / newDeleteOrder  Administrative order edits and removal.
+ * - addPayment / updatePayment / getPaymnetLog / getPaymentLogDetailsByRenterId / getTransactionSeacrh  Payments.
+ */
+
 // External Dependancies
 const boom = require("boom");
 const NodeGeocoder = require("node-geocoder");
