@@ -1,3 +1,25 @@
+/**
+ * @module controllers/constantController
+ * @description
+ * Serves the configurable reference data and CMS-style content that powers the
+ * app: cities, contracts and contract details, transport and inventory options,
+ * delivery time slots, global settings, static pages, social links, contact
+ * options, buy units, app update metadata and pricing "extras". Provides read
+ * endpoints for clients plus full CRUD for the admin dashboard.
+ *
+ * Exposed handlers:
+ * - getUpdates / getBuyUnits / getContactOption / getSocialOption   App metadata & options.
+ * - getCity / getSingleCity + addCity / updateCity / deleteCity     City reference data.
+ * - getContract(Details) / getSingleContract + add/update/deleteContract  Contract templates.
+ * - getTransport / getInventory (+ single) + add/update/delete       Transport & inventory options.
+ * - getSettings / getSingleSettings + addSetting / updateSetting / deleteSetting  Global settings.
+ * - getdelivery_time + add/update/deletedelivery_time               Delivery time slots.
+ * - getStaticPage / getSingleStatic + add/update/deleteStatic       Static CMS pages.
+ * - addSocial / updateSocial / deleteSocial                         Social links.
+ * - getSingleContact + addContact / updateContact / deleteContact   Contact entries.
+ * - get_extra / getSingle_extra + add_extra / update_extra / delete_extra  Pricing extras.
+ */
+
 const boom = require("boom");
 const util = require("util");
 
