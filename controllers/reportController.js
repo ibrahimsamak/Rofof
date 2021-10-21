@@ -1,3 +1,19 @@
+/**
+ * @module controllers/reportController
+ * @description
+ * Powers the analytics and business-intelligence dashboards. Aggregates counts
+ * and time-series across the platform — product totals, top cities, headline
+ * KPIs (globally and per renter), new-user growth, users/orders/revenue per
+ * year, and best-selling products and top renters.
+ *
+ * Exposed handlers:
+ * - getProductsCount / getTop10Cities            Product and geographic distribution.
+ * - importantCounters / importantCountersForRenter  Headline KPI cards (global / per renter).
+ * - top15NewUsers / UsersRenterPerYear           User growth reports.
+ * - OrdersPerYear / revenuPerYear / revenuPerYearRenter  Order and revenue time series.
+ * - getMostProductSells(Renter) / getMostProductQty(Renter) / getMostRenter  Top sellers and renters.
+ */
+
 const _ = require("underscore");
 const lodash = require("lodash");
 const boom = require("boom");
