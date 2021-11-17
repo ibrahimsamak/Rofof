@@ -1,3 +1,15 @@
+/**
+ * @module controllers/advController
+ * @description
+ * Manages promotional advertisements/banners surfaced in the client apps.
+ * Provides listing and single-item retrieval for clients plus full CRUD
+ * (including image handling) for the admin dashboard.
+ *
+ * Exposed handlers:
+ * - getAdv / getSingleAdv               List adverts or fetch one by id.
+ * - addAdv / updateAdv / deleteAdv      Create, edit and remove adverts.
+ */
+
 // External Dependancies
 const boom = require("boom");
 const fs = require("fs");

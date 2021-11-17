@@ -1,3 +1,15 @@
+/**
+ * @module controllers/couponController
+ * @description
+ * Manages discount coupons for the Rufuf marketplace: admin CRUD over coupon
+ * records plus the checkout-time validation used to apply a coupon to an order.
+ *
+ * Exposed handlers:
+ * - getcoupon / getSinglecoupon              List coupons or fetch one by id.
+ * - addcoupon / updatecoupon / deletecoupon  Coupon CRUD.
+ * - checkCoupon                              Validate a coupon code at checkout.
+ */
+
 // External Dependancies
 const boom = require("boom");
 
