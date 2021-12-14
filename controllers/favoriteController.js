@@ -1,3 +1,15 @@
+/**
+ * @module controllers/favoriteController
+ * @description
+ * Manages a customer's list of favorite products/racks — retrieving the
+ * favorites for a user and adding or removing individual entries.
+ *
+ * Exposed handlers:
+ * - getFav      List the authenticated user's favorites.
+ * - addFav      Add an item to the user's favorites.
+ * - deleteFav   Remove an item from the user's favorites.
+ */
+
 const boom = require("boom");
 
 // Get Data Models

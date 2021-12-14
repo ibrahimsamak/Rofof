@@ -1,3 +1,15 @@
+/**
+ * @module controllers/notificationController
+ * @description
+ * Manages in-app notifications for users: fetching a user's notifications,
+ * marking them as read, and updating notification records.
+ *
+ * Exposed handlers:
+ * - getNotfications      List a user's notifications.
+ * - readNotifications    Mark notifications as read.
+ * - updateNotifications  Update notification records.
+ */
+
 const boom = require("boom");
 
 // Get Data Models
