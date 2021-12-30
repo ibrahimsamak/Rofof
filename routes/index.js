@@ -674,7 +674,6 @@ const routes = [
   {
     method: "POST",
     url: "/api/renterforgetPassword",
-    beforeHandler: [auth.getToken],
     handler: renterController.forgetPassword,
   },
   {

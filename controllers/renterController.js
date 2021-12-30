@@ -348,7 +348,8 @@ exports.addrenters = async (req, reply) => {
         IBAN: req.body.IBAN,
         BankName: req.body.BankName,
         isEnableEdit:false,
-        isEnableAdd:false
+        isEnableAdd:false,
+        isDeleted:false
       });
       var _return = handleError(_user.validateSync());
       if (_return.length > 0) {
@@ -381,8 +382,10 @@ exports.login = async (req, reply) => {
     let pass = encryptPassword(req.body.password);
 
     const user = await renters.findOne({
-     $and:[{ phone_number: req.body.phone_number},
-      {password: pass,},{isDeleted:false}]
+     $and:[
+      { phone_number: req.body.phone_number},
+      {password: pass,},
+      {isDeleted:false}]
     });
     if (!user) {
       const response = {

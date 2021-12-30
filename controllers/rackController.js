@@ -183,6 +183,7 @@ exports.addrack = async (req, reply) => {
       lengthUnit: req.body.lengthUnit,
       widthUnit: req.body.widthUnit,
       heightUnit: req.body.heightUnit,
+      isDeleted:false
     });
     var _return = handleError(_rack.validateSync());
     if (_return.length > 0) {

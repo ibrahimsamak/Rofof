@@ -90,7 +90,8 @@ exports.addOrder = async (req, reply) => {
 
 
       //add transaction payment
-      let _newTotal = Number(data.price) * Number(data.qty)
+      let discount = Number(req.body.Total_Discount)
+      let _newTotal = (Number(data.price) * Number(data.qty)) - discount
       let admin_amount = (parseFloat(percentage).toFixed(2) * _newTotal).toFixed(2);
       let provider_amount = -1 * Number(_newTotal - admin_amount);
       
@@ -1025,7 +1026,8 @@ exports.newDeleteOrder = async (req, reply) => {
   
         percentage = Number(contract_id.value);
 
-        let _newTotal = Number(data.price) * (Number(data.selectedQty));
+        let discount = Number(data.Total_Discount)
+        let _newTotal = (Number(data.price) * (Number(data.selectedQty))) - discount;
         let admin_amount = (parseFloat(percentage).toFixed(2) * _newTotal).toFixed(2);
         let provider_amount = -1 * Number(_newTotal - admin_amount);
         

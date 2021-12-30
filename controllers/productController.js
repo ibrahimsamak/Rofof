@@ -23,6 +23,8 @@ const { setting } = require("../models/Constant");
 const { rack, reserve } = require("../models/Rack");
 const { uploadImages, makeid, handleError } = require("../utils/utils");
 const { renters } = require("../models/Renter");
+const { PaymnetLog, Transaction } = require("../models/Payment");
+const { Order } = require("../models/Order");
 
 // Get All Categories
 exports.getCategories = async (req, reply) => {
@@ -554,6 +556,7 @@ exports.addProduct = async (req, reply) => {
             rate: 0,
             rack_id: req.raw.body.rack_id,
             reserve_id: req.raw.body.reserve_id,
+            isDeleted:false
           });
           var _return = handleError(products.validateSync());
           if (_return.length > 0) {
@@ -595,6 +598,7 @@ exports.addProduct = async (req, reply) => {
         rate: 0,
         rack_id: req.raw.body.rack_id,
         reserve_id: req.raw.body.reserve_id,
+        isDeleted:false
       });
       await products.save();
       const response = {
@@ -1127,23 +1131,37 @@ exports.transfer = async (req, reply) => {
 
 
 exports.testupdatemany = async (req, reply) => {
-  await Product.updateMany(
-    { },
-    { isDeleted: false },
+  // let xx= await PaymnetLog.findById("5ff16fed60e845bac622458c")
+  await renters.deleteMany(
+    {_id:{$in:["5feddce00bcbe40aee239bcf"]} },
     function (err, res) {
     }
   );
-  await renters.updateMany(
-    { },
-    { isDeleted: false },
+  await Product.deleteMany(
+    {by_user_id:{$in:["5feddce00bcbe40aee239bcf"]} },
     function (err, res) {
     }
   );
-  await rack.updateMany(
-    { },
-    { isDeleted: false },
+  await reserve.deleteMany(
+    {renter_id:{$in:["5feddce00bcbe40aee239bcf"]} },
     function (err, res) {
     }
   );
-  reply.send("done")
+  await Order.deleteMany(
+    {provider_id:{$in:["5feddce00bcbe40aee239bcf"]} },
+    function (err, res) {
+    }
+  );
+  await PaymnetLog.deleteMany(
+    {by_user_id:{$in:["5feddce00bcbe40aee239bcf"]} },
+    function (err, res) {
+    }
+  );
+  await Transaction.deleteMany(
+    {provider_id:{$in:["5feddce00bcbe40aee239bcf"]} },
+    function (err, res) {
+    }
+  );
+ 
+  reply.send(xx)
 }
