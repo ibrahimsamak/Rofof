@@ -32,12 +32,12 @@ const axios = require("axios");
 const mongoose = require("mongoose");
 
 var config = {
-  apiKey: "AIzaSyABN7HaigdqFPQx9un5pngBD7w6w2Cz5_E",
-  authDomain: "gazapp-4e160.firebaseapp.com",
-  databaseURL: "https://gazapp-4e160.firebaseio.com",
-  projectId: "gazapp-4e160",
-  storageBucket: "gazapp-4e160.appspot.com",
-  messagingSenderId: "239118239090",
+  apiKey: "",
+  authDomain: "",
+  databaseURL: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
 };
 firebase.initializeApp(config);
 
@@ -72,7 +72,7 @@ const { reserve } = require("../models/Rack");
 const options = {
   provider: "google",
   httpAdapter: "https",
-  apiKey: "AIzaSyDP-XwnS5Daa_uSFZJvY6H0hsKaOxe2ar0",
+  apiKey: "",
   formatter: null,
 };
 const geocoder = NodeGeocoder(options);

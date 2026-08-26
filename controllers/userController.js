@@ -34,8 +34,8 @@ require("dotenv").config();
 
 cloudinary.config({
   cloud_name: "dsz57mpwt",
-  api_key: "798849627961531",
-  api_secret: "mluiA31CtWFTj5E5EMPRS5tvQXw",
+  api_key: "",
+  api_secret: "",
 });
 
 var transporter = nodemailer.createTransport({
@@ -44,7 +44,7 @@ var transporter = nodemailer.createTransport({
   secure: true,
   auth: {
     user: "no-reply@souqgaz.com",
-    pass: "no-reply@souqgaz.com",
+    pass: "",
   },
 });
 
@@ -53,7 +53,7 @@ const options = {
 
   // Optional depending on the providers
   httpAdapter: "https", // Default
-  apiKey: "AIzaSyDP-XwnS5Daa_uSFZJvY6H0hsKaOxe2ar0", // for Mapquest, OpenCage, Google Premier
+  apiKey: "", // for Mapquest, OpenCage, Google Premier
   formatter: null, // 'gpx', 'string', ...
 };
 
